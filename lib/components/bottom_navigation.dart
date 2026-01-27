@@ -1,34 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
-// ignore: must_be_immutable
 class MyBottomNavigation extends StatelessWidget {
-  void Function(int) onTabChange;
-  MyBottomNavigation({super.key, required this.onTabChange});
+  final void Function(int) onTabChange;
+  final int selectedIndex;
+
+  const MyBottomNavigation({
+    super.key,
+    required this.onTabChange,
+    required this.selectedIndex,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 7),
-      child: GNav(
-        color: Colors.grey[400],
-        activeColor: Colors.grey.shade700,
-        tabActiveBorder: Border.all(color: Colors.white),
-        tabBackgroundColor: Colors.grey.shade100,
-        mainAxisAlignment: MainAxisAlignment.center,
-        tabBorderRadius: 16,
-        gap: 8,
-        onTabChange: (index) => onTabChange(index),
-        tabs: [
-          GButton(
-            icon: Icons.home,
-            text: 'Home',
-          ),
-          GButton(
-            icon: Icons.shopping_cart_sharp,
-            text: 'Cart',
-          ),
-        ],
+    final width = MediaQuery.of(context).size.width;
+
+    // Responsive breakpoints
+    final bool isTablet = width >= 600;
+    final double iconSize = isTablet ? 26 : 22;
+    final double navHeight = isTablet ? 70 : 60;
+
+    return SafeArea(
+      child: Container(
+        height: navHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
+          ],
+        ),
+        child: GNav(
+          selectedIndex: selectedIndex,
+          iconSize: iconSize,
+          gap: 6,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          color: Colors.grey[400],
+          activeColor: Colors.grey.shade700,
+          tabBackgroundColor: Colors.grey.shade100,
+          tabBorderRadius: 14,
+          onTabChange: onTabChange,
+          tabs: const [
+            GButton(icon: Icons.home, text: 'Home'),
+            GButton(icon: Icons.search_outlined, text: 'Explore'),
+            GButton(icon: Icons.calendar_month, text: 'Bookings'),
+            GButton(icon: Icons.wallet, text: 'Wallet'),
+            GButton(icon: Icons.person, text: 'Profile'),
+          ],
+        ),
       ),
     );
   }

@@ -37,6 +37,7 @@ dependencies:
   flutter_login: ^6.0.0
   google_nav_bar: ^5.0.6
   provider: ^6.1.5+1
+  flutter_local_notifications: ^20.0.0
 
 dev_dependencies:
   flutter_test:

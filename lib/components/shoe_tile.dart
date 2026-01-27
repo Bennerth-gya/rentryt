@@ -4,19 +4,21 @@ import 'package:flutter/material.dart';
 
 class ShoeTile extends StatelessWidget {
   final Shoe shoe;
-  final void Function()? onTap;
+  final VoidCallback onTap;
+  final bool isInGrid;
 
   const ShoeTile({
     super.key,
     required this.shoe,
     required this.onTap,
+    this.isInGrid = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 200,
-      margin: const EdgeInsets.only(left: 20),
+      width: isInGrid ? null : 200,
+      margin: isInGrid ? null : const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -24,64 +26,62 @@ class ShoeTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // IMAGE (fixed height)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.asset(
-              shoe.imagePath,
-              height: 130,
-              width: double.infinity,
-              fit: BoxFit.cover,
+          /// IMAGE
+          AspectRatio(
+            aspectRatio: 1.1,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child: Image.asset(shoe.imagePath, fit: BoxFit.cover),
             ),
           ),
 
-          // CONTENT (flexible)
+          /// CONTENT (EXPANDS SAFELY)
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    shoe.name,
-                    style: TextStyle(
-                      color: accent,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Text(
+                      shoe.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-
-                  Text(
-                    shoe.description,
-                    style: TextStyle(color: textSecondary),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 3),
+                  Flexible(
+                    child: Text(
+                      shoe.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11, color: textSecondary),
+                    ),
                   ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '\$${shoe.price}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: accent,
+                  const Spacer(),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onTap,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      Container(
-                        color: accent,
-                        child: GestureDetector(
-                          onTap: onTap,
-                          child: Icon(
-                            Icons.add,
-                          ),
-                        ),
-                      )
-                    ],
-                  )
+                      child: const Text("Add", style: TextStyle(fontSize: 13)),
+                    ),
+                  ),
                 ],
               ),
             ),
