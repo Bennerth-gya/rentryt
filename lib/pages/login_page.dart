@@ -33,6 +33,7 @@ class LoginPage extends StatelessWidget {
       color: Colors.amber,
       home: Scaffold(
         body: FlutterLogin(
+          title: 'Comfi',
           navigateBackAfterRecovery: true,
           onLogin: _authUser,
           onRecoverPassword: _recoverPassword,

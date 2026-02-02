@@ -1,5 +1,7 @@
 import 'package:comfi/components/bottom_navigation.dart';
 import 'package:comfi/pages/cart_page.dart';
+import 'package:comfi/pages/categories_page.dart';
+import 'package:comfi/pages/profile_screen.dart';
 import 'package:comfi/pages/shop_page.dart';
 import 'package:flutter/material.dart';
 
@@ -27,8 +29,13 @@ class _HomePageState extends State<HomePage> {
     // home page
     const ShopPage(),
 
+    // categories
+    const CategoriesPage(),
+
     // cart page
     const CartPage(),
+    // profile page
+    ProfileScreen(),
   ];
 
   @override

@@ -1,13 +1,13 @@
 import 'package:comfi/consts/colors.dart';
-import 'package:comfi/models/shoe.dart';
+import 'package:comfi/models/products.dart';
 import 'package:flutter/material.dart';
 
-class ShoeTile extends StatelessWidget {
-  final Shoe shoe;
+class ProductsTile extends StatelessWidget {
+  final Products shoe;
   final VoidCallback onTap;
   final bool isInGrid;
 
-  const ShoeTile({
+  const ProductsTile({
     super.key,
     required this.shoe,
     required this.onTap,

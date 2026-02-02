@@ -1,7 +1,7 @@
-import 'package:comfi/components/shoe_tile.dart';
+import 'package:comfi/components/products_tile.dart';
 import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/cart.dart';
-import 'package:comfi/models/shoe.dart';
+import 'package:comfi/models/products.dart';
 import 'package:comfi/pages/column_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +14,7 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
-  void addShoeToCart(Shoe shoe) {
+  void addShoeToCart(Products shoe) {
     Provider.of<Cart>(context, listen: false).addItemToCart(shoe);
 
     // Check if widget is still mounted before showing dialog
@@ -75,7 +75,7 @@ class _ShopPageState extends State<ShopPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Hi Mike,",
+                                      "Hi Systrom,",
                                       style: TextStyle(
                                         fontSize: isDesktop
                                             ? 28
@@ -260,7 +260,7 @@ class _ShopPageState extends State<ShopPage> {
                                                 ),
                                               ),
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.white,
+                                                backgroundColor: Colors.black,
                                                 foregroundColor: accent,
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -315,7 +315,7 @@ class _ShopPageState extends State<ShopPage> {
                                     itemCount: cart.getShoeList().length,
                                     itemBuilder: (context, index) {
                                       final shoe = cart.getShoeList()[index];
-                                      return ShoeTile(
+                                      return ProductsTile(
                                         shoe: shoe,
                                         onTap: () => addShoeToCart(shoe),
                                         isInGrid: true,
@@ -329,7 +329,7 @@ class _ShopPageState extends State<ShopPage> {
                                       itemCount: cart.getShoeList().length,
                                       itemBuilder: (context, index) {
                                         final shoe = cart.getShoeList()[index];
-                                        return ShoeTile(
+                                        return ProductsTile(
                                           shoe: shoe,
                                           onTap: () => addShoeToCart(shoe),
                                           isInGrid: false,

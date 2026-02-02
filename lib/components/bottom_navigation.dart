@@ -42,9 +42,8 @@ class MyBottomNavigation extends StatelessWidget {
           onTabChange: onTabChange,
           tabs: const [
             GButton(icon: Icons.home, text: 'Home'),
-            GButton(icon: Icons.search_outlined, text: 'Explore'),
-            GButton(icon: Icons.calendar_month, text: 'Bookings'),
-            GButton(icon: Icons.wallet, text: 'Wallet'),
+            GButton(icon: Icons.category, text: 'Categories'),
+            GButton(icon: Icons.shopping_bag, text: 'Cart'),
             GButton(icon: Icons.person, text: 'Profile'),
           ],
         ),

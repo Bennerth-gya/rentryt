@@ -1,9 +1,9 @@
-class Shoe {
+class Products {
   final String name;
-  final String description; 
+  final String description;
   final String price;
   final String imagePath;
-  Shoe({
+  Products({
     required this.name,
     required this.description,
     required this.price,
