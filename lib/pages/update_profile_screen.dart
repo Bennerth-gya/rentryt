@@ -128,11 +128,11 @@ class UpdateProfileScreen extends StatelessWidget {
                 children: [
                   Text.rich(
                     TextSpan(
-                      text: 'Joined 2 February, 2026',
+                      text: '2 February, 2026',
                       style: TextStyle(fontSize: 12),
                       children: [
                         TextSpan(
-                          text: 'Joined',
+                          text: ' Joined',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
