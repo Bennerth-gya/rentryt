@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
     const ShopPage(),
 
     // categories
-    const CategoriesPage(),
+    const CategoriesScreen(),
 
     // cart page
     const CartPage(),

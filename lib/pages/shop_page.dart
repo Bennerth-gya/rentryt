@@ -5,6 +5,7 @@ import 'package:comfi/models/products.dart';
 import 'package:comfi/pages/column_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -16,10 +17,8 @@ class ShopPage extends StatefulWidget {
 class _ShopPageState extends State<ShopPage> {
   void addShoeToCart(Products shoe) {
     Provider.of<Cart>(context, listen: false).addItemToCart(shoe);
-
     // Check if widget is still mounted before showing dialog
     if (!mounted) return;
-
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -47,7 +46,6 @@ class _ShopPageState extends State<ShopPage> {
                 final width = constraints.maxWidth;
                 final isTablet = width >= 600;
                 final isDesktop = width >= 1000;
-
                 final horizontalPadding = isDesktop
                     ? 200.0
                     : isTablet
@@ -151,8 +149,7 @@ class _ShopPageState extends State<ShopPage> {
 
                           const SizedBox(height: 25),
 
-                          // ================= HERO BANNER =================
-                          // ================= HERO BANNER =================
+                          // ================= HERO BANNER (now with carousel) =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -163,7 +160,7 @@ class _ShopPageState extends State<ShopPage> {
                                   ? 420
                                   : isTablet
                                   ? 360
-                                  : 300, // mobile still comfortable but not overwhelming
+                                  : 300,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
                                 // Optional: subtle border or shadow for depth
@@ -180,12 +177,37 @@ class _ShopPageState extends State<ShopPage> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    // Background image – full space
-                                    Image.asset(
-                                      'lib/images/smart-shopping-tips.jpg',
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
+                                    // Carousel background (multiple images changing over time)
+                                    CarouselSlider(
+                                      options: CarouselOptions(
+                                        height: double.infinity,
+                                        viewportFraction: 1.0,
+                                        autoPlay: true,
+                                        autoPlayInterval: const Duration(
+                                          seconds: 5,
+                                        ),
+                                        autoPlayAnimationDuration:
+                                            const Duration(milliseconds: 1200),
+                                        autoPlayCurve: Curves.easeInOutCubic,
+                                        enlargeCenterPage: false,
+                                        scrollDirection: Axis.horizontal,
+                                        enableInfiniteScroll: true,
+                                      ),
+                                      items:
+                                          [
+                                            'lib/images/smart-shopping-tips.jpg',
+                                            'lib/images/dark_lady_shopping.jpg',
+                                            'lib/images/beautiful_dark_shopping.jpg',
+                                            'lib/images/black_man.jpg',
+                                            // Add more images here if you have them
+                                          ].map((imagePath) {
+                                            return Image.asset(
+                                              imagePath,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                            );
+                                          }).toList(),
                                     ),
 
                                     // Dark overlay – adjustable for readability
@@ -245,7 +267,6 @@ class _ShopPageState extends State<ShopPage> {
                                               textAlign: TextAlign.center,
                                             ),
                                             const SizedBox(height: 16),
-
                                             const SizedBox(height: 32),
                                             ElevatedButton.icon(
                                               icon: const Icon(
@@ -290,9 +311,8 @@ class _ShopPageState extends State<ShopPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(
-                            height: 40,
-                          ), // increased spacing after banner
+
+                          const SizedBox(height: 40),
 
                           const SizedBox(height: 15),
 
