@@ -1,4 +1,3 @@
-import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/profile_body.dart';
 import 'package:comfi/pages/update_profile_screen.dart';
 import 'package:flutter/material.dart';
