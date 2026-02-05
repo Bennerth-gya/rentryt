@@ -2,7 +2,6 @@ import 'package:comfi/components/products_tile.dart';
 import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
-import 'package:comfi/pages/column_section.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -15,10 +14,11 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
-  void addShoeToCart(Products shoe) {
-    Provider.of<Cart>(context, listen: false).addItemToCart(shoe);
-    // Check if widget is still mounted before showing dialog
+  void addProductToCart(Products product) {
+    Provider.of<Cart>(context, listen: false).addItemToCart(product);
+
     if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -86,7 +86,7 @@ class _ShopPageState extends State<ShopPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      "Find your home away from home!",
+                                      "Find what you need in Tarkwa!",
                                       style: TextStyle(
                                         fontSize: isTablet ? 16 : 14,
                                         color: textSecondary,
@@ -123,8 +123,8 @@ class _ShopPageState extends State<ShopPage> {
                                       color: cardColor,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Row(
-                                      children: const [
+                                    child: const Row(
+                                      children: [
                                         Icon(Icons.location_on, size: 18),
                                         SizedBox(width: 8),
                                         Text("Tarkwa"),
@@ -149,13 +149,12 @@ class _ShopPageState extends State<ShopPage> {
 
                           const SizedBox(height: 25),
 
-                          // ================= HERO BANNER (now with carousel) =================
+                          // ================= HERO BANNER =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
                             ),
                             child: Container(
-                              // Much taller on larger screens → gives space for more text
                               height: isDesktop
                                   ? 420
                                   : isTablet
@@ -163,7 +162,6 @@ class _ShopPageState extends State<ShopPage> {
                                   : 300,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(18),
-                                // Optional: subtle border or shadow for depth
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.15),
@@ -177,7 +175,6 @@ class _ShopPageState extends State<ShopPage> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    // Carousel background (multiple images changing over time)
                                     CarouselSlider(
                                       options: CarouselOptions(
                                         height: double.infinity,
@@ -190,7 +187,6 @@ class _ShopPageState extends State<ShopPage> {
                                             const Duration(milliseconds: 1200),
                                         autoPlayCurve: Curves.easeInOutCubic,
                                         enlargeCenterPage: false,
-                                        scrollDirection: Axis.horizontal,
                                         enableInfiniteScroll: true,
                                       ),
                                       items:
@@ -199,7 +195,6 @@ class _ShopPageState extends State<ShopPage> {
                                             'lib/images/dark_lady_shopping.jpg',
                                             'lib/images/beautiful_dark_shopping.jpg',
                                             'lib/images/black_man.jpg',
-                                            // Add more images here if you have them
                                           ].map((imagePath) {
                                             return Image.asset(
                                               imagePath,
@@ -209,8 +204,6 @@ class _ShopPageState extends State<ShopPage> {
                                             );
                                           }).toList(),
                                     ),
-
-                                    // Dark overlay – adjustable for readability
                                     Container(
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
@@ -223,8 +216,6 @@ class _ShopPageState extends State<ShopPage> {
                                         ),
                                       ),
                                     ),
-
-                                    // Content – more space, better typography hierarchy
                                     Center(
                                       child: Padding(
                                         padding: EdgeInsets.symmetric(
@@ -266,7 +257,6 @@ class _ShopPageState extends State<ShopPage> {
                                               ),
                                               textAlign: TextAlign.center,
                                             ),
-                                            const SizedBox(height: 16),
                                             const SizedBox(height: 32),
                                             ElevatedButton.icon(
                                               icon: const Icon(
@@ -274,7 +264,7 @@ class _ShopPageState extends State<ShopPage> {
                                                 size: 20,
                                               ),
                                               label: const Text(
-                                                "Explore Hostels Now",
+                                                "Start Shopping",
                                                 style: TextStyle(
                                                   fontSize: 17,
                                                   fontWeight: FontWeight.w600,
@@ -299,7 +289,7 @@ class _ShopPageState extends State<ShopPage> {
                                                 ),
                                               ),
                                               onPressed: () {
-                                                // Add navigation or scroll to featured section
+                                                // Optional: scroll to featured or navigate
                                               },
                                             ),
                                           ],
@@ -314,7 +304,20 @@ class _ShopPageState extends State<ShopPage> {
 
                           const SizedBox(height: 40),
 
-                          const SizedBox(height: 15),
+                          // ================= FEATURED PRODUCTS =================
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: horizontalPadding,
+                            ),
+                            child: const Text(
+                              "Featured Products",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
                           Padding(
                             padding: EdgeInsets.symmetric(
@@ -332,26 +335,30 @@ class _ShopPageState extends State<ShopPage> {
                                           crossAxisSpacing: 16,
                                           mainAxisSpacing: 16,
                                         ),
-                                    itemCount: cart.getShoeList().length,
+                                    itemCount: cart.getFeaturedList().length,
                                     itemBuilder: (context, index) {
-                                      final shoe = cart.getShoeList()[index];
+                                      final product = cart
+                                          .getFeaturedList()[index];
                                       return ProductsTile(
-                                        shoe: shoe,
-                                        onTap: () => addShoeToCart(shoe),
+                                        shoe:
+                                            product, // ← rename to product later
+                                        onTap: () => addProductToCart(product),
                                         isInGrid: true,
                                       );
                                     },
                                   )
                                 : SizedBox(
-                                    height: 260,
+                                    height: 280,
                                     child: ListView.builder(
                                       scrollDirection: Axis.horizontal,
-                                      itemCount: cart.getShoeList().length,
+                                      itemCount: cart.getFeaturedList().length,
                                       itemBuilder: (context, index) {
-                                        final shoe = cart.getShoeList()[index];
+                                        final product = cart
+                                            .getFeaturedList()[index];
                                         return ProductsTile(
-                                          shoe: shoe,
-                                          onTap: () => addShoeToCart(shoe),
+                                          shoe: product,
+                                          onTap: () =>
+                                              addProductToCart(product),
                                           isInGrid: false,
                                         );
                                       },
@@ -359,52 +366,69 @@ class _ShopPageState extends State<ShopPage> {
                                   ),
                           ),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 40),
 
-                          // ================= FEATURED HOSTELS =================
+                          // ================= RECOMMENDED SECTION =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
                             ),
-                            child: const Text(
-                              "Featured Hostels 🏠",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: horizontalPadding,
-                            ),
-                            child: GridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              crossAxisCount: isTablet ? 2 : 1,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                              children: const [
-                                HostelCard(
-                                  imagePath: 'lib/images/fada.jpeg',
-                                  name: 'Green View Hostel',
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Recommended For You",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                HostelCard(
-                                  imagePath: 'lib/images/A1.jpg',
-                                  name: 'Sunrise Hostel',
-                                ),
-                                HostelCard(
-                                  imagePath: 'lib/images/hostel1.jpeg',
-                                  name: 'Royal Comfort Hostel',
+                                TextButton(
+                                  onPressed: () {
+                                    // TODO: Navigate to full list / search page
+                                  },
+                                  child: const Text(
+                                    "View All",
+                                    style: TextStyle(color: Colors.blueAccent),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
+                          const SizedBox(height: 16),
 
-                          const SizedBox(height: 40),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: horizontalPadding,
+                            ),
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: isDesktop
+                                        ? 4
+                                        : isTablet
+                                        ? 3
+                                        : 2,
+                                    childAspectRatio: 0.68,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 20,
+                                  ),
+                              itemCount: cart.getRecommendedList().length,
+                              itemBuilder: (context, index) {
+                                final product = cart
+                                    .getRecommendedList()[index];
+                                return ProductsTile(
+                                  shoe: product,
+                                  onTap: () => addProductToCart(product),
+                                  isInGrid: true,
+                                );
+                              },
+                            ),
+                          ),
+
+                          const SizedBox(height: 60),
                         ],
                       ),
                     ),

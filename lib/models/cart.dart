@@ -2,58 +2,111 @@ import 'package:comfi/models/products.dart';
 import 'package:flutter/material.dart';
 
 class Cart extends ChangeNotifier {
-  // List of items for sale
-  List<Products> shoeShop = [
+  // Featured / Popular products (shown in the horizontal scroll or tablet grid above)
+  List<Products> featuredProducts = [
     Products(
       name: 'Jersey',
       description: 'Get your favorite team jersey now!',
       price: '29',
       imagePath: 'lib/images/hostel5.jpg',
     ),
-
     Products(
       name: 'HP Laptop',
-      description: 'Nice and sleak laptop',
+      description: 'Nice and sleek laptop',
       price: '500',
       imagePath: 'lib/images/laptop.jpeg',
     ),
-
     Products(
-      name: 'Men Slippers',
-      description: 'Hostel description',
+      name: 'Study lamp',
+      description: 'Study throught the night',
       price: '15',
-      imagePath: 'lib/images/slipper2.jpg',
+      imagePath: 'lib/images/study_lamp.jpg',
     ),
+    // Add 3–6 more featured items with different images
+    Products(
+      name: 'smart watch',
+      description: 'Smart watch',
+      price: '45',
+      imagePath: 'lib/images/smart_watchj.jpg', // ← new/different image
+    ),
+    Products(
+      name: 'Men\'s shirt',
+      description: 'Nice men shirt',
+      price: '35',
+      imagePath: 'lib/images/men_shirt1.jpg',
+    ),
+  ];
 
+  // Recommended products (different selection, different images)
+  List<Products> recommendedProducts = [
     Products(
       name: "Fada's services",
-      description: 'Get your all your PPEs here',
+      description: 'Get all your PPEs here',
       price: '29',
       imagePath: 'lib/images/fada.jpeg',
     ),
+    Products(
+      name: 'Men shirt',
+      description: 'Nice men shirt',
+      price: '26',
+      imagePath: 'lib/images/men_shirt.jpg',
+    ),
+    Products(
+      name: 'Men\'s african slippers',
+      description: 'Nice men slippers',
+      price: '89',
+      imagePath: 'lib/images/slipper2.jpg', // ← different image
+    ),
+    Products(
+      name: 'Men Shoe',
+      description: 'Nice shoe',
+      price: '12',
+      imagePath: 'lib/images/men_shoe.jpg',
+    ),
+    Products(
+      name: 'Ladies African dress',
+      description: 'New style',
+      price: '18',
+      imagePath: 'lib/images/ladies_african_dress.jpg',
+    ),
+    Products(
+      name: 'Ladies Heels',
+      description: 'Classic ladies heels',
+      price: '30',
+      imagePath: 'lib/images/heels2.jpg',
+    ),
+    // Add more as needed — ideally 6–12 items
   ];
-  // list of item to you
+
+  // All products (if you want a "View All" or search to show everything)
+  List<Products> get allProducts => [
+    ...featuredProducts,
+    ...recommendedProducts,
+  ];
+
+  // ────────────────────────────────────────────────
+  // Getter for featured (used in the upper section)
+  List<Products> getFeaturedList() {
+    return featuredProducts;
+  }
+
+  // Getter for recommended (used in the lower section)
+  List<Products> getRecommendedList() {
+    return recommendedProducts;
+  }
+
+  // Your existing cart methods remain the same
   List<Products> userCart = [];
 
-  // get List of shoes for sale
-  List<Products> getShoeList() {
-    return shoeShop;
-  }
+  List<Products> getUserCart() => userCart;
 
-  // get List of shoes in user cart
-  List<Products> getUserCart() {
-    return userCart;
-  }
-
-  // add shoe to user cart
-  void addItemToCart(Products shoe) {
-    userCart.add(shoe);
+  void addItemToCart(Products product) {
+    userCart.add(product);
     notifyListeners();
   }
 
-  // remove shoe from user cart
-  void removeItemFromCart(Products shoe) {
-    userCart.remove(shoe);
+  void removeItemFromCart(Products product) {
+    userCart.remove(product);
     notifyListeners();
   }
 }
