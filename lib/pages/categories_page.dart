@@ -1,3 +1,4 @@
+import 'package:comfi/pages/shop_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -73,6 +74,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const ShopPage(), // ← your ShopPage widget
+              ),
+            );
+          },
+        ),
         title: const Text(
           "Categories",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
