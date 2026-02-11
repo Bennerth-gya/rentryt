@@ -1,6 +1,9 @@
-import 'package:comfi/consts/colors.dart';
-import 'package:comfi/pages/shop_page.dart';
 import 'package:flutter/material.dart';
+import 'package:comfi/components/products_tile.dart';
+import 'package:comfi/consts/colors.dart';
+import 'package:comfi/models/cart.dart';
+import 'package:comfi/models/products.dart';
+import 'package:provider/provider.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -11,7 +14,6 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   int _selectedCategoryIndex = 0;
-
   final List<String> _categories = [
     'All',
     'Electronics',
@@ -20,64 +22,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     'Ladies',
   ];
 
-  // Sample category preview items (you can replace with real assets / models)
-  final List<Map<String, dynamic>> _featuredItems = [
-    {'name': 'PPEs', 'price': 321, 'image': 'lib/images/fada.jpeg'},
-    {'name': 'Study Lamp', 'price': 19, 'image': 'lib/images/study_lamp.jpg'},
-    {'name': 'Men shoe', 'price': 30, 'image': 'lib/images/men_shoe.jpg'},
-    {'name': 'Hp Laptop', 'price': 450, 'image': 'lib/images/laptops.jpg'},
-    {'name': 'Heels', 'price': 40, 'image': 'lib/images/heels1.jpg'},
-    {
-      'name': 'Ladies africa dress',
-      'price': 20,
-      'image': 'lib/images/ladies_african_dress.jpg',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
+        title: const Text('CATEGORIES'),
         backgroundColor: background,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black87),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const ShopPage(), // ← your ShopPage widget
-              ),
-            );
-          },
-        ),
-        title: const Text(
-          "Categories",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-        ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded, color: Colors.black54),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Colors.black54,
-            ),
-            onPressed: () {},
-          ),
-        ],
       ),
-
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Horizontal category chips
+            // Category chips (horizontal scroll) - unchanged
             SizedBox(
               height: 48,
               child: ListView.builder(
@@ -88,7 +47,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 scrollDirection: Axis.horizontal,
                 itemCount: _categories.length,
                 itemBuilder: (context, index) {
-                  final bool isSelected = index == _selectedCategoryIndex;
+                  final isSelected = index == _selectedCategoryIndex;
                   return Padding(
                     padding: const EdgeInsets.only(right: 12),
                     child: FilterChip(
@@ -119,7 +78,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
             const SizedBox(height: 8),
 
-            // Greeting or title
+            // Title
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
@@ -132,24 +91,44 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
             const SizedBox(height: 16),
 
-            // Grid of category items / products
+            // Products grid – match ShopPage style & spacing
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio:
-                        0.68, // taller cards like in furniture apps
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: _featuredItems.length,
-                  itemBuilder: (context, index) {
-                    final item = _featuredItems[index];
-                    return _buildCategoryCard(item);
-                  },
-                ),
+              child: Consumer<Cart>(
+                builder: (context, cart, child) {
+                  final selectedCategory = _categories[_selectedCategoryIndex];
+                  final products = cart.getProductsForCategory(
+                    selectedCategory,
+                  );
+
+                  if (products.isEmpty) {
+                    return const Center(
+                      child: Text("No products in this category yet"),
+                    );
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio:
+                            0.50, // ← key fix: use a value that works in ShopPage
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 24, // ← more vertical breathing room
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return ProductsTile(
+                          product: product,
+                          onTap: () => _addToCart(product),
+                          isInGrid: true,
+                          showAddButton: true,
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -158,77 +137,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildCategoryCard(Map<String, dynamic> item) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to product detail or filtered list
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image area
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-                child: Container(
-                  color: Colors.grey.shade100,
-                  width: double.infinity,
-                  child: Image.asset(
-                    item['image'],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.image_not_supported,
-                      size: 60,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['name'],
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "\$${item['price']}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _addToCart(Products product) {
+    Provider.of<Cart>(context, listen: false).addItemToCart(product);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("${product.name} added to cart")));
   }
 }

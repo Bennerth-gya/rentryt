@@ -1,7 +1,7 @@
-import 'package:comfi/components/cart_item.dart';
-import 'package:comfi/models/cart.dart';
-import 'package:comfi/models/products.dart';
 import 'package:flutter/material.dart';
+import 'package:comfi/components/cart_item.dart';
+import 'package:comfi/models/products.dart';
+import 'package:comfi/models/cart.dart';
 import 'package:provider/provider.dart';
 
 class CartPage extends StatefulWidget {
@@ -35,7 +35,7 @@ class _CartPageState extends State<CartPage> {
                   Products indevidualShoe = value.getUserCart()[index];
 
                   // return the cart item
-                  return CartItem(shoe: indevidualShoe);
+                  return CartItem(product: indevidualShoe);
                 },
               ),
             ),

@@ -1,21 +1,23 @@
-import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
+import 'package:comfi/models/cart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// ignore: must_be_immutable
 class CartItem extends StatefulWidget {
-  Products shoe;
-  CartItem({super.key, required this.shoe});
+  final Products product;
+
+  const CartItem({super.key, required this.product});
 
   @override
   State<CartItem> createState() => _CartItemState();
 }
 
 class _CartItemState extends State<CartItem> {
-  // remove item from cart
   void removeItemFromCart() {
-    Provider.of<Cart>(context, listen: false).removeItemFromCart(widget.shoe);
+    Provider.of<Cart>(
+      context,
+      listen: false,
+    ).removeItemFromCart(widget.product);
   }
 
   @override
@@ -27,14 +29,16 @@ class _CartItemState extends State<CartItem> {
       ),
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
-        leading: Image.asset(widget.shoe.imagePath),
-        title: Text(widget.shoe.name),
-        subtitle: Text(
-          '\$${widget.shoe.price}',
-        ), // or 'GH₵ ${widget.shoe.price}'
+        leading: Image.asset(
+          widget.product.imagePath,
+          width: 50,
+          fit: BoxFit.cover,
+        ),
+        title: Text(widget.product.name),
+        subtitle: Text('\$${widget.product.price}'),
         trailing: IconButton(
           onPressed: removeItemFromCart,
-          icon: Icon(Icons.delete),
+          icon: const Icon(Icons.delete),
         ),
       ),
     );

@@ -1,112 +1,204 @@
+import 'package:flutter/foundation.dart';
 import 'package:comfi/models/products.dart';
-import 'package:flutter/material.dart';
 
 class Cart extends ChangeNotifier {
-  // Featured / Popular products (shown in the horizontal scroll or tablet grid above)
-  List<Products> featuredProducts = [
+  final List<Products> _userCart = [];
+
+  // Sample featured products (you can replace with actual data source)
+  final List<Products> _featuredList = [
     Products(
-      name: 'Jersey',
-      description: 'Get your favorite jersey',
-      price: 80,
-      imagePath: 'lib/images/Barcelona-Away-Kit.jpg',
+      name: "Premium Desk",
+      imagePath: "lib/images/laptops.jpg",
+      description: "High quality wooden desk",
+      price: 299.99,
+      colors: ["#8B4513", "#2F4F4F"],
+      sizes: ["S", "M", "L"],
+      averageRating: 4.5,
+      reviewCount: 58,
     ),
     Products(
-      name: 'HP Laptop',
-      description: 'Nice and sleek laptop',
-      price: 5000,
-      imagePath: 'lib/images/laptop.jpeg',
+      name: "Comfort Chair",
+      imagePath: "lib/images/smart_watchj.jpg",
+      description: "Ergonomic office chair",
+      price: 199.99,
+      colors: ["#000000", "#FFFFFF"],
+      sizes: ["One Size"],
+      averageRating: 4.8,
+      reviewCount: 256,
     ),
     Products(
-      name: 'Study lamp',
-      description: 'Study throught the night',
-      price: 150,
-      imagePath: 'lib/images/study_lamp.jpg',
-    ),
-    // Add 3–6 more featured items with different images
-    Products(
-      name: 'smart watch',
-      description: 'Smart watch',
-      price: 45,
-      imagePath: 'lib/images/smart_watchj.jpg', // ← new/different image
-    ),
-    Products(
-      name: 'Men\'s shirt',
-      description: 'Nice men shirt',
-      price: 90,
-      imagePath: 'lib/images/men_shirt1.jpg',
+      name: "Wall Shelf",
+      imagePath: "lib/images/slipper2.jpg",
+      description: "Modern floating shelf",
+      price: 79.99,
+      colors: ["#FFD700", "#C0C0C0"],
+      sizes: ["Small", "Large"],
+      averageRating: 4.2,
+      reviewCount: 64,
     ),
   ];
 
-  // Recommended products (different selection, different images)
-  List<Products> recommendedProducts = [
+  // Sample recommended products
+  final List<Products> _recommendedList = [
     Products(
-      name: "Fada's services",
-      description: 'Get all your PPEs here',
-      price: 290,
-      imagePath: 'lib/images/fada.jpeg',
+      name: "Study Table",
+      imagePath: "lib/images/laptops.jpg",
+      description: "Perfect for students",
+      price: 149.99,
+      colors: ["#8B4513"],
+      sizes: ["Standard"],
+      averageRating: 4.3,
+      reviewCount: 92,
     ),
     Products(
-      name: 'Men shirt',
-      description: 'Nice men shirt',
-      price: 100,
-      imagePath: 'lib/images/men_shirt.jpg',
+      name: "Bedside Lamp",
+      imagePath: "lib/images/ladies_african_dress1.jpg",
+      description: "Adjustable reading lamp",
+      price: 49.99,
+      colors: ["#000000", "#FFFFFF"],
+      sizes: ["One Size"],
+      averageRating: 4.6,
+      reviewCount: 178,
     ),
     Products(
-      name: 'Men\'s african slippers',
-      description: 'Nice men slippers',
-      price: 80,
-      imagePath: 'lib/images/slipper2.jpg', // ← different image
+      name: "Bookshelf",
+      imagePath: "lib/images/study_lamp.jpg",
+      description: "5-tier wooden bookshelf",
+      price: 249.99,
+      colors: ["#8B4513", "#DAA520"],
+      sizes: ["M", "L"],
+      averageRating: 4.4,
+      reviewCount: 134,
     ),
     Products(
-      name: 'Men Shoe',
-      description: 'Nice shoe',
-      price: 230,
-      imagePath: 'lib/images/men_shoe.jpg',
+      name: "Office Cabinet",
+      imagePath: "lib/images/purse.jpg",
+      description: "Storage with locking doors",
+      price: 399.99,
+      colors: ["#2F4F4F"],
+      sizes: ["Large"],
+      averageRating: 4.7,
+      reviewCount: 89,
     ),
-    Products(
-      name: 'Ladies African dress',
-      description: 'New style',
-      price: 200,
-      imagePath: 'lib/images/ladies_african_dress.jpg',
-    ),
-    Products(
-      name: 'Ladies Heels',
-      description: 'Classic ladies heels',
-      price: 220,
-      imagePath: 'lib/images/heels2.jpg',
-    ),
-    // Add more as needed — ideally 6–12 items
   ];
 
-  // All products (if you want a "View All" or search to show everything)
-  List<Products> get allProducts => [
-    ...featuredProducts,
-    ...recommendedProducts,
-  ];
+  final Map<String, List<Products>> _categorizedProducts = {
+    'All': [],
+    'Electronics': [
+      Products(
+        name: "Desk Lamp",
+        imagePath: "lib/images/iron.jpg",
+        description: "LED desk lamp",
+        price: 59.99,
+        colors: ["#FFD700"],
+        sizes: ["One Size"],
+      ),
+      Products(
+        name: "Hotplate",
+        imagePath: "lib/images/hotplate.jpg",
+        description: "4-port USB hub",
+        price: 29.99,
+        colors: ["#000000"],
+        sizes: ["One Size"],
+      ),
+    ],
+    'Education': [
+      Products(
+        name: "Notebook Pack",
+        imagePath: "lib/images/notes.jpg",
+        description: "100-page notebooks",
+        price: 19.99,
+        colors: ["#0000FF", "#FF0000"],
+        sizes: ["Standard"],
+      ),
+      Products(
+        name: "Study table",
+        imagePath: "lib/images/study_table1.jpg",
+        description: "12-piece premium pen set",
+        price: 24.99,
+        colors: ["#000000"],
+        sizes: ["One Size"],
+      ),
+    ],
+    'Men': [
+      Products(
+        name: "Men slippers",
+        imagePath: "lib/images/men_slippers1.jpg",
+        description: "Ergonomic office chair",
+        price: 199.99,
+        colors: ["#000000"],
+        sizes: ["One Size"],
+      ),
+      Products(
+        name: "Shoe",
+        imagePath: "lib/images/men_shoe.jpg",
+        description: "Professional work desk",
+        price: 349.99,
+        colors: ["#8B4513"],
+        sizes: ["Large"],
+      ),
+    ],
+    'Ladies': [
+      Products(
+        name: "Purse",
+        imagePath: "lib/images/ladies_purse.jpg",
+        description: "LED vanity mirror",
+        price: 89.99,
+        colors: ["#FFD700"],
+        sizes: ["Standard"],
+      ),
+      Products(
+        name: "Heels",
+        imagePath: "lib/images/heels1.jpg",
+        description: "Decorative storage",
+        price: 129.99,
+        colors: ["#DAA520"],
+        sizes: ["Medium"],
+      ),
+    ],
+  };
 
-  // ────────────────────────────────────────────────
-  // Getter for featured (used in the upper section)
-  List<Products> getFeaturedList() {
-    return featuredProducts;
+  Cart() {
+    // Initialize "All" category with all products
+    _categorizedProducts['All'] = [
+      ..._featuredList,
+      ..._recommendedList,
+      ...(_categorizedProducts['Electronics'] ?? []),
+      ...(_categorizedProducts['Education'] ?? []),
+      ...(_categorizedProducts['Men'] ?? []),
+      ...(_categorizedProducts['Ladies'] ?? []),
+    ];
   }
 
-  // Getter for recommended (used in the lower section)
-  List<Products> getRecommendedList() {
-    return recommendedProducts;
+  // Get user's cart items
+  List<Products> getUserCart() {
+    return _userCart;
   }
 
-  // Your existing cart methods remain the same
-  List<Products> userCart = [];
-
-  List<Products> getUserCart() => userCart;
-
+  // Add item to cart
   void addItemToCart(Products product) {
-    userCart.add(product);
+    _userCart.add(product);
     notifyListeners();
   }
 
+  // Remove item from cart
   void removeItemFromCart(Products product) {
-    userCart.remove(product);
+    _userCart.remove(product);
     notifyListeners();
+  }
+
+  // Get featured products list
+  List<Products> getFeaturedList() {
+    return _featuredList;
+  }
+
+  // Get recommended products list
+  List<Products> getRecommendedList() {
+    return _recommendedList;
+  }
+
+  // Get products for a specific category
+  List<Products> getProductsForCategory(String category) {
+    return _categorizedProducts[category] ?? [];
   }
 }

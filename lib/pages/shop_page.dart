@@ -3,8 +3,8 @@ import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:provider/provider.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
@@ -14,9 +14,10 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
+  int _currentBanner = 0;
+
   void addProductToCart(Products product) {
     Provider.of<Cart>(context, listen: false).addItemToCart(product);
-
     if (!mounted) return;
 
     showDialog(
@@ -33,6 +34,26 @@ class _ShopPageState extends State<ShopPage> {
       ),
     );
   }
+
+  // Banner items – update paths to match your pubspec.yaml assets
+  // Recommended: use 'assets/images/...' (not 'lib/images/...')
+  final List<Map<String, String>> bannerItems = [
+    {
+      'image': 'lib/images/black_man.jpg',
+      'title': 'New Collection',
+      'subtitle': 'Up to 50% Off',
+    },
+    {
+      'image': 'lib/images/beautiful_dark_shopping.jpg',
+      'title': 'Summer Sale',
+      'subtitle': 'Fresh Styles Await',
+    },
+    {
+      'image': 'lib/images/dark_lady_shopping.jpg',
+      'title': 'Limited Stock',
+      'subtitle': 'Grab Now!',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +72,12 @@ class _ShopPageState extends State<ShopPage> {
                     : isTablet
                     ? 60.0
                     : 25.0;
+
+                final bannerHeight = isDesktop
+                    ? 420.0
+                    : isTablet
+                    ? 360.0
+                    : 280.0;
 
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -149,162 +176,205 @@ class _ShopPageState extends State<ShopPage> {
 
                           const SizedBox(height: 25),
 
-                          // ================= HERO BANNER =================
+                          // ================= HERO CAROUSEL =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
                             ),
-                            child: Container(
-                              height: isDesktop
-                                  ? 420
-                                  : isTablet
-                                  ? 360
-                                  : 300,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(18),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 6),
+                            child: Column(
+                              children: [
+                                CarouselSlider(
+                                  options: CarouselOptions(
+                                    height: bannerHeight,
+                                    autoPlay: true,
+                                    autoPlayInterval: const Duration(
+                                      seconds: 5,
+                                    ),
+                                    autoPlayAnimationDuration: const Duration(
+                                      milliseconds: 800,
+                                    ),
+                                    autoPlayCurve: Curves.fastOutSlowIn,
+                                    enlargeCenterPage: true,
+                                    enlargeFactor: 0.22,
+                                    viewportFraction: isDesktop
+                                        ? 0.70
+                                        : isTablet
+                                        ? 0.80
+                                        : 0.92,
+                                    aspectRatio: 16 / 9,
+                                    enableInfiniteScroll: true,
+                                    scrollPhysics:
+                                        const BouncingScrollPhysics(),
+                                    padEnds: true,
+                                    onPageChanged: (index, reason) {
+                                      setState(() {
+                                        _currentBanner = index;
+                                      });
+                                    },
                                   ),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(18),
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    CarouselSlider(
-                                      options: CarouselOptions(
-                                        height: double.infinity,
-                                        viewportFraction: 1.0,
-                                        autoPlay: true,
-                                        autoPlayInterval: const Duration(
-                                          seconds: 5,
-                                        ),
-                                        autoPlayAnimationDuration:
-                                            const Duration(milliseconds: 1200),
-                                        autoPlayCurve: Curves.easeInOutCubic,
-                                        enlargeCenterPage: false,
-                                        enableInfiniteScroll: true,
-                                      ),
-                                      items:
-                                          [
-                                            'lib/images/smart-shopping-tips.jpg',
-                                            'lib/images/dark_lady_shopping.jpg',
-                                            'lib/images/beautiful_dark_shopping.jpg',
-                                            'lib/images/black_man.jpg',
-                                          ].map((imagePath) {
-                                            return Image.asset(
-                                              imagePath,
+                                  items: bannerItems.map((banner) {
+                                    return Builder(
+                                      builder: (BuildContext context) {
+                                        return Container(
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 6.0,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.15,
+                                                ),
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 6),
+                                              ),
+                                            ],
+                                            image: DecorationImage(
+                                              image: AssetImage(
+                                                banner['image']!,
+                                              ),
                                               fit: BoxFit.cover,
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                            );
-                                          }).toList(),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.black.withOpacity(0.15),
-                                            Colors.black.withOpacity(0.65),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Center(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: isDesktop
-                                              ? 60
-                                              : isTablet
-                                              ? 40
-                                              : 28,
-                                          vertical: isDesktop
-                                              ? 40
-                                              : isTablet
-                                              ? 32
-                                              : 24,
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              "Shopping doesn't get any easier and better than this",
-                                              style: TextStyle(
-                                                fontSize: isDesktop
-                                                    ? 38
-                                                    : isTablet
-                                                    ? 32
-                                                    : 26,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                height: 1.15,
-                                                letterSpacing: -0.5,
-                                                shadows: const [
-                                                  Shadow(
-                                                    blurRadius: 6,
-                                                    color: Colors.black87,
-                                                    offset: Offset(2, 2),
-                                                  ),
-                                                ],
-                                              ),
-                                              textAlign: TextAlign.center,
                                             ),
-                                            const SizedBox(height: 32),
-                                            ElevatedButton.icon(
-                                              icon: const Icon(
-                                                Icons.explore,
-                                                size: 20,
-                                              ),
-                                              label: const Text(
-                                                "Start Shopping",
-                                                style: TextStyle(
-                                                  fontSize: 17,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.black,
-                                                foregroundColor: accent,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 40,
-                                                      vertical: 16,
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            child: Stack(
+                                              children: [
+                                                Container(
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      begin:
+                                                          Alignment.topCenter,
+                                                      end: Alignment
+                                                          .bottomCenter,
+                                                      colors: [
+                                                        Colors.transparent,
+                                                        Colors.black
+                                                            .withOpacity(0.55),
+                                                      ],
                                                     ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
+                                                  ),
                                                 ),
-                                                elevation: 6,
-                                                minimumSize: const Size(
-                                                  220,
-                                                  56,
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    24.0,
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        banner['title']!,
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 28,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          shadows: [
+                                                            Shadow(
+                                                              blurRadius: 4,
+                                                              color: Colors
+                                                                  .black54,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 6),
+                                                      Text(
+                                                        banner['subtitle']!,
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 18,
+                                                          shadows: [
+                                                            Shadow(
+                                                              blurRadius: 3,
+                                                              color: Colors
+                                                                  .black54,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 16,
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          // TODO: handle banner tap (e.g. navigate to category)
+                                                        },
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              Colors.white,
+                                                          foregroundColor:
+                                                              Colors.black87,
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 24,
+                                                                vertical: 12,
+                                                              ),
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  30,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                        child: const Text(
+                                                          "Shop Now",
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                              onPressed: () {
-                                                // Optional: scroll to featured or navigate
-                                              },
+                                              ],
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }).toList(),
                                 ),
-                              ),
+
+                                const SizedBox(height: 16),
+
+                                // Dynamic dots indicator
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: bannerItems.asMap().entries.map((
+                                    entry,
+                                  ) {
+                                    return Container(
+                                      width: 8.0,
+                                      height: 8.0,
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 4.0,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _currentBanner == entry.key
+                                            ? Colors
+                                                  .redAccent // active dot
+                                            : Colors.grey.withOpacity(
+                                                0.5,
+                                              ), // inactive
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
                             ),
                           ),
 
                           const SizedBox(height: 40),
 
-                          // ================= FEATURED PRODUCTS =================
+                          // <<<----------------- FEATURED PRODUCTS --------------->>>
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -313,12 +383,12 @@ class _ShopPageState extends State<ShopPage> {
                               "Featured Products",
                               style: TextStyle(
                                 fontSize: 20,
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           const SizedBox(height: 16),
-
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -330,36 +400,78 @@ class _ShopPageState extends State<ShopPage> {
                                         const NeverScrollableScrollPhysics(),
                                     gridDelegate:
                                         const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 3,
-                                          childAspectRatio: 0.75,
-                                          crossAxisSpacing: 16,
+                                          crossAxisCount: 2,
+                                          childAspectRatio:
+                                              0.78, // I will try and add the payment section today,ok,  can I call you? are yyyyyyyou my girlfriend? Haha you get one now?es, tomorrow, you will get one tomorrow?
+                                          crossAxisSpacing:
+                                              12, // her tomorrow type within the comment oo senior memp3 as3m biaa
                                           mainAxisSpacing: 16,
                                         ),
+
                                     itemCount: cart.getFeaturedList().length,
                                     itemBuilder: (context, index) {
                                       final product = cart
                                           .getFeaturedList()[index];
                                       return ProductsTile(
-                                        shoe:
-                                            product, // ← rename to product later
+                                        product: product,
                                         onTap: () => addProductToCart(product),
                                         isInGrid: true,
                                       );
                                     },
                                   )
                                 : SizedBox(
-                                    height: 280,
-                                    child: ListView.builder(
+                                    height: 220,
+                                    child: ListView.separated(
                                       scrollDirection: Axis.horizontal,
                                       itemCount: cart.getFeaturedList().length,
+                                      separatorBuilder: (_, __) =>
+                                          const SizedBox(width: 12),
                                       itemBuilder: (context, index) {
                                         final product = cart
                                             .getFeaturedList()[index];
-                                        return ProductsTile(
-                                          shoe: product,
-                                          onTap: () =>
-                                              addProductToCart(product),
-                                          isInGrid: false,
+
+                                        return Container(
+                                          width: 160,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF1E293B),
+                                            borderRadius: BorderRadius.circular(
+                                              18,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.all(10),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  child: Image.asset(
+                                                    product.imagePath,
+                                                    fit: BoxFit.cover,
+                                                    width: double.infinity,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                product.name,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                "\$${product.price}",
+                                                style: const TextStyle(
+                                                  color: Color(0xFF8B5CF6),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         );
                                       },
                                     ),
@@ -368,7 +480,7 @@ class _ShopPageState extends State<ShopPage> {
 
                           const SizedBox(height: 40),
 
-                          // ================= RECOMMENDED SECTION =================
+                          // <<<------------- RECOMMENDED SECTION ----------->>>
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -379,13 +491,14 @@ class _ShopPageState extends State<ShopPage> {
                                 const Text(
                                   "Recommended For You",
                                   style: TextStyle(
+                                    color: Colors.white,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    // TODO: Navigate to full list / search page
+                                    // <<-------TODO: Navigate to full list / search page---->>>
                                   },
                                   child: const Text(
                                     "View All",
@@ -396,7 +509,6 @@ class _ShopPageState extends State<ShopPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -411,16 +523,17 @@ class _ShopPageState extends State<ShopPage> {
                                         : isTablet
                                         ? 3
                                         : 2,
-                                    childAspectRatio: 0.68,
+                                    childAspectRatio: 0.50,
                                     crossAxisSpacing: 16,
-                                    mainAxisSpacing: 20,
+                                    mainAxisSpacing: 24,
                                   ),
                               itemCount: cart.getRecommendedList().length,
                               itemBuilder: (context, index) {
                                 final product = cart
                                     .getRecommendedList()[index];
+                                // <<------- calls the productstile section------>>>
                                 return ProductsTile(
-                                  shoe: product,
+                                  product: product,
                                   onTap: () => addProductToCart(product),
                                   isInGrid: true,
                                 );

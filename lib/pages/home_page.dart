@@ -1,10 +1,10 @@
+import 'package:flutter/material.dart';
+
 import 'package:comfi/components/bottom_navigation.dart';
 import 'package:comfi/pages/cart_page.dart';
-import 'package:comfi/pages/categories_page.dart';
 import 'package:comfi/pages/categories_screen.dart';
 import 'package:comfi/pages/profile_screen.dart';
 import 'package:comfi/pages/shop_page.dart';
-import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -42,11 +42,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: Colors.grey[300],
       bottomNavigationBar: MyBottomNavigation(
-        onTabChange: (index) => navigationBottomBar(index),
-        selectedIndex: 0,
+        onTabChange: navigationBottomBar,
+        selectedIndex: _selectedIndex,
       ),
+
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: Builder(
@@ -56,7 +58,7 @@ class _HomePageState extends State<HomePage> {
             },
             icon: Padding(
               padding: const EdgeInsets.only(left: 12.0),
-              child: Icon(Icons.menu, color: Colors.black),
+              child: const Icon(Icons.menu, color: Colors.white),
             ),
           ),
         ),
@@ -64,6 +66,7 @@ class _HomePageState extends State<HomePage> {
 
       drawer: Drawer(
         backgroundColor: Colors.grey[900],
+
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

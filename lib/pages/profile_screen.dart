@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:comfi/models/profile_body.dart';
 import 'package:comfi/pages/update_profile_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
