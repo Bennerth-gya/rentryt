@@ -121,7 +121,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         final product = products[index];
                         return ProductsTile(
                           product: product,
-                          onTap: () => _addToCart(product),
+                          onAddToCart: () => _addToCart(product),
                           isInGrid: true,
                           showAddButton: true,
                         );

@@ -1,3 +1,4 @@
+import 'package:comfi/components/products_details.dart';
 import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/products.dart';
 import 'package:flutter/material.dart';
@@ -7,14 +8,14 @@ import 'package:comfi/models/cart.dart';
 // products_tile.dart
 class ProductsTile extends StatelessWidget {
   final Products product;
-  final VoidCallback? onTap;
+  final VoidCallback? onAddToCart; // ← NEW: dedicated add callback
   final bool isInGrid;
   final bool showAddButton;
 
   const ProductsTile({
     super.key,
     required this.product,
-    this.onTap,
+    this.onAddToCart, // ← changed name for clarity
     this.isInGrid = true,
     this.showAddButton = true,
   });
@@ -22,7 +23,17 @@ class ProductsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      // ── Whole card taps → detail page ───────────────┐
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailsPage(product: product),
+          ),
+        );
+      },
+
+      // ────────────────────────────────────────────────┘
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
@@ -38,7 +49,6 @@ class ProductsTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image - fixed aspect
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(18),
@@ -55,18 +65,12 @@ class ProductsTile extends StatelessWidget {
               ),
             ),
 
-            // Content area with reserved space for button
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      12,
-                      12,
-                      12,
-                      54,
-                    ), // ← key: reserve ~50-54px bottom
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 54),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -76,12 +80,11 @@ class ProductsTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 15, // slightly smaller helps
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 6),
-
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -101,9 +104,7 @@ class ProductsTile extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-
                         Expanded(
-                          // ← description takes remaining space
                           child: Text(
                             product.description ?? "",
                             maxLines: 3,
@@ -119,24 +120,28 @@ class ProductsTile extends StatelessWidget {
                     ),
                   ),
 
-                  // Floating add button
+                  // Floating + button – only adds to cart
                   if (showAddButton)
                     Positioned(
                       bottom: 12,
                       right: 12,
                       child: GestureDetector(
-                        onTap: () {
-                          Provider.of<Cart>(
-                            context,
-                            listen: false,
-                          ).addItemToCart(product);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("${product.name} added"),
-                              duration: const Duration(milliseconds: 1200),
-                            ),
-                          );
-                        },
+                        // ── + button only adds ── no navigation ───────┐
+                        onTap:
+                            onAddToCart ??
+                            () {
+                              Provider.of<Cart>(
+                                context,
+                                listen: false,
+                              ).addItemToCart(product);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("${product.name} added"),
+                                  duration: const Duration(milliseconds: 1200),
+                                ),
+                              );
+                            },
+                        // ────────────────────────────────────────────────┘
                         child: Container(
                           width: 44,
                           height: 44,

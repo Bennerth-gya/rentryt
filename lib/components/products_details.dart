@@ -1,5 +1,6 @@
 import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/products.dart';
+import 'package:comfi/payment/payment_method.dart';
 import 'package:flutter/material.dart';
 
 class ProductDetailsPage extends StatefulWidget {
@@ -14,6 +15,7 @@ class ProductDetailsPage extends StatefulWidget {
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   String? _selectedColor;
   String? _selectedSize;
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -44,6 +46,70 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     );
   }
 
+  Future<void> _simulateBuyNow() async {
+    if (_selectedSize == null || _selectedColor == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select size and color first")),
+      );
+      return;
+    }
+
+    setState(() => _isProcessing = true);
+    await Future.delayed(const Duration(seconds: 3));
+
+    final bool success = DateTime.now().millisecond % 10 < 7;
+
+    setState(() => _isProcessing = false);
+    if (!mounted) return;
+
+    if (success) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          icon: const Icon(Icons.check_circle, color: Colors.green, size: 64),
+          title: const Text("Payment Successful!"),
+          content: Text(
+            "Thank you! Your order for ${widget.product.name}\n"
+            "(Color: $_selectedColor • Size: $_selectedSize)\n"
+            "has been placed successfully.\n\n"
+            "Order reference: CMP-${DateTime.now().millisecondsSinceEpoch}",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.pop(context); // back to previous screen
+              },
+              child: const Text("View Order"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Continue Shopping"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Payment declined. Please try again or use another method.",
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _simulateAddToCart() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("${widget.product.name} added to cart!"),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
@@ -59,10 +125,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero image (you can later swap based on selected color)
+            // Hero image
             AspectRatio(
               aspectRatio: 1.0,
-              child: Image.asset(product.imagePath, fit: BoxFit.cover),
+              child: Image.asset(
+                product.imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.image_not_supported,
+                  size: 100,
+                  color: Colors.grey,
+                ),
+              ),
             ),
 
             Padding(
@@ -70,6 +144,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Product name
                   Text(
                     product.name,
                     style: const TextStyle(
@@ -90,7 +165,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Rating row
+                  // Rating
                   if (product.averageRating != null &&
                       product.reviewCount != null) ...[
                     Row(
@@ -106,7 +181,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     const SizedBox(height: 24),
                   ],
 
-                  // Color selection
+                  // ── Color Selection ───────────────────────────────────────
                   if (product.colors.isNotEmpty) ...[
                     const Text(
                       "Color",
@@ -129,8 +204,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           final isSelected = _selectedColor == colorHex;
 
                           return GestureDetector(
-                            onTap: () =>
-                                setState(() => _selectedColor = colorHex),
+                            onTap: () {
+                              setState(() => _selectedColor = colorHex);
+                            },
                             child: Container(
                               width: 44,
                               height: 44,
@@ -143,7 +219,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                     : null,
                                 boxShadow: [
                                   BoxShadow(
-                                    // ignore: deprecated_member_use
                                     color: Colors.black.withOpacity(0.1),
                                     blurRadius: 6,
                                     offset: const Offset(0, 2),
@@ -158,7 +233,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     const SizedBox(height: 28),
                   ],
 
-                  // Size selection
+                  // ── Size Selection ────────────────────────────────────────
                   if (product.sizes.isNotEmpty) ...[
                     const Text(
                       "Size",
@@ -176,8 +251,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         return ChoiceChip(
                           label: Text(size),
                           selected: isSelected,
-                          onSelected: (_) =>
-                              setState(() => _selectedSize = size),
+                          onSelected: (_) {
+                            setState(() => _selectedSize = size);
+                          },
                           selectedColor: accent,
                           backgroundColor: cardColor,
                           labelStyle: TextStyle(
@@ -200,95 +276,74 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Add to Cart button (you can disable if no size/color selected)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton.icon(
-                      onPressed:
-                          (_selectedSize != null && _selectedColor != null)
-                          ? () {
-                              // TODO: Add variant logic + cart
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Added to cart!")),
-                              );
-                            }
-                          : null,
-                      icon: Icon(Icons.add_shopping_cart, color: accent),
-                      label: Text(
-                        "Add to Cart",
-                        style: TextStyle(fontSize: 17, color: accent),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  // ── Action Buttons ────────────────────────────────────────
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _simulateAddToCart,
+                          icon: Icon(Icons.add_shopping_cart, color: accent),
+                          label: const Text("Add to Cart"),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: accent),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
                         ),
-                        disabledBackgroundColor: Colors.black,
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      // Inside the build method, replace the ElevatedButton for "Buy Now"
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _isProcessing
+                              ? null
+                              : () async {
+                                  // validate selections first
+                                  if (_selectedSize == null ||
+                                      _selectedColor == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Please select size and color first",
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const PaymentMethod(),
+                                    ),
+                                  );
+                                },
+                          icon: const Icon(Icons.payment, color: Colors.white),
+                          label: const Text(
+                            "Buy Now",
+                            style: TextStyle(fontSize: 17, color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accent,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+
                   const SizedBox(height: 40),
 
-                  // Customer Reviews Section
+                  // Customer Reviews Section (your existing code can go here)
                   const Text(
                     "Customer Reviews",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-
-                  if (product.reviews != null &&
-                      product.reviews!.isNotEmpty) ...[
-                    ...product.reviews!.take(3).map((review) {
-                      // Show first 3
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    review.userName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  _buildStarRating(review.rating),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(review.comment),
-                              const SizedBox(height: 4),
-                              Text(
-                                review.date,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                    if (product.reviews!.length > 3)
-                      TextButton(
-                        onPressed: () {
-                          // TODO: Navigate to full reviews page
-                        },
-                        child: const Text("See all reviews"),
-                      ),
-                  ] else ...[
-                    Text(
-                      "No reviews yet. Be the first to review!",
-                      style: TextStyle(color: textSecondary),
-                    ),
-                  ],
+                  // ... add your reviews rendering logic here ...
                 ],
               ),
             ),

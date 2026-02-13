@@ -414,7 +414,9 @@ class _ShopPageState extends State<ShopPage> {
                                           .getFeaturedList()[index];
                                       return ProductsTile(
                                         product: product,
-                                        onTap: () => addProductToCart(product),
+                                        onAddToCart: () => addProductToCart(
+                                          product,
+                                        ), // renamed
                                         isInGrid: true,
                                       );
                                     },
@@ -534,7 +536,8 @@ class _ShopPageState extends State<ShopPage> {
                                 // <<------- calls the productstile section------>>>
                                 return ProductsTile(
                                   product: product,
-                                  onTap: () => addProductToCart(product),
+                                  onAddToCart: () =>
+                                      addProductToCart(product), // renamed
                                   isInGrid: true,
                                 );
                               },

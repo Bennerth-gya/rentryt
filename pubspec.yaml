@@ -42,6 +42,10 @@ dependencies:
   line_awesome_flutter: ^3.0.1
   carousel_slider: ^5.1.1
   intl: ^0.20.2
+  paystack_flutter_sdk: ^0.0.1-alpha.2
+  flutter_paystack_plus: ^2.4.0
+  http: ^1.2.2
+  webview_flutter: ^4.13.1
 
 
 dev_dependencies:

@@ -3,6 +3,7 @@ import 'package:comfi/pages/categories_screen.dart';
 import 'package:comfi/pages/home_page.dart';
 import 'package:comfi/pages/intro_page.dart';
 import 'package:comfi/pages/shop_page.dart';
+import 'package:comfi/payment/payment_method.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:provider/provider.dart';

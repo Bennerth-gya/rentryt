@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:comfi/components/bottom_navigation.dart';
@@ -5,6 +7,7 @@ import 'package:comfi/pages/cart_page.dart';
 import 'package:comfi/pages/categories_screen.dart';
 import 'package:comfi/pages/profile_screen.dart';
 import 'package:comfi/pages/shop_page.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
