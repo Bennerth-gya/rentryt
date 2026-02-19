@@ -2,6 +2,7 @@ import 'package:comfi/components/products_tile.dart';
 import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
+import 'package:comfi/pages/product_search_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,14 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   int _currentBanner = 0;
+  void _openSearch() {
+    showSearch(
+      context: context,
+      delegate: ProductSearchDelegate(
+        cart: Provider.of<Cart>(context, listen: false),
+      ),
+    );
+  }
 
   void addProductToCart(Products product) {
     Provider.of<Cart>(context, listen: false).addItemToCart(product);
@@ -141,23 +150,32 @@ class _ShopPageState extends State<ShopPage> {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 15,
-                                      vertical: 14,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: cardColor,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Icon(Icons.location_on, size: 18),
-                                        SizedBox(width: 8),
-                                        Text("Tarkwa"),
-                                        Spacer(),
-                                        Icon(Icons.search),
-                                      ],
+                                  child: GestureDetector(
+                                    onTap: _openSearch,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 14,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: cardColor,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.search,
+                                            color: textSecondary,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            "Search products...",
+                                            style: TextStyle(
+                                              color: textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -168,12 +186,14 @@ class _ShopPageState extends State<ShopPage> {
                                     color: cardColor,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(Icons.tune),
+                                  child: const Icon(
+                                    Icons.tune,
+                                    color: textPrimary,
+                                  ),
                                 ),
                               ],
                             ),
                           ),
-
                           const SizedBox(height: 25),
 
                           // ================= HERO CAROUSEL =================

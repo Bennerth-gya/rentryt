@@ -6,7 +6,9 @@ import 'package:provider/provider.dart';
 class CartItem extends StatefulWidget {
   final Products product;
 
-  const CartItem({super.key, required this.product});
+  final int quantity;
+
+  const CartItem({super.key, required this.product, required this.quantity});
 
   @override
   State<CartItem> createState() => _CartItemState();
@@ -23,23 +25,63 @@ class _CartItemState extends State<CartItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: Image.asset(
-          widget.product.imagePath,
-          width: 50,
-          fit: BoxFit.cover,
-        ),
-        title: Text(widget.product.name),
-        subtitle: Text('\$${widget.product.price}'),
-        trailing: IconButton(
-          onPressed: removeItemFromCart,
-          icon: const Icon(Icons.delete),
-        ),
+      child: Row(
+        children: [
+          Image.asset(widget.product.imagePath, width: 60),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.product.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text("\$${widget.product.price}"),
+              ],
+            ),
+          ),
+
+          // 🔥 Quantity Controls
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Provider.of<Cart>(
+                    context,
+                    listen: false,
+                  ).decreaseQuantity(widget.product);
+                },
+                icon: const Icon(Icons.remove_circle_outline),
+              ),
+
+              Text(widget.quantity.toString()),
+
+              IconButton(
+                onPressed: () {
+                  Provider.of<Cart>(
+                    context,
+                    listen: false,
+                  ).increaseQuantity(widget.product);
+                },
+                icon: const Icon(Icons.add_circle_outline),
+              ),
+            ],
+          ),
+
+          IconButton(
+            onPressed: removeItemFromCart,
+            icon: const Icon(Icons.delete),
+          ),
+        ],
       ),
     );
   }

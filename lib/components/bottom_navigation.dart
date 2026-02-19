@@ -27,16 +27,22 @@ class MyBottomNavigation extends StatelessWidget {
         selectedItemColor: const Color(0xFF8B5CF6),
         unselectedItemColor: Colors.grey,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.grid_view_rounded),
-            label: '',
+            label: 'Categories',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag_rounded),
-            label: '',
+            label: 'Cart',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_rounded),
+            label: 'Profile',
+          ),
         ],
       ),
     );

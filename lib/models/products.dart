@@ -1,39 +1,34 @@
 class Products {
   final String name;
   final String imagePath;
-  final String? description;
-  final double? price;
-  final List<String> colors; // e.g. ["#FF5733", "#000000", "#FFFFFF"]
-  final List<String> sizes; // e.g. ["S", "M", "L", "XL"]
-  final double? averageRating; // e.g. 4.7
-  final int? reviewCount; // e.g. 128
-  // Optional: List of reviews if you want to hardcode or pass them
-  final List<Review>? reviews;
+  final String description;
+  final double price;
+  final List<String> colors;
+  final List<String> sizes;
+  final double? averageRating;
+  final int? reviewCount;
+  final String category; // ← moved here + made final
 
   Products({
     required this.name,
     required this.imagePath,
-    this.description,
-    this.price,
-    this.colors = const [],
-    this.sizes = const [],
+    required this.description,
+    required this.price,
+    required this.colors,
+    required this.sizes,
+    required this.category, // ← now properly inside as required named param
     this.averageRating,
     this.reviewCount,
-    this.reviews,
   });
-}
 
-// Simple review model
-class Review {
-  final String userName;
-  final double rating;
-  final String comment;
-  final String date;
+  // Important for Map<Products, int> – equality based on name only
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Products &&
+          runtimeType == other.runtimeType &&
+          name == other.name;
 
-  Review({
-    required this.userName,
-    required this.rating,
-    required this.comment,
-    required this.date,
-  });
+  @override
+  int get hashCode => name.hashCode;
 }

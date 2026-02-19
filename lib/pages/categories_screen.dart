@@ -27,7 +27,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
-        title: const Text('CATEGORIES'),
+        title: const Text('CATEGORIES', style: TextStyle(color: Colors.white)),
         backgroundColor: background,
         elevation: 0,
         centerTitle: true,
@@ -85,7 +85,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 _selectedCategoryIndex == 0
                     ? "Explore Our Collection"
                     : "Best ${_categories[_selectedCategoryIndex]}",
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: TextStyle(color: Colors.white),
               ),
             ),
 

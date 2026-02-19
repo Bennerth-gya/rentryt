@@ -182,6 +182,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ],
 
                   // ── Color Selection ───────────────────────────────────────
+                  // ── Color Selection ───────────────────────────────────────
                   if (product.colors.isNotEmpty) ...[
                     const Text(
                       "Color",
@@ -197,15 +198,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         scrollDirection: Axis.horizontal,
                         itemCount: product.colors.length,
                         itemBuilder: (context, index) {
-                          final colorHex = product.colors[index];
-                          final color = Color(
-                            int.parse(colorHex.replaceFirst('#', '0xFF')),
-                          );
-                          final isSelected = _selectedColor == colorHex;
+                          final colorName = product
+                              .colors[index]; // ← this is "Black", "Navy", etc.
+
+                          // Use the helper from consts/colors.dart
+                          final displayColor = getProductColor(colorName);
+
+                          final isSelected = _selectedColor == colorName;
 
                           return GestureDetector(
                             onTap: () {
-                              setState(() => _selectedColor = colorHex);
+                              setState(() => _selectedColor = colorName);
                             },
                             child: Container(
                               width: 44,
@@ -213,7 +216,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               margin: const EdgeInsets.only(right: 12),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: color,
+                                color: displayColor, // ← real Color object
                                 border: isSelected
                                     ? Border.all(color: accent, width: 3)
                                     : null,
@@ -224,6 +227,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
+                              ),
+                              // Optional: show first letter or tooltip for better UX
+                              child: Center(
+                                child: Text(
+                                  colorName.isNotEmpty ? colorName[0] : '?',
+                                  style: TextStyle(
+                                    color: displayColor.computeLuminance() > 0.5
+                                        ? Colors.black
+                                        : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           );

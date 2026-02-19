@@ -31,6 +31,7 @@ class _PaymentMethodState extends State<PaymentMethod> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
+            // ignore: avoid_print
             print('Progress $progress%');
           },
         ),

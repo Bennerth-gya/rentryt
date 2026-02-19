@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:comfi/consts/colors.dart';
 import 'package:flutter/material.dart';
 
 import 'package:comfi/components/bottom_navigation.dart';
@@ -46,7 +47,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      backgroundColor: Colors.grey[300],
+      backgroundColor: background,
       bottomNavigationBar: MyBottomNavigation(
         onTabChange: navigationBottomBar,
         selectedIndex: _selectedIndex,
