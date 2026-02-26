@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
             Column(
               children: [
                 // logo
-                DrawerHeader(child: Image.asset('lib/images/company1.png')),
+                DrawerHeader(child: Image.asset('assets/images/mylogo.png')),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: Divider(color: Colors.grey[800]),

@@ -113,7 +113,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         crossAxisCount: 2,
                         childAspectRatio:
                             0.50, // ← key fix: use a value that works in ShopPage
-                        crossAxisSpacing: 16,
+                        crossAxisSpacing: 5,
                         mainAxisSpacing: 24, // ← more vertical breathing room
                       ),
                       itemCount: products.length,

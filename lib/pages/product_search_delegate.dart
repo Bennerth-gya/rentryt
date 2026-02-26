@@ -102,7 +102,7 @@ class ProductSearchDelegate extends SearchDelegate<Products?> {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.55,
-        crossAxisSpacing: 16,
+        crossAxisSpacing: 5,
         mainAxisSpacing: 24,
       ),
       itemCount: results.length,
