@@ -4,6 +4,7 @@ import 'package:comfi/pages/become_a_seller_dashboard.dart';
 //import 'package:comfi/pages/seller/seller_dashboard_screen.dart'; // your dashboard
 //import 'package:comfi/pages/seller/seller_orders_screen.dart';   // your orders page
 import 'package:comfi/pages/seller_orders_screen.dart';
+import 'package:comfi/pages/sellers_refund_screen.dart';
 import 'package:flutter/material.dart';
 
 class SellerMainScreen extends StatefulWidget {
@@ -19,12 +20,7 @@ class _SellerMainScreenState extends State<SellerMainScreen> {
   static const List<Widget> _pages = <Widget>[
     SellerDashboardScreen(), // index 0
     SellerOrdersScreen(), // index 1 - My Orders
-    Center(
-      child: Text(
-        "Refund Page - Coming Soon",
-        style: TextStyle(color: Colors.white),
-      ),
-    ),
+    SellerRefundScreen(order: {}),
     Center(
       child: Text(
         "Menu / Settings - Coming Soon",

@@ -82,6 +82,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
 
                 // Shop Name
                 TextFormField(
+                  style: whiteInputStyle,
                   decoration: InputDecoration(
                     labelText: "Shop Name",
                     hintText: "e.g. Bennerth Fashion Hub",
@@ -102,6 +103,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
 
                 // Phone Number
                 TextFormField(
+                  style: whiteInputStyle,
                   decoration: InputDecoration(
                     labelText: "Phone Number (WhatsApp preferred)",
                     hintText: "e.g. +233 24 123 4567",
@@ -123,6 +125,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
 
                 // Location
                 TextFormField(
+                  style: whiteInputStyle,
                   decoration: InputDecoration(
                     labelText: "Location",
                     hintText: "e.g. Market Street, Tarkwa",
@@ -140,6 +143,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
 
                 // Description
                 TextFormField(
+                  style: whiteInputStyle,
                   decoration: InputDecoration(
                     labelText: "About your shop",
                     hintText: "Tell customers what you sell...",

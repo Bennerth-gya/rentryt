@@ -1,5 +1,6 @@
 import 'package:comfi/consts/colors.dart';
 import 'package:comfi/pages/seller_order_details_screen.dart';
+import 'package:comfi/pages/sellers_refund_screen.dart';
 import 'package:flutter/material.dart';
 
 class SellerOrdersScreen extends StatefulWidget {
@@ -148,6 +149,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Existing header row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -166,6 +168,8 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                     ],
                   ),
                   const SizedBox(height: 8),
+
+                  // Status + amount row
                   Row(
                     children: [
                       Icon(
@@ -192,11 +196,49 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 4),
                   Text(
                     "Payment: ${order["payment"]}",
                     style: TextStyle(color: textSecondary, fontSize: 13),
                   ),
+
+                  // ──── NEW: Refund button ────
+                  const SizedBox(height: 12),
+                  if (order["status"] == "Delivered" ||
+                      order["status"] ==
+                          "Pending") // only show for eligible orders
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  SellerRefundScreen(order: order),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.refresh,
+                          size: 18,
+                          color: Color(0xFF6B4EFF),
+                        ),
+                        label: const Text(
+                          "Request Refund",
+                          style: TextStyle(
+                            color: Color(0xFF6B4EFF),
+                            fontSize: 14,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -54,3 +54,5 @@ Color getProductColor(String? colorName) {
       productColorMap[normalized.toLowerCase()] ?? // try lowercase too
       Colors.grey.shade600; // safe fallback
 }
+
+const TextStyle whiteInputStyle = TextStyle(color: Colors.white, fontSize: 16);
