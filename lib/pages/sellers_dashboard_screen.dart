@@ -9,6 +9,7 @@ class SellerDashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: background, // your dark background
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           "Business Analytics",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),

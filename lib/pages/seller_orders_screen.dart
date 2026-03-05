@@ -31,7 +31,10 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
-        title: const Text("My Orders", style: TextStyle(color: Colors.white)),
+        automaticallyImplyLeading: false,
+        title: Center(
+          child: const Text("My Orders", style: TextStyle(color: Colors.white)),
+        ),
         backgroundColor: background,
         elevation: 0,
         foregroundColor: Colors.white,

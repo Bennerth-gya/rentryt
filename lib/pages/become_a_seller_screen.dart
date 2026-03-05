@@ -1,6 +1,6 @@
-import 'package:comfi/components/sellermainscreen_nav.dart';
+import 'package:comfi/components/sellers_main_screen_nav.dart';
 import 'package:comfi/consts/colors.dart';
-import 'package:comfi/pages/become_a_seller_dashboard.dart';
+import 'package:comfi/pages/sellers_dashboard_screen.dart';
 import 'package:flutter/material.dart';
 // You can import your SellerMainScreen here later when you create it
 // import 'package:comfi/pages/seller/seller_main_screen.dart';

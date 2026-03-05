@@ -1,9 +1,11 @@
 // lib/pages/seller/seller_main_screen.dart
 import 'package:comfi/consts/colors.dart';
-import 'package:comfi/pages/become_a_seller_dashboard.dart';
+import 'package:comfi/pages/sellers_dashboard_screen.dart';
 //import 'package:comfi/pages/seller/seller_dashboard_screen.dart'; // your dashboard
 //import 'package:comfi/pages/seller/seller_orders_screen.dart';   // your orders page
 import 'package:comfi/pages/seller_orders_screen.dart';
+import 'package:comfi/pages/seller_post_product_screen.dart';
+import 'package:comfi/pages/sellers_menu_screen.dart';
 import 'package:comfi/pages/sellers_refund_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -19,8 +21,10 @@ class _SellerMainScreenState extends State<SellerMainScreen> {
 
   static const List<Widget> _pages = <Widget>[
     SellerDashboardScreen(), // index 0
-    SellerOrdersScreen(), // index 1 - My Orders
+    SellerOrdersScreen(),
+    SellerPostProductScreen(), // index 1 - My Orders
     SellerRefundScreen(order: {}),
+    SellerMenuScreen(),
     Center(
       child: Text(
         "Menu / Settings - Coming Soon",
@@ -52,6 +56,7 @@ class _SellerMainScreenState extends State<SellerMainScreen> {
             icon: Icon(Icons.receipt_long),
             label: "My Order",
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Post'),
           BottomNavigationBarItem(icon: Icon(Icons.refresh), label: "Refund"),
           BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
         ],

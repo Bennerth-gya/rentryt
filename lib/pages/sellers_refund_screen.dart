@@ -58,9 +58,12 @@ class _SellerRefundScreenState extends State<SellerRefundScreen> {
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
-        title: Text(
-          "Refund Request #${order['id']}",
-          style: const TextStyle(color: Colors.white),
+        automaticallyImplyLeading: false,
+        title: Center(
+          child: Text(
+            "Refund Request #${order['id']}",
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
         backgroundColor: background,
         foregroundColor: Colors.white,
@@ -231,7 +234,7 @@ class _SellerRefundScreenState extends State<SellerRefundScreen> {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.white70),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 20),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -248,7 +251,10 @@ class _SellerRefundScreenState extends State<SellerRefundScreen> {
                     onPressed: _isSubmitting ? null : _submitRefund,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6B4EFF),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20,
+                        horizontal: 16,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -256,14 +262,14 @@ class _SellerRefundScreenState extends State<SellerRefundScreen> {
                     child: _isSubmitting
                         ? const SizedBox(
                             height: 20,
-                            width: 20,
+                            width: 40,
                             child: CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2.5,
                             ),
                           )
                         : const Text(
-                            "Submit Refund Request",
+                            "Submit Request",
                             style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                   ),
