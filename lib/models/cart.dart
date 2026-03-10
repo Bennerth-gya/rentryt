@@ -166,4 +166,32 @@ class Cart extends ChangeNotifier {
     });
     return total;
   }
+  // ====================== SELLER FEATURES ======================
+  // (This makes products dynamic for sellers)
+
+  final List<Products> _sellerProducts = [];
+
+  List<Products> get sellerProducts => List.unmodifiable(_sellerProducts);
+
+  void addNewProduct(Products product) {
+    _allProducts.add(product);
+    _sellerProducts.add(product);
+    notifyListeners();
+  }
+
+  void updateProduct(Products oldProduct, Products newProduct) {
+    final index = _allProducts.indexOf(oldProduct);
+    if (index != -1) _allProducts[index] = newProduct;
+
+    final sIndex = _sellerProducts.indexOf(oldProduct);
+    if (sIndex != -1) _sellerProducts[sIndex] = newProduct;
+    notifyListeners();
+  }
+
+  void deleteProduct(Products product) {
+    _allProducts.remove(product);
+    _sellerProducts.remove(product);
+    _userCart.remove(product);
+    notifyListeners();
+  }
 }

@@ -4,7 +4,9 @@ import 'package:comfi/pages/sellers_refund_screen.dart';
 import 'package:flutter/material.dart';
 
 class SellerOrdersScreen extends StatefulWidget {
-  const SellerOrdersScreen({super.key});
+  final int initialTab;
+
+  const SellerOrdersScreen({super.key, this.initialTab = 0});
 
   @override
   State<SellerOrdersScreen> createState() => _SellerOrdersScreenState();
@@ -17,7 +19,12 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
   }
 
   @override
@@ -32,8 +39,8 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
       backgroundColor: background,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Center(
-          child: const Text("My Orders", style: TextStyle(color: Colors.white)),
+        title: const Center(
+          child: Text("My Orders", style: TextStyle(color: Colors.white)),
         ),
         backgroundColor: background,
         elevation: 0,
@@ -55,7 +62,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildOrderList(statusFilter: null), // All
+          _buildOrderList(statusFilter: null),
           _buildOrderList(statusFilter: "Pending"),
           _buildOrderList(statusFilter: "Packaging"),
           _buildOrderList(statusFilter: "Delivered"),
@@ -65,7 +72,6 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
   }
 
   Widget _buildOrderList({String? statusFilter}) {
-    // Dummy data – later replace with real orders from provider or API
     final dummyOrders = [
       {
         "id": "100140",
@@ -132,6 +138,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
       itemCount: filteredOrders.length,
       itemBuilder: (context, index) {
         final order = filteredOrders[index];
+
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -148,11 +155,11 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Existing header row
+                  /// Order header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -170,9 +177,10 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 8),
 
-                  // Status + amount row
+                  /// Status and price
                   Row(
                     children: [
                       Icon(
@@ -201,16 +209,18 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                   ),
 
                   const SizedBox(height: 4),
+
+                  /// Payment
                   Text(
                     "Payment: ${order["payment"]}",
                     style: TextStyle(color: textSecondary, fontSize: 13),
                   ),
 
-                  // ──── NEW: Refund button ────
                   const SizedBox(height: 12),
+
+                  /// Refund button
                   if (order["status"] == "Delivered" ||
-                      order["status"] ==
-                          "Pending") // only show for eligible orders
+                      order["status"] == "Pending")
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton.icon(
@@ -234,11 +244,6 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                             color: Color(0xFF6B4EFF),
                             fontSize: 14,
                           ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                       ),
                     ),

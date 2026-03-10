@@ -1,9 +1,8 @@
-import 'package:comfi/components/sellers_main_screen_nav.dart';
-import 'package:comfi/consts/colors.dart';
-import 'package:comfi/pages/sellers_dashboard_screen.dart';
+// lib/pages/become_a_seller_screen.dart
+import 'package:comfi/consts/colors.dart'; // ← Make sure this import exists
 import 'package:flutter/material.dart';
-// You can import your SellerMainScreen here later when you create it
-// import 'package:comfi/pages/seller/seller_main_screen.dart';
+
+import 'seller_section/sellers_main_screen.dart';
 
 class BecomeSellerScreen extends StatefulWidget {
   const BecomeSellerScreen({super.key});
@@ -14,9 +13,10 @@ class BecomeSellerScreen extends StatefulWidget {
 
 class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
   final _formKey = GlobalKey<FormState>();
+
   String shopName = '';
   String phone = '';
-  String location = 'Tarkwa, Ghana'; // default based on your app context
+  String location = 'Tarkwa, Ghana'; // default
   String description = '';
 
   bool _isSubmitting = false;
@@ -27,11 +27,13 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
     _formKey.currentState!.save();
 
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 2)); // simulate processing
 
-    setState(() => _isSubmitting = false);
+    // Simulate server-side processing / approval delay
+    await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
+
+    setState(() => _isSubmitting = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -40,8 +42,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
       ),
     );
 
-    // For now: navigate to a placeholder seller dashboard
-    // Later replace with your real SellerMainScreen
+    // Navigate to SellerMainScreen (with bottom navigation: Shop, My Products, Post, Dashboard)
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const SellerMainScreen()),
@@ -86,7 +87,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
                   decoration: InputDecoration(
                     labelText: "Shop Name",
                     hintText: "e.g. Bennerth Fashion Hub",
-                    hintStyle: const TextStyle(color: Colors.white),
+                    hintStyle: const TextStyle(color: Colors.white54),
                     labelStyle: const TextStyle(color: Colors.white),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -107,7 +108,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
                   decoration: InputDecoration(
                     labelText: "Phone Number (WhatsApp preferred)",
                     hintText: "e.g. +233 24 123 4567",
-                    hintStyle: const TextStyle(color: Colors.white),
+                    hintStyle: const TextStyle(color: Colors.white54),
                     labelStyle: const TextStyle(color: Colors.white),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -129,7 +130,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
                   decoration: InputDecoration(
                     labelText: "Location",
                     hintText: "e.g. Market Street, Tarkwa",
-                    hintStyle: const TextStyle(color: Colors.white),
+                    hintStyle: const TextStyle(color: Colors.white54),
                     labelStyle: const TextStyle(color: Colors.white),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -147,7 +148,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
                   decoration: InputDecoration(
                     labelText: "About your shop",
                     hintText: "Tell customers what you sell...",
-                    hintStyle: const TextStyle(color: Colors.white),
+                    hintStyle: const TextStyle(color: Colors.white54),
                     labelStyle: const TextStyle(color: Colors.white),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -189,8 +190,8 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
                     onPressed: _isSubmitting ? null : _submit,
                   ),
                 ),
-
                 const SizedBox(height: 24),
+
                 const Center(
                   child: Text(
                     "Your application will be reviewed shortly.\nYou can start adding products once approved.",
