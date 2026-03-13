@@ -1,350 +1,310 @@
 import 'package:comfi/consts/colors.dart';
+import 'package:comfi/pages/cart_page.dart';
 import 'package:flutter/material.dart';
+
+import 'seller_orders_screen.dart';
+import 'seller_section/seller_earnings_screen.dart';
+import 'seller_section/seller_profile_screen.dart';
+import 'sellers_products/sellers_customers_screen.dart';
+import 'sellers_products/sellers_products_screen.dart';
+import 'sellers_products/sellers_statistics_screen.dart';
 
 class SellerDashboardScreen extends StatelessWidget {
   const SellerDashboardScreen({super.key});
 
-  /// -------------------------
-  /// ANALYTICS CARD
-  /// -------------------------
-  static Widget _analyticsCard(String title, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF6B4EFF), size: 28),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(color: Colors.white70)),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
+  @override
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: background,
-        appBar: AppBar(
-          automaticallyImplyLeading: true,
-          backgroundColor: background,
-          elevation: 0,
-          title: const Text(
-            "Business Analytics",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: DropdownButton<String>(
-                value: "Overall",
-                underline: const SizedBox(),
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                dropdownColor: cardColor,
-                items: ["Overall", "This Month", "This Year"]
-                    .map(
-                      (e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(
-                          e,
-                          style: const TextStyle(color: Colors.white),
+    return Scaffold(
+      backgroundColor: background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top greeting + today sales (hero style)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF6B4EFF),
+                    const Color(0xFF4A63F6).withOpacity(0.8),
+                  ],
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Hello, Bennerth!",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Good evening • Accra",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // ── Make CircleAvatar tappable ────────────────────────────────
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SellerProfileScreen(), // ← your profile screen
+                            ),
+                          );
+                        },
+                        child: CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.white24,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
                       ),
-                    )
-                    .toList(),
-                onChanged: (value) {},
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  const Text(
+                    "Today Sales",
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "GHS 1,260.40", // ← make dynamic later
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 42,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Quick access cards
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 1,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.4,
+                      children: [
+                        _quickCard(Icons.people, "Customers", () {
+                          // Navigate to My Customers screen (create this if not already done)
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SellersCustomersScreen(), // ← define this screen
+                            ),
+                          );
+                        }),
+                        _quickCard(Icons.inventory_2, "Products", () {
+                          // Navigate to My Products screen (create this if not already done)
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  SellersProductsScreen(), // ← define this screen
+                            ),
+                          );
+                        }),
+                        _quickCard(Icons.attach_money, "Revenue", () {
+                          // Navigate to Earnings screen (you already have this in menu)
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SellerEarningsScreen(),
+                            ),
+                          );
+                        }),
+                        _quickCard(Icons.bar_chart, "Statistics", () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SellersStatisticsScreen(), // or SellerStatsScreen()
+                            ),
+                          );
+                          // Better: if using tabs, you can use DefaultTabController.of(context).animateTo(1);
+                          // But since it's a different Scaffold, better to have a dedicated screen
+                        }),
+                        _quickCard(Icons.shopping_cart, "Orders", () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SellerOrdersScreen(), // or SellerOrdersScreen()
+                            ),
+                          );
+                          // Better: if using tabs, you can use DefaultTabController.of(context).animateTo(1);
+                          // But since it's a different Scaffold, better to have a dedicated screen
+                        }),
+                        _quickCard(Icons.local_mall, "Cart", () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CartPage(), // or SellerOrdersScreen()
+                            ),
+                          );
+                          // Better: if using tabs, you can use DefaultTabController.of(context).animateTo(1);
+                          // But since it's a different Scaffold, better to have a dedicated screen
+                        }),
+                      ],
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Keep your existing analytics / orders / earnings sections here
+                    // or move them below as secondary content
+                    _buildOverview(), // ← your current overview content
+                  ],
+                ),
               ),
             ),
           ],
-
-          bottom: const TabBar(
-            indicatorColor: Colors.purpleAccent,
-            tabs: [
-              Tab(text: "Overview"),
-              Tab(text: "Sales"),
-              Tab(text: "Products"),
-            ],
-          ),
-        ),
-
-        body: TabBarView(
-          children: [_buildOverview(), _buildSalesTab(), _buildProductsTab()],
         ),
       ),
+
+      // Bottom navigation like in the image
+      // bottomNavigationBar: BottomNavigationBar(
+      //   backgroundColor: cardColor,
+      //   selectedItemColor: const Color(0xFF6B4EFF),
+      //   unselectedItemColor: Colors.white70,
+      //   showSelectedLabels: false,
+      //   showUnselectedLabels: false,
+      //   type: BottomNavigationBarType.fixed,
+      //   items: const [
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.history), label: "Orders"),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.notifications),
+      //       label: "Notifications",
+      //     ),
+      //     BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+      //   ],
+      //   currentIndex: 0, // make dynamic with state
+      //   onTap: (index) {
+      //     // handle navigation
+      //   },
+      // ),
     );
   }
 
-  /// -------------------------
-  /// OVERVIEW TAB
-  /// -------------------------
-  static Widget _buildOverview() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// ANALYTICS GRID (MERGED CODE)
-          GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _analyticsCard("Total Sales", "GHS 980", Icons.attach_money),
-              _analyticsCard("Orders", "24", Icons.shopping_bag),
-              _analyticsCard("Customers", "12", Icons.people),
-              _analyticsCard("Visits", "180", Icons.show_chart),
-            ],
+  Widget _buildOverview() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Overview",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-
-          const SizedBox(height: 32),
-
-          const Text(
-            "Ongoing Orders",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          Row(
-            children: const [
-              _OrderStatCard(
-                title: "Pending Orders",
-                count: "3",
-                color: Colors.blue,
-              ),
-              _OrderStatCard(
-                title: "Packaging Orders",
-                count: "1",
-                color: Colors.orange,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          Row(
-            children: const [
-              _OrderStatCard(
-                title: "Confirmed Orders",
-                count: "4",
-                color: Colors.green,
-              ),
-              _OrderStatCard(
-                title: "Out For Delivery",
-                count: "2",
-                color: Colors.red,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-
-          /// COMPLETED ORDERS
-          Card(
-            color: cardColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _SummaryRow(
-                    icon: Icons.check_circle,
-                    label: "Delivered",
-                    count: "10",
-                    color: Colors.green,
-                  ),
-                  Divider(color: Colors.white24),
-                  _SummaryRow(
-                    icon: Icons.cancel,
-                    label: "Cancelled",
-                    count: "1",
-                    color: Colors.red,
-                  ),
-                  Divider(color: Colors.white24),
-                  _SummaryRow(
-                    icon: Icons.replay,
-                    label: "Return",
-                    count: "1",
-                    color: Colors.orange,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 32),
-
-          /// EARNINGS
-          Card(
-            color: cardColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _MiniStat("This Year", "GHS 12,450", Colors.greenAccent),
-                  _MiniStat("This Month", "GHS 3,280", Colors.blueAccent),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        _analyticsCard("Total Orders", "24", Icons.shopping_bag),
+      ],
     );
   }
 
-  /// SALES TAB
-  static Widget _buildSalesTab() {
-    return const Center(
-      child: Text(
-        "Sales Analytics Coming Soon",
-        style: TextStyle(color: Colors.white),
-      ),
-    );
-  }
-
-  /// PRODUCTS TAB
-  static Widget _buildProductsTab() {
-    return const Center(
-      child: Text(
-        "Products Overview Coming Soon",
-        style: TextStyle(color: Colors.white),
+  static Widget _quickCard(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: const Color(0xFF6B4EFF), size: 40),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Icon(Icons.arrow_forward, color: Color(0xFF6B4EFF), size: 20),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// ORDER STAT CARD
-class _OrderStatCard extends StatelessWidget {
-  final String title;
-  final String count;
-  final Color color;
-
-  const _OrderStatCard({
-    required this.title,
-    required this.count,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.5)),
-        ),
-        child: Column(
+/// -------------------------
+/// ANALYTICS CARD
+/// -------------------------
+Widget _analyticsCard(String title, String value, IconData icon) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: cardColor,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: const Color(0xFF6B4EFF), size: 28),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(title, style: const TextStyle(color: Colors.white70)),
+            const SizedBox(height: 4),
             Text(
-              title,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              count,
-              style: TextStyle(
-                color: color,
-                fontSize: 32,
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// SUMMARY ROW
-class _SummaryRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String count;
-  final Color color;
-
-  const _SummaryRow({
-    required this.icon,
-    required this.label,
-    required this.count,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: color),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(label, style: const TextStyle(color: Colors.white70)),
-        ),
-        Text(
-          count,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold),
-        ),
       ],
-    );
-  }
-}
-
-/// MINI STAT
-class _MiniStat extends StatelessWidget {
-  final String title;
-  final String value;
-  final Color color;
-
-  const _MiniStat(this.title, this.value, this.color);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(title, style: const TextStyle(color: Colors.white70)),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-      ],
-    );
-  }
+    ),
+  );
 }

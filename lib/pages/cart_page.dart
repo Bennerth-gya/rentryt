@@ -22,7 +22,11 @@ class _CartPageState extends State<CartPage> {
           // Heading
           const Text(
             'My Cart',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 24,
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -30,7 +34,10 @@ class _CartPageState extends State<CartPage> {
           if (value.userCart.isEmpty) ...[
             const SizedBox(height: 200),
             const Center(
-              child: Text("Your Cart is Empty", style: TextStyle(fontSize: 18)),
+              child: Text(
+                "Your Cart is Empty",
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
             ),
             const SizedBox(height: 20),
             // Center(

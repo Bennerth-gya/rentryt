@@ -63,7 +63,6 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
 
             // Verification Code
@@ -80,7 +79,7 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "709795", // dummy
+                      "709795", // ← replace with real dynamic value later
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -92,7 +91,6 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
 
             // Address Info
@@ -122,7 +120,9 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                               size: 20,
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                // TODO: open map (Google Maps, etc.)
+                              },
                               child: const Text("Show Map"),
                             ),
                           ],
@@ -147,10 +147,9 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
 
-            // Order Summary
+            // Order Summary ── main changes are here
             Card(
               color: cardColor,
               child: Padding(
@@ -203,7 +202,9 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
+
+                    // Main action button (keep for now – can be removed later)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -216,10 +217,91 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                         ),
                         child: const Text(
                           "Order Setup",
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 16),
+
+                    // ── NEW: Conditional action buttons for Pending orders ──
+                    if (order["status"] == "Pending")
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.green,
+                                side: const BorderSide(color: Colors.green),
+                              ),
+                              onPressed: () {
+                                // TODO: real status update logic here
+                                // Example: call provider, api, change state, etc.
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Order accepted & moved to Packaging",
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                // Navigator.pop(context);  ← optional: go back after action
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Text("Accept & Pack"),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.redAccent,
+                                side: const BorderSide(color: Colors.redAccent),
+                              ),
+                              onPressed: () {
+                                // TODO: implement cancel logic
+                                // Usually: show confirmation dialog first
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    title: const Text("Cancel Order?"),
+                                    content: const Text(
+                                      "This will cancel the order. The buyer will be notified.",
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text("No"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(ctx);
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text("Order cancelled"),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                          // TODO: real cancel logic + refresh
+                                        },
+                                        child: const Text("Yes, Cancel"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                child: Text("Cancel"),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -232,6 +314,7 @@ class SellerOrderDetailsScreen extends StatelessWidget {
     );
   }
 
+  // ── existing helper methods remain unchanged ──
   Widget _buildAddressRow(
     String type,
     String name,
