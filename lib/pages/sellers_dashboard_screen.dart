@@ -1,4 +1,5 @@
 import 'package:comfi/consts/colors.dart';
+import 'package:comfi/models/cart.dart';
 import 'package:comfi/pages/cart_page.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +13,6 @@ import 'sellers_products/sellers_statistics_screen.dart';
 class SellerDashboardScreen extends StatelessWidget {
   const SellerDashboardScreen({super.key});
 
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(

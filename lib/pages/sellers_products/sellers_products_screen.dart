@@ -8,28 +8,28 @@ class SellersProductsScreen extends StatelessWidget {
   // Dummy data — replace with real fetch
   final List<Map<String, dynamic>> products = [
     {
-      'name': 'Bridal rings with diamond',
+      'name': "Hot Plate",
       'price': 'GHS 680',
       'rating': 4.4,
-      'image': 'assets/rings.jpg',
+      'image': 'assets/images/hotplate.jpg',
     },
     {
-      'name': 'Galaxy earrings',
-      'price': 'GHS 280',
+      'name': "Men's Shirt",
+      'price': 'GHS 100',
       'rating': 4.0,
-      'image': 'assets/earrings.jpg',
+      'image': 'assets/images/men_shirt1.jpg',
     },
     {
-      'name': 'Wedding rings',
-      'price': 'GHS 1,290',
+      'name': 'Study lamp',
+      'price': 'GHS 690',
       'rating': 4.4,
-      'image': 'assets/wedding.jpg',
+      'image': 'assets/images/study_lamp.jpg',
     },
     {
-      'name': 'Boho earrings',
+      'name': "Men's Slippers",
       'price': 'GHS 399',
       'rating': 3.6,
-      'image': 'assets/boho.jpg',
+      'image': 'assets/images/slipper2.jpg',
     },
   ];
 
@@ -38,11 +38,16 @@ class SellersProductsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
-        title: const Text("My Products"),
+        title: Center(
+          child: const Text(
+            "My Products",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
         backgroundColor: const Color(0xFF6B4EFF),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, color: Colors.white),
             onPressed: () {
               /* Add product */
             },
@@ -63,7 +68,7 @@ class SellersProductsScreen extends StatelessWidget {
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.65,
+                  childAspectRatio: 0.49,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
@@ -88,7 +93,7 @@ class SellersProductsScreen extends StatelessWidget {
                             ),
                             child: Image.asset(
                               p['image'], // use network images later
-                              height: 140,
+                              height: 150,
                               width: double.infinity,
                               fit: BoxFit.cover,
                             ),

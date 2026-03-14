@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
 
+import '../models/cart_badge.dart';
+
 class ShopPage extends StatefulWidget {
   const ShopPage({super.key});
 
@@ -29,7 +31,9 @@ class _ShopPageState extends State<ShopPage> {
 
   void addProductToCart(Products product) {
     Provider.of<Cart>(context, listen: false).addItemToCart(product);
+
     if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -75,11 +79,13 @@ class _ShopPageState extends State<ShopPage> {
                 final width = constraints.maxWidth;
                 final isTablet = width >= 600;
                 final isDesktop = width >= 1000;
+
                 final horizontalPadding = isDesktop
                     ? 200.0
                     : isTablet
                     ? 60.0
                     : 20.0;
+
                 final bannerHeight = isDesktop
                     ? 420.0
                     : isTablet
@@ -94,7 +100,7 @@ class _ShopPageState extends State<ShopPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ================= HEADER =================
+                          /// ================= HEADER =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -103,7 +109,7 @@ class _ShopPageState extends State<ShopPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // LEFT - Greeting
+                                /// LEFT - Greeting
                                 Flexible(
                                   flex: 3,
                                   child: Column(
@@ -121,8 +127,6 @@ class _ShopPageState extends State<ShopPage> {
                                           fontWeight: FontWeight.bold,
                                           color: textPrimary,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
@@ -131,14 +135,12 @@ class _ShopPageState extends State<ShopPage> {
                                           fontSize: isTablet ? 15 : 13,
                                           color: textSecondary,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
                                 ),
 
-                                // RIGHT - Actions
+                                /// RIGHT - ACTIONS
                                 Flexible(
                                   flex: 2,
                                   fit: FlexFit.loose,
@@ -146,6 +148,19 @@ class _ShopPageState extends State<ShopPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
+                                      /// CART BADGE
+                                      // Container(
+                                      //   decoration: BoxDecoration(
+                                      //     color: Colors.white,
+                                      //     borderRadius: BorderRadius.circular(
+                                      //       12,
+                                      //     ),
+                                      //   ),
+                                      //   child: const CartBadge(),
+                                      // ),
+                                      const SizedBox(width: 2),
+
+                                      /// NOTIFICATION
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
@@ -159,11 +174,14 @@ class _ShopPageState extends State<ShopPage> {
                                           size: 20,
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+
+                                      const SizedBox(width: 12),
+
+                                      /// SELL BUTTON
                                       OutlinedButton.icon(
                                         icon: const Icon(
                                           Icons.storefront,
-                                          size: 14,
+                                          size: 10,
                                         ),
                                         label: const Text(
                                           "Sell",
@@ -203,7 +221,7 @@ class _ShopPageState extends State<ShopPage> {
                             ),
                           ),
 
-                          // ================= SEARCH =================
+                          /// ================= SEARCH =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -255,7 +273,7 @@ class _ShopPageState extends State<ShopPage> {
 
                           const SizedBox(height: 25),
 
-                          // ================= CAROUSEL =================
+                          /// ================= CAROUSEL =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -271,7 +289,9 @@ class _ShopPageState extends State<ShopPage> {
                                     ? 0.8
                                     : 0.92,
                                 onPageChanged: (index, reason) {
-                                  setState(() => _currentBanner = index);
+                                  setState(() {
+                                    _currentBanner = index;
+                                  });
                                 },
                               ),
                               items: bannerItems.map((banner) {
@@ -289,7 +309,7 @@ class _ShopPageState extends State<ShopPage> {
 
                           const SizedBox(height: 40),
 
-                          // ================= FEATURED =================
+                          /// ================= FEATURED =================
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: horizontalPadding,
@@ -303,6 +323,7 @@ class _ShopPageState extends State<ShopPage> {
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 20),
 
                           Padding(
@@ -326,6 +347,7 @@ class _ShopPageState extends State<ShopPage> {
                               itemCount: cart.getFeaturedList().length,
                               itemBuilder: (context, index) {
                                 final product = cart.getFeaturedList()[index];
+
                                 return ProductsTile(
                                   product: product,
                                   onAddToCart: () => addProductToCart(product),

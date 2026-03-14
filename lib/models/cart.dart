@@ -18,7 +18,7 @@ class Cart extends ChangeNotifier {
     ),
     Products(
       name: "Laptop",
-      price: 1800.0, // ← realistic price (was probably typo)
+      price: 4800.0, // ← realistic price (was probably typo)
       imagePath: "assets/images/laptops.jpg",
       description: "Powerful 16GB RAM laptop",
       category: "Electronics",

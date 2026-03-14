@@ -1,7 +1,6 @@
 // lib/pages/become_a_seller_screen.dart
-import 'package:comfi/consts/colors.dart'; // ← Make sure this import exists
+import 'package:comfi/consts/colors.dart';
 import 'package:flutter/material.dart';
-
 import 'seller_section/sellers_main_screen.dart';
 
 class BecomeSellerScreen extends StatefulWidget {
@@ -16,7 +15,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
 
   String shopName = '';
   String phone = '';
-  String location = 'Tarkwa, Ghana'; // default
+  String location = 'Tarkwa, Ghana';
   String description = '';
 
   bool _isSubmitting = false;
@@ -28,7 +27,6 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
 
     setState(() => _isSubmitting = true);
 
-    // Simulate server-side processing / approval delay
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
@@ -42,166 +40,222 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen> {
       ),
     );
 
-    // Navigate to SellerMainScreen (with bottom navigation: Shop, My Products, Post, Dashboard)
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const SellerMainScreen()),
     );
   }
 
+  InputDecoration inputStyle(String label, String hint, IconData icon) {
+    return InputDecoration(
+      prefixIcon: Icon(icon, color: Colors.white70),
+      labelText: label,
+      hintText: hint,
+      hintStyle: const TextStyle(color: Colors.white38),
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: cardColor,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF6B4EFF), width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: background,
       appBar: AppBar(
-        title: const Text("Become a Seller on Comfi"),
         backgroundColor: background,
-        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
+      backgroundColor: background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Start Selling Today",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+        child: Column(
+          children: [
+            /// TOP HERO SECTION
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF6B4EFF), Color(0xFF8E7BFF)],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  "Reach customers in Tarkwa and across Ghana with your products.",
-                  style: TextStyle(color: textSecondary, fontSize: 15),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(35),
+                  bottomRight: Radius.circular(35),
                 ),
-                const SizedBox(height: 32),
-
-                // Shop Name
-                TextFormField(
-                  style: whiteInputStyle,
-                  decoration: InputDecoration(
-                    labelText: "Shop Name",
-                    hintText: "e.g. Bennerth Fashion Hub",
-                    hintStyle: const TextStyle(color: Colors.white54),
-                    labelStyle: const TextStyle(color: Colors.white),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(.15),
+                      shape: BoxShape.circle,
                     ),
-                    filled: true,
-                    fillColor: cardColor,
-                  ),
-                  validator: (value) => value == null || value.trim().isEmpty
-                      ? "Shop name is required"
-                      : null,
-                  onSaved: (value) => shopName = value!.trim(),
-                ),
-                const SizedBox(height: 20),
-
-                // Phone Number
-                TextFormField(
-                  style: whiteInputStyle,
-                  decoration: InputDecoration(
-                    labelText: "Phone Number (WhatsApp preferred)",
-                    hintText: "e.g. +233 24 123 4567",
-                    hintStyle: const TextStyle(color: Colors.white54),
-                    labelStyle: const TextStyle(color: Colors.white),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    child: const Icon(
+                      Icons.storefront,
+                      size: 40,
+                      color: Colors.white,
                     ),
-                    filled: true,
-                    fillColor: cardColor,
                   ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) => value == null || value.length < 9
-                      ? "Enter a valid phone number"
-                      : null,
-                  onSaved: (value) => phone = value!.trim(),
-                ),
-                const SizedBox(height: 20),
-
-                // Location
-                TextFormField(
-                  style: whiteInputStyle,
-                  decoration: InputDecoration(
-                    labelText: "Location",
-                    hintText: "e.g. Market Street, Tarkwa",
-                    hintStyle: const TextStyle(color: Colors.white54),
-                    labelStyle: const TextStyle(color: Colors.white),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Become a Seller",
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    filled: true,
-                    fillColor: cardColor,
                   ),
-                  onSaved: (value) => location = value?.trim() ?? location,
-                ),
-                const SizedBox(height: 20),
-
-                // Description
-                TextFormField(
-                  style: whiteInputStyle,
-                  decoration: InputDecoration(
-                    labelText: "About your shop",
-                    hintText: "Tell customers what you sell...",
-                    hintStyle: const TextStyle(color: Colors.white54),
-                    labelStyle: const TextStyle(color: Colors.white),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: cardColor,
+                  const SizedBox(height: 6),
+                  const Text(
+                    "Start selling your products on Comfi",
+                    style: TextStyle(color: Colors.white70),
                   ),
-                  maxLines: 4,
-                  onSaved: (value) => description = value?.trim() ?? '',
-                ),
-                const SizedBox(height: 40),
-
-                // Submit Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton.icon(
-                    icon: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : const Icon(Icons.storefront),
-                    label: Text(
-                      _isSubmitting ? "Processing..." : "Create Seller Account",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6B4EFF),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: _isSubmitting ? null : _submit,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                const Center(
-                  child: Text(
-                    "Your application will be reviewed shortly.\nYou can start adding products once approved.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+
+            /// FORM SECTION
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E2C),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(.4),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        /// Shop Name
+                        TextFormField(
+                          style: whiteInputStyle,
+                          decoration: inputStyle(
+                            "Shop Name",
+                            "Bennerth Fashion Hub",
+                            Icons.store,
+                          ),
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                              ? "Shop name is required"
+                              : null,
+                          onSaved: (value) => shopName = value!.trim(),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        /// Phone
+                        TextFormField(
+                          style: whiteInputStyle,
+                          decoration: inputStyle(
+                            "Phone Number",
+                            "+233 24 123 4567",
+                            Icons.phone,
+                          ),
+                          keyboardType: TextInputType.phone,
+                          validator: (value) =>
+                              value == null || value.length < 9
+                              ? "Enter a valid phone number"
+                              : null,
+                          onSaved: (value) => phone = value!.trim(),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        /// Location
+                        TextFormField(
+                          style: whiteInputStyle,
+                          decoration: inputStyle(
+                            "Location",
+                            "Market Street, Tarkwa",
+                            Icons.location_on,
+                          ),
+                          onSaved: (value) =>
+                              location = value?.trim() ?? location,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        /// Description
+                        TextFormField(
+                          style: whiteInputStyle,
+                          maxLines: 4,
+                          decoration: inputStyle(
+                            "About your shop",
+                            "Tell customers what you sell...",
+                            Icons.info,
+                          ),
+                          onSaved: (value) => description = value?.trim() ?? '',
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        /// SUBMIT BUTTON
+                        SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: ElevatedButton(
+                            onPressed: _isSubmitting ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6B4EFF),
+                              elevation: 8,
+                              shadowColor: const Color(0xFF6B4EFF),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: _isSubmitting
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : const Text(
+                                    "Create Seller Account",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        const Text(
+                          "Your application will be reviewed shortly.\nYou can start adding products once approved.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white38, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
