@@ -80,7 +80,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 Navigator.pop(ctx);
                 Navigator.pop(context); // back to previous screen
               },
-              child: const Text("View Order"),
+              child: const Text("Orders"),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
