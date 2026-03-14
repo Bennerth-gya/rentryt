@@ -40,7 +40,7 @@ class SellersProductsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Center(
           child: const Text(
-            "My Products",
+            "My Productss",
             style: TextStyle(color: Colors.white),
           ),
         ),
