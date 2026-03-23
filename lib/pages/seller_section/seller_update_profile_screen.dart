@@ -1,5 +1,7 @@
-import 'package:comfi/consts/colors.dart';
+
+import 'package:comfi/consts/theme_toggle_button.dart' show ThemeToggleButton;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
@@ -7,177 +9,602 @@ class SellerUpdateProfileScreen extends StatefulWidget {
   const SellerUpdateProfileScreen({super.key});
 
   @override
-  State<SellerUpdateProfileScreen> createState() => _UpdateProfileScreenState();
+  State<SellerUpdateProfileScreen> createState() =>
+      _SellerUpdateProfileScreenState();
 }
 
-class _UpdateProfileScreenState extends State<SellerUpdateProfileScreen> {
+class _SellerUpdateProfileScreenState
+    extends State<SellerUpdateProfileScreen> {
   bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
+
+    // ── Theme tokens ──────────────────────────────
+    final scaffoldBg = isDark
+        ? const Color(0xFF080C14)
+        : const Color(0xFFF5F7FF);
+    final surfaceColor =
+        isDark ? const Color(0xFF111827) : Colors.white;
+    final inputFill = isDark
+        ? const Color(0xFF1F2937)
+        : const Color(0xFFEEF1FB);
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.06)
+        : const Color(0xFFE2E8F0);
+    final primaryText =
+        isDark ? Colors.white : const Color(0xFF0F172A);
+    final secondaryText = isDark
+        ? Colors.white.withOpacity(0.5)
+        : const Color(0xFF64748B);
+    final labelColor = isDark
+        ? Colors.white.withOpacity(0.4)
+        : const Color(0xFF94A3B8);
+    final inputText =
+        isDark ? Colors.white : const Color(0xFF0F172A);
+    final prefixColor = isDark
+        ? Colors.white.withOpacity(0.4)
+        : const Color(0xFF94A3B8);
+
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(LineAwesomeIcons.angle_double_left_solid),
+        backgroundColor: surfaceColor,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        shape: Border(
+            bottom: BorderSide(color: borderColor)),
+        leading: GestureDetector(
+          onTap: () => Get.back(),
+          child: Container(
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: scaffoldBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: borderColor),
+            ),
+            child: Icon(
+              LineAwesomeIcons.angle_double_left_solid,
+              color: primaryText,
+              size: 18,
+            ),
+          ),
         ),
-        title: const Text(
-          "Edit Profile",
-          style: TextStyle(color: Colors.white),
+        title: Text('Edit Seller Profile',
+          style: TextStyle(
+            color: primaryText,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.3,
+          ),
         ),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black87,
+        actions: [
+          // ✅ Theme toggle
+          Padding(
+            padding: const EdgeInsets.only(
+                right: 16, top: 8, bottom: 8),
+            child: ThemeToggleButton(
+              surfaceColor: scaffoldBg,
+              borderColor: borderColor,
+              size: 38,
+            ),
+          ),
+        ],
       ),
+
       body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.all(24.0),
+        physics: const BouncingScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
-              // Profile Picture Section
-              Stack(
-                children: [
-                  SizedBox(
-                    width: 140,
-                    height: 140,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(100),
-                      child: const Image(
-                        image: AssetImage('assets/images/strive.jpg'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 42,
-                      height: 42,
+
+              // ── Avatar section ──────────────────
+              Center(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Gradient ring + photo
+                    Container(
+                      padding:
+                          const EdgeInsets.all(3),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
-                        color: Colors.amber,
-                        border: Border.all(color: Colors.white, width: 3),
+                        shape: BoxShape.circle,
+                        gradient:
+                            const LinearGradient(
+                          colors: [
+                            Color(0xFF7C3AED),
+                            Color(0xFF8B5CF6),
+                          ],
+                          begin: Alignment.topLeft,
+                          end:
+                              Alignment.bottomRight,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
+                            color: const Color(
+                                    0xFF8B5CF6)
+                                .withOpacity(0.45),
+                            blurRadius: 24,
+                            offset:
+                                const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        LineAwesomeIcons.camera_solid,
-                        color: Colors.black87,
-                        size: 22,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/strive.jpg',
+                          width: 110,
+                          height: 110,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
 
-              const SizedBox(height: 40),
-
-              // Form Fields
-              Form(
-                child: Column(
-                  children: [
-                    _buildTextField(
-                      label: "Fullname",
-                      icon: Icons.person_outline_rounded,
-                      keyboardType: TextInputType.name,
+                    // Camera button
+                    Positioned(
+                      bottom: 2, right: 2,
+                      child: GestureDetector(
+                        onTap: () =>
+                            HapticFeedback
+                                .lightImpact(),
+                        child: Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            gradient:
+                                const LinearGradient(
+                              colors: [
+                                Color(0xFF7C3AED),
+                                Color(0xFF8B5CF6),
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: scaffoldBg,
+                              width: 2.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                        0xFF8B5CF6)
+                                    .withOpacity(
+                                        0.4),
+                                blurRadius: 10,
+                                offset:
+                                    const Offset(
+                                        0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            LineAwesomeIcons
+                                .camera_solid,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 20),
 
-                    _buildTextField(
-                      label: "Business name",
-                      icon: Icons.person_outline_rounded,
-                      keyboardType: TextInputType.name,
+                    // Verified seller badge
+                    Positioned(
+                      top: -4, right: -4,
+                      child: Container(
+                        padding:
+                            const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFF34D399),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: scaffoldBg,
+                            width: 2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.storefront_rounded,
+                          color: Colors.white,
+                          size: 11,
+                        ),
+                      ),
                     ),
-
-                    const SizedBox(height: 20),
-
-                    _buildTextField(
-                      label: "Email",
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 20),
-
-                    _buildTextField(
-                      label: "Phone No.",
-                      icon: Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 20),
-
-                    _buildPasswordField(),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 8),
 
-              // Optional: Save Button
+              Center(
+                child: Text(
+                  'Tap camera to change photo',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: secondaryText,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // ── Personal info ───────────────────
+              _FormSectionLabel(
+                label: 'Personal Info',
+                color: secondaryText,
+              ),
+              const SizedBox(height: 14),
+
+              _ThemedField(
+                label: 'Full Name',
+                icon: Icons.person_outline_rounded,
+                keyboardType: TextInputType.name,
+                inputFill: inputFill,
+                borderColor: borderColor,
+                inputText: inputText,
+                labelColor: labelColor,
+                prefixColor: prefixColor,
+              ),
+              const SizedBox(height: 14),
+
+              _ThemedField(
+                label: 'Email Address',
+                icon: Icons.email_outlined,
+                keyboardType:
+                    TextInputType.emailAddress,
+                inputFill: inputFill,
+                borderColor: borderColor,
+                inputText: inputText,
+                labelColor: labelColor,
+                prefixColor: prefixColor,
+              ),
+              const SizedBox(height: 14),
+
+              _ThemedField(
+                label: 'Phone Number',
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                inputFill: inputFill,
+                borderColor: borderColor,
+                inputText: inputText,
+                labelColor: labelColor,
+                prefixColor: prefixColor,
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── Business info ───────────────────
+              _FormSectionLabel(
+                label: 'Business Info',
+                color: secondaryText,
+              ),
+              const SizedBox(height: 14),
+
+              _ThemedField(
+                label: 'Business Name',
+                icon: Icons.storefront_rounded,
+                keyboardType: TextInputType.name,
+                inputFill: inputFill,
+                borderColor: borderColor,
+                inputText: inputText,
+                labelColor: labelColor,
+                prefixColor: prefixColor,
+              ),
+              const SizedBox(height: 14),
+
+              _ThemedField(
+                label: 'Business Location',
+                icon: Icons.location_on_rounded,
+                keyboardType: TextInputType.text,
+                inputFill: inputFill,
+                borderColor: borderColor,
+                inputText: inputText,
+                labelColor: labelColor,
+                prefixColor: prefixColor,
+              ),
+              const SizedBox(height: 14),
+
+              // Business category dropdown
+              Container(
+                decoration: BoxDecoration(
+                  color: inputFill,
+                  borderRadius:
+                      BorderRadius.circular(14),
+                  border:
+                      Border.all(color: borderColor),
+                ),
+                child: DropdownButtonFormField<String>(
+                  value: 'Fashion & Clothing',
+                  style: TextStyle(
+                      color: inputText, fontSize: 15),
+                  dropdownColor: isDark
+                      ? const Color(0xFF1F2937)
+                      : Colors.white,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: const Color(0xFF8B5CF6),
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Business Category',
+                    labelStyle: TextStyle(
+                      color: labelColor,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.category_rounded,
+                      color: const Color(0xFF8B5CF6),
+                      size: 20,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
+                  ),
+                  items: [
+                    'Fashion & Clothing',
+                    'Electronics',
+                    'Food & Beverages',
+                    'Health & Beauty',
+                    'Home & Living',
+                    'Education',
+                    'Other',
+                  ].map((cat) => DropdownMenuItem(
+                    value: cat,
+                    child: Text(cat,
+                      style: TextStyle(
+                          color: inputText,
+                          fontSize: 14),
+                    ),
+                  )).toList(),
+                  onChanged: (_) {},
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── Security ────────────────────────
+              _FormSectionLabel(
+                label: 'Security',
+                color: secondaryText,
+              ),
+              const SizedBox(height: 14),
+
+              // Password field
+              TextFormField(
+                obscureText: _obscurePassword,
+                style: TextStyle(
+                    color: inputText, fontSize: 15),
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  labelStyle: TextStyle(
+                    color: labelColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.lock_outline_rounded,
+                    color: prefixColor,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons
+                              .visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: prefixColor,
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() =>
+                        _obscurePassword =
+                            !_obscurePassword),
+                  ),
+                  filled: true,
+                  fillColor: inputFill,
+                  contentPadding:
+                      const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 16),
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(14),
+                    borderSide:
+                        BorderSide(color: borderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF8B5CF6),
+                      width: 1.8,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 36),
+
+              // ── Save button ─────────────────────
               SizedBox(
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Save profile logic
+                    HapticFeedback.lightImpact();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black87,
-                    elevation: 3,
+                    backgroundColor:
+                        Colors.transparent,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius:
+                          BorderRadius.circular(16),
                     ),
+                    padding: EdgeInsets.zero,
                   ),
-                  child: const Text(
-                    "Save Changes",
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      text: '2 February, 2026',
-                      style: TextStyle(fontSize: 12, color: Colors.white60),
-                      children: [
-                        TextSpan(
-                          text: ' Joined',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF7C3AED),
+                          Color(0xFF8B5CF6),
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                                  0xFF8B5CF6)
+                              .withOpacity(0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent.withOpacity(0.1),
-                        elevation: 0,
-                        foregroundColor: Colors.red,
-                        shape: const StadiumBorder(),
-                        side: BorderSide.none,
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: const Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_rounded,
+                              color: Colors.white,
+                              size: 20),
+                          SizedBox(width: 8),
+                          Text('Save Changes',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight:
+                                  FontWeight.w700,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Text('Delete'),
                     ),
                   ),
-                ],
+                ),
               ),
+
+              const SizedBox(height: 20),
+
+              // ── Member since + delete ───────────
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: surfaceColor,
+                  borderRadius:
+                      BorderRadius.circular(16),
+                  border:
+                      Border.all(color: borderColor),
+                ),
+                child: Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 36, height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(
+                                    0xFF8B5CF6)
+                                .withOpacity(0.1),
+                            borderRadius:
+                                BorderRadius.circular(
+                                    10),
+                          ),
+                          child: const Icon(
+                            Icons
+                                .calendar_today_rounded,
+                            color: Color(0xFF8B5CF6),
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment
+                                  .start,
+                          children: [
+                            Text('Seller since',
+                              style: TextStyle(
+                                color: secondaryText,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text('2 February, 2026',
+                              style: TextStyle(
+                                color: primaryText,
+                                fontSize: 13,
+                                fontWeight:
+                                    FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () =>
+                          _showDeleteSheet(
+                        context,
+                        isDark,
+                        surfaceColor,
+                        borderColor,
+                        primaryText,
+                        secondaryText,
+                      ),
+                      child: Container(
+                        padding:
+                            const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                                  0xFFEF4444)
+                              .withOpacity(0.1),
+                          borderRadius:
+                              BorderRadius.circular(
+                                  20),
+                          border: Border.all(
+                            color: const Color(
+                                    0xFFEF4444)
+                                .withOpacity(0.2),
+                          ),
+                        ),
+                        child: const Text(
+                          'Delete Account',
+                          style: TextStyle(
+                            color: Color(0xFFEF4444),
+                            fontSize: 12,
+                            fontWeight:
+                                FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -185,90 +612,213 @@ class _UpdateProfileScreenState extends State<SellerUpdateProfileScreen> {
     );
   }
 
-  // Reusable beautiful text field
-  Widget _buildTextField({
-    required String label,
-    required IconData icon,
-    TextInputType? keyboardType,
-  }) {
-    return TextFormField(
-      keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.black87),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
-          color: Colors.grey.shade700,
-          fontWeight: FontWeight.w500,
+  void _showDeleteSheet(
+    BuildContext context,
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: borderColor),
         ),
-        prefixIcon: Icon(icon, color: Colors.grey.shade600),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 18,
-          horizontal: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.amber, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.red),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 36, height: 4,
+              margin:
+                  const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withOpacity(0.15)
+                    : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Container(
+              width: 64, height: 64,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444)
+                    .withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.delete_forever_rounded,
+                color: Color(0xFFEF4444),
+                size: 30,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text('Delete Account?',
+              style: TextStyle(
+                color: primaryText,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'This will permanently delete your seller\naccount and all your products.\nThis action cannot be undone.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: secondaryText,
+                fontSize: 13,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () =>
+                        Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      padding:
+                          const EdgeInsets.symmetric(
+                              vertical: 14),
+                      side: BorderSide(
+                          color: borderColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text('Cancel',
+                      style: TextStyle(
+                        color: primaryText,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          const Color(0xFFEF4444),
+                      elevation: 0,
+                      padding:
+                          const EdgeInsets.symmetric(
+                              vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text('Yes, Delete',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
         ),
       ),
     );
   }
+}
 
-  // Password field with visibility toggle
-  Widget _buildPasswordField() {
+// ── Form section label ────────────────────────────────────────────────────────
+class _FormSectionLabel extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _FormSectionLabel({
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(label.toUpperCase(),
+      style: TextStyle(
+        color: color,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+      ),
+    );
+  }
+}
+
+// ── Reusable themed text field ────────────────────────────────────────────────
+class _ThemedField extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final TextInputType? keyboardType;
+  final Color inputFill;
+  final Color borderColor;
+  final Color inputText;
+  final Color labelColor;
+  final Color prefixColor;
+
+  const _ThemedField({
+    required this.label,
+    required this.icon,
+    required this.inputFill,
+    required this.borderColor,
+    required this.inputText,
+    required this.labelColor,
+    required this.prefixColor,
+    this.keyboardType,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return TextFormField(
-      obscureText: _obscurePassword,
-      style: const TextStyle(color: Colors.black87),
+      keyboardType: keyboardType,
+      style: TextStyle(color: inputText, fontSize: 15),
       decoration: InputDecoration(
-        labelText: "Password",
+        labelText: label,
         labelStyle: TextStyle(
-          color: Colors.grey.shade700,
+          color: labelColor,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.grey),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            color: Colors.grey.shade600,
-          ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
-        ),
+        prefixIcon: Icon(icon,
+            color: const Color(0xFF8B5CF6), size: 20),
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: inputFill,
         contentPadding: const EdgeInsets.symmetric(
-          vertical: 18,
-          horizontal: 16,
-        ),
+            horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.amber, width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(
+              color: Color(0xFF8B5CF6), width: 1.8),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(
+              color: Color(0xFFEF4444)),
         ),
       ),
     );
