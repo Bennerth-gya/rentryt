@@ -1,4 +1,5 @@
 import 'package:comfi/consts/app_theme.dart';
+import 'package:comfi/pages/sellers_shoppage.dart';
 import 'package:flutter/material.dart';
 import 'seller_section/sellers_main_screen.dart';
 
@@ -88,7 +89,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const SellerMainScreen()),
+      MaterialPageRoute(builder: (_) => const SellerShopPage()),
     );
   }
 

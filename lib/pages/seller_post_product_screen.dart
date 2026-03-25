@@ -219,19 +219,19 @@ class _SellerPostProductScreenState
     if (!mounted) return;
 
     final newProduct = Products(
-      name: _nameCtrl.text.trim(),
-      imagePath: _selectedImages.isNotEmpty
-          ? _selectedImages.first.path
-          : (widget.productToEdit?.imagePath ??
-              'assets/images/placeholder.jpg'),
-      description: _descCtrl.text.trim(),
-      price:
-          double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
-      colors: List.from(_selectedColors),
-      sizes: List.from(_selectedSizes),
-      category: _selectedCategory!,
-    );
-
+  name: _nameCtrl.text.trim(),
+  imagePath: _selectedImages.isNotEmpty
+      ? _selectedImages.first.path
+      : (widget.productToEdit?.imagePath ?? 'assets/images/placeholder.jpg'),
+  imagePaths: _selectedImages.isNotEmpty          // ← add this
+      ? _selectedImages.map((x) => x.path).toList()
+      : (widget.productToEdit?.imagePaths ?? ['assets/images/placeholder.jpg']),
+  description: _descCtrl.text.trim(),
+  price: double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
+  colors: List.from(_selectedColors),
+  sizes: List.from(_selectedSizes),
+  category: _selectedCategory!,
+);
     final cart =
         Provider.of<Cart>(context, listen: false);
     if (widget.productToEdit != null) {

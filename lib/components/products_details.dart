@@ -43,11 +43,7 @@ class _ProductDetailsPageState
     // ── Populate image list ──────────────────────────
     // If your Products model gains an `imagePaths` field,
     // replace this with: _images = product.imagePaths;
-    _images = [
-      widget.product.imagePath,
-      widget.product.imagePath,
-      widget.product.imagePath,
-    ];
+    _images = widget.product.imagePaths;
 
     if (widget.product.colors.isNotEmpty) {
       _selectedColor = widget.product.colors.first;
