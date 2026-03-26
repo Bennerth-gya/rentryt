@@ -1,6 +1,7 @@
 import 'package:comfi/consts/app_theme.dart';
 import 'package:comfi/pages/sellers_shoppage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'seller_section/sellers_main_screen.dart';
 
 class BecomeSellerScreen extends StatefulWidget {
@@ -44,7 +45,21 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
     _animController.dispose();
     super.dispose();
   }
+  // In BecomeSellerScreen
 
+final List<XFile> _shopImages = [];   // Add this
+
+// Add this method
+Future<void> _pickShopImage() async {
+  try {
+    final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() => _shopImages.add(image));  // or just keep one
+    }
+  } catch (e) {
+    // show error
+  }
+}
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
