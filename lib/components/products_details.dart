@@ -1,48 +1,41 @@
-
+import 'dart:io';
 import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/products.dart';
 import 'package:comfi/payment/payment_method.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../consts/theme_toggle_button.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final Products product;
-  const ProductDetailsPage(
-      {super.key, required this.product});
+  const ProductDetailsPage({super.key, required this.product});
 
   @override
   State<ProductDetailsPage> createState() =>
       _ProductDetailsPageState();
 }
 
-class _ProductDetailsPageState
-    extends State<ProductDetailsPage>
+class _ProductDetailsPageState extends State<ProductDetailsPage>
     with SingleTickerProviderStateMixin {
   String? _selectedColor;
   String? _selectedSize;
   bool _isProcessing = false;
   bool _isFavourited = false;
   int _quantity = 1;
-  int _selectedImageIndex = 0; // ✅ tracks active thumbnail
+  int _selectedImageIndex = 0;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
-  // ✅ Build image list from product — uses imagePath as
-  //    primary + fills remaining slots with same asset
-  //    (swap with product.imagePaths list when available)
   late final List<String> _images;
 
   @override
   void initState() {
     super.initState();
 
-    // ── Populate image list ──────────────────────────
-    // If your Products model gains an `imagePaths` field,
-    // replace this with: _images = product.imagePaths;
     _images = widget.product.imagePaths;
 
     if (widget.product.colors.isNotEmpty) {
@@ -73,8 +66,7 @@ class _ProductDetailsPageState
   }
 
   void _showSnackbar(String msg, {bool isError = false}) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -128,10 +120,59 @@ class _ProductDetailsPageState
     _showSnackbar('${widget.product.name} added to cart!');
   }
 
+  /// Launch the phone dialer with the seller's number
+  Future<void> _callSeller(String phone) async {
+    final uri = Uri(scheme: 'tel', path: phone);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      _showSnackbar('Could not open dialer', isError: true);
+    }
+  }
+
+  // ── Seller avatar widget ──────────────────────────────────────────────────
+  Widget _buildSellerAvatar(String? imagePath,
+      {double size = 52}) {
+    final placeholder = Container(
+      width: size, height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFF8B5CF6).withOpacity(0.12),
+      ),
+      child: Icon(Icons.person_rounded,
+          color: const Color(0xFF8B5CF6).withOpacity(0.6),
+          size: size * 0.45),
+    );
+
+    if (imagePath == null || imagePath.isEmpty) {
+      return placeholder;
+    }
+
+    final isAsset = imagePath.startsWith('assets/');
+    return Container(
+      width: size, height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withOpacity(0.35),
+          width: 2,
+        ),
+      ),
+      child: ClipOval(
+        child: isAsset
+            ? Image.asset(imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => placeholder)
+            : Image.file(File(imagePath),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => placeholder),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final product = widget.product;
 
     final scaffoldBg    = isDark ? const Color(0xFF080C14)  : const Color(0xFFF5F7FF);
@@ -165,7 +206,6 @@ class _ProductDetailsPageState
           ),
         ),
         actions: [
-          // ✅ Theme toggle
           Container(
             margin: const EdgeInsets.only(right: 6),
             decoration: BoxDecoration(
@@ -181,13 +221,10 @@ class _ProductDetailsPageState
               size: 38,
             ),
           ),
-
-          // Favourite
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
-              setState(
-                  () => _isFavourited = !_isFavourited);
+              setState(() => _isFavourited = !_isFavourited);
             },
             child: Container(
               margin: const EdgeInsets.only(right: 8),
@@ -210,8 +247,6 @@ class _ProductDetailsPageState
               ),
             ),
           ),
-
-          // Share
           Container(
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.all(8),
@@ -234,38 +269,31 @@ class _ProductDetailsPageState
           physics: const BouncingScrollPhysics(),
           slivers: [
 
-            // ── HERO IMAGE ───────────────────────────
+            // ── HERO IMAGE ────────────────────────────
             SliverToBoxAdapter(
               child: Stack(
                 children: [
-                  // Main image — switches with thumbnail tap
                   AnimatedSwitcher(
-                    duration:
-                        const Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     child: AspectRatio(
                       key: ValueKey(_selectedImageIndex),
                       aspectRatio: 1.0,
                       child: Image.asset(
                         _images[_selectedImageIndex],
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            Container(
+                        errorBuilder: (_, __, ___) => Container(
                           color: cardBg,
                           child: Icon(
-                            Icons
-                                .image_not_supported_outlined,
+                            Icons.image_not_supported_outlined,
                             size: 64,
                             color: isDark
-                                ? Colors.white
-                                    .withOpacity(0.2)
+                                ? Colors.white.withOpacity(0.2)
                                 : const Color(0xFFCBD5E1),
                           ),
                         ),
                       ),
                     ),
                   ),
-
-                  // Bottom fade
                   Positioned(
                     bottom: 0, left: 0, right: 0,
                     child: Container(
@@ -282,8 +310,6 @@ class _ProductDetailsPageState
                       ),
                     ),
                   ),
-
-                  // Category badge
                   Positioned(
                     bottom: 20, left: 16,
                     child: Container(
@@ -291,8 +317,7 @@ class _ProductDetailsPageState
                           horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
                         color: const Color(0xFF8B5CF6),
-                        borderRadius:
-                            BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(product.category,
                         style: const TextStyle(
@@ -308,30 +333,24 @@ class _ProductDetailsPageState
               ),
             ),
 
-            // ── ✅ THUMBNAIL ROW ──────────────────────
+            // ── THUMBNAIL ROW ────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    16, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: Row(
                   children: List.generate(
                     _images.length,
                     (i) {
-                      final isSelected =
-                          i == _selectedImageIndex;
+                      final isSelected = i == _selectedImageIndex;
                       return GestureDetector(
                         onTap: () {
                           HapticFeedback.selectionClick();
-                          setState(
-                              () => _selectedImageIndex = i);
+                          setState(() => _selectedImageIndex = i);
                         },
                         child: AnimatedContainer(
-                          duration: const Duration(
-                              milliseconds: 250),
-                          width: 58,
-                          height: 58,
-                          margin: const EdgeInsets.only(
-                              right: 10),
+                          duration: const Duration(milliseconds: 250),
+                          width: 58, height: 58,
+                          margin: const EdgeInsets.only(right: 10),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
@@ -343,12 +362,10 @@ class _ProductDetailsPageState
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(
-                                              0xFF8B5CF6)
+                                      color: const Color(0xFF8B5CF6)
                                           .withOpacity(0.4),
                                       blurRadius: 10,
-                                      offset:
-                                          const Offset(0, 3),
+                                      offset: const Offset(0, 3),
                                     )
                                   ]
                                 : [],
@@ -357,18 +374,14 @@ class _ProductDetailsPageState
                             child: Image.asset(
                               _images[i],
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  Container(
+                              errorBuilder: (_, __, ___) => Container(
                                 color: cardBg,
                                 child: Icon(
-                                  Icons
-                                      .image_not_supported_outlined,
+                                  Icons.image_not_supported_outlined,
                                   size: 22,
                                   color: isDark
-                                      ? Colors.white
-                                          .withOpacity(0.2)
-                                      : const Color(
-                                          0xFFCBD5E1),
+                                      ? Colors.white.withOpacity(0.2)
+                                      : const Color(0xFFCBD5E1),
                                 ),
                               ),
                             ),
@@ -386,11 +399,9 @@ class _ProductDetailsPageState
               child: SlideTransition(
                 position: _slideAnim,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                      16, 20, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
 
                       // Name + price row
@@ -411,19 +422,16 @@ class _ProductDetailsPageState
                           ),
                           const SizedBox(width: 12),
                           Container(
-                            padding:
-                                const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: const Color(0xFF34D399)
                                   .withOpacity(0.12),
                               borderRadius:
                                   BorderRadius.circular(12),
                               border: Border.all(
-                                color:
-                                    const Color(0xFF34D399)
-                                        .withOpacity(0.25),
+                                color: const Color(0xFF34D399)
+                                    .withOpacity(0.25),
                               ),
                             ),
                             child: Text(
@@ -452,20 +460,17 @@ class _ProductDetailsPageState
                                 v <= product.averageRating!
                                     ? Icons.star_rounded
                                     : v - 0.5 <=
-                                            product
-                                                .averageRating!
-                                        ? Icons
-                                            .star_half_rounded
-                                        : Icons
-                                            .star_outline_rounded,
-                                color:
-                                    const Color(0xFFFBBF24),
+                                            product.averageRating!
+                                        ? Icons.star_half_rounded
+                                        : Icons.star_outline_rounded,
+                                color: const Color(0xFFFBBF24),
                                 size: 18,
                               );
                             }),
                             const SizedBox(width: 8),
                             Text(
-                              '${product.averageRating!.toStringAsFixed(1)}',
+                              product.averageRating!
+                                  .toStringAsFixed(1),
                               style: TextStyle(
                                 color: primaryText,
                                 fontWeight: FontWeight.w700,
@@ -501,8 +506,8 @@ class _ProductDetailsPageState
                               color: surfaceColor,
                               borderRadius:
                                   BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: borderColor),
+                              border:
+                                  Border.all(color: borderColor),
                             ),
                             child: Row(
                               children: [
@@ -520,14 +525,12 @@ class _ProductDetailsPageState
                                 ),
                                 Padding(
                                   padding: const EdgeInsets
-                                      .symmetric(
-                                          horizontal: 16),
+                                      .symmetric(horizontal: 16),
                                   child: Text('$_quantity',
                                     style: TextStyle(
                                       color: primaryText,
                                       fontSize: 16,
-                                      fontWeight:
-                                          FontWeight.w700,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -536,8 +539,7 @@ class _ProductDetailsPageState
                                   onTap: () {
                                     HapticFeedback
                                         .selectionClick();
-                                    setState(
-                                        () => _quantity++);
+                                    setState(() => _quantity++);
                                   },
                                   isDark: isDark,
                                   isAdd: true,
@@ -550,7 +552,7 @@ class _ProductDetailsPageState
 
                       const SizedBox(height: 24),
 
-                      // ── Colors ────────────────────────
+                      // ── Colors ───────────────────────────
                       if (product.colors.isNotEmpty) ...[
                         _SectionLabel(
                           label: 'Color',
@@ -564,19 +566,15 @@ class _ProductDetailsPageState
                             scrollDirection: Axis.horizontal,
                             itemCount: product.colors.length,
                             itemBuilder: (_, i) {
-                              final name =
-                                  product.colors[i];
-                              final col =
-                                  getProductColor(name);
+                              final name = product.colors[i];
+                              final col = getProductColor(name);
                               final selected =
                                   _selectedColor == name;
                               return GestureDetector(
                                 onTap: () {
-                                  HapticFeedback
-                                      .selectionClick();
+                                  HapticFeedback.selectionClick();
                                   setState(() =>
-                                      _selectedColor =
-                                          name);
+                                      _selectedColor = name);
                                 },
                                 child: Tooltip(
                                   message: name,
@@ -584,11 +582,9 @@ class _ProductDetailsPageState
                                     duration: const Duration(
                                         milliseconds: 200),
                                     width: 44, height: 44,
-                                    margin:
-                                        const EdgeInsets.only(
-                                            right: 10),
-                                    decoration:
-                                        BoxDecoration(
+                                    margin: const EdgeInsets.only(
+                                        right: 10),
+                                    decoration: BoxDecoration(
                                       color: col,
                                       shape: BoxShape.circle,
                                       border: Border.all(
@@ -596,37 +592,29 @@ class _ProductDetailsPageState
                                             ? const Color(
                                                 0xFF8B5CF6)
                                             : borderColor,
-                                        width: selected
-                                            ? 3
-                                            : 1.5,
+                                        width: selected ? 3 : 1.5,
                                       ),
                                       boxShadow: selected
                                           ? [
                                               BoxShadow(
                                                 color: const Color(
                                                         0xFF8B5CF6)
-                                                    .withOpacity(
-                                                        0.4),
-                                                blurRadius:
-                                                    10,
-                                                offset:
-                                                    const Offset(
-                                                        0, 3),
+                                                    .withOpacity(0.4),
+                                                blurRadius: 10,
+                                                offset: const Offset(
+                                                    0, 3),
                                               )
                                             ]
                                           : [],
                                     ),
                                     child: selected
                                         ? Icon(
-                                            Icons
-                                                .check_rounded,
+                                            Icons.check_rounded,
                                             size: 18,
                                             color: col.computeLuminance() >
                                                     0.5
-                                                ? Colors
-                                                    .black
-                                                : Colors
-                                                    .white)
+                                                ? Colors.black
+                                                : Colors.white)
                                         : null,
                                   ),
                                 ),
@@ -637,7 +625,7 @@ class _ProductDetailsPageState
                         const SizedBox(height: 24),
                       ],
 
-                      // ── Sizes ─────────────────────────
+                      // ── Sizes ────────────────────────────
                       if (product.sizes.isNotEmpty) ...[
                         _SectionLabel(
                           label: 'Size',
@@ -648,47 +636,40 @@ class _ProductDetailsPageState
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children:
-                              product.sizes.map((size) {
+                          children: product.sizes.map((size) {
                             final selected =
                                 _selectedSize == size;
                             return GestureDetector(
                               onTap: () {
-                                HapticFeedback
-                                    .selectionClick();
-                                setState(() =>
-                                    _selectedSize = size);
+                                HapticFeedback.selectionClick();
+                                setState(
+                                    () => _selectedSize = size);
                               },
                               child: AnimatedContainer(
                                 duration: const Duration(
                                     milliseconds: 200),
-                                padding:
-                                    const EdgeInsets.symmetric(
+                                padding: const EdgeInsets
+                                    .symmetric(
                                         horizontal: 16,
                                         vertical: 10),
                                 decoration: BoxDecoration(
                                   color: selected
-                                      ? const Color(
-                                              0xFF8B5CF6)
+                                      ? const Color(0xFF8B5CF6)
                                           .withOpacity(0.15)
                                       : surfaceColor,
                                   borderRadius:
-                                      BorderRadius.circular(
-                                          12),
+                                      BorderRadius.circular(12),
                                   border: Border.all(
                                     color: selected
-                                        ? const Color(
-                                            0xFF8B5CF6)
+                                        ? const Color(0xFF8B5CF6)
                                         : borderColor,
-                                    width:
-                                        selected ? 1.8 : 1,
+                                    width: selected ? 1.8 : 1,
                                   ),
                                 ),
                                 child: Text(size,
                                   style: TextStyle(
                                     color: selected
-                                        ? const Color(
-                                            0xFF8B5CF6)
+                                        ? const Color(0xFF8B5CF6)
                                         : secondaryText,
                                     fontSize: 13,
                                     fontWeight: selected
@@ -703,7 +684,7 @@ class _ProductDetailsPageState
                         const SizedBox(height: 24),
                       ],
 
-                      // ── Description ───────────────────
+                      // ── Description ──────────────────────
                       Text('Description',
                         style: TextStyle(
                           color: primaryText,
@@ -736,12 +717,11 @@ class _ProductDetailsPageState
 
                       const SizedBox(height: 24),
 
-                      // ── Delivery info chips ───────────
+                      // ── Delivery info chips ──────────────
                       Row(
                         children: [
                           _InfoChip(
-                            icon: Icons
-                                .local_shipping_outlined,
+                            icon: Icons.local_shipping_outlined,
                             label: 'Fast Delivery',
                             isDark: isDark,
                             surfaceColor: surfaceColor,
@@ -769,9 +749,262 @@ class _ProductDetailsPageState
                         ],
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
-                      // ── Reviews header ────────────────
+                      // ══════════════════════════════════════
+                      // SELLER INFO CARD
+                      // ══════════════════════════════════════
+                      if (product.sellerName != null ||
+                          product.sellerPhone != null ||
+                          product.sellerLocation != null) ...[
+                        Text('Seller Information',
+                          style: TextStyle(
+                            color: primaryText,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: surfaceColor,
+                            borderRadius:
+                                BorderRadius.circular(20),
+                            border:
+                                Border.all(color: borderColor),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isDark
+                                    ? Colors.black
+                                        .withOpacity(0.15)
+                                    : const Color(0xFF8B5CF6)
+                                        .withOpacity(0.05),
+                                blurRadius: 20,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              // Top row: avatar + name + location
+                              Row(
+                                children: [
+                                  // Seller avatar
+                                  _buildSellerAvatar(
+                                      product.sellerImagePath,
+                                      size: 56),
+                                  const SizedBox(width: 14),
+
+                                  // Name + location
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if (product.sellerName !=
+                                            null)
+                                          Text(
+                                            product.sellerName!,
+                                            style: TextStyle(
+                                              color: primaryText,
+                                              fontSize: 15,
+                                              fontWeight:
+                                                  FontWeight.w700,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
+                                        const SizedBox(height: 4),
+                                        if (product.sellerLocation !=
+                                            null)
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons
+                                                    .location_on_rounded,
+                                                size: 13,
+                                                color: const Color(
+                                                    0xFF8B5CF6),
+                                              ),
+                                              const SizedBox(
+                                                  width: 3),
+                                              Expanded(
+                                                child: Text(
+                                                  product
+                                                      .sellerLocation!,
+                                                  style: TextStyle(
+                                                    color:
+                                                        secondaryText,
+                                                    fontSize: 12.5,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow
+                                                          .ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Verified badge
+                                  Container(
+                                    padding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF34D399)
+                                          .withOpacity(0.1),
+                                      borderRadius:
+                                          BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color:
+                                            const Color(0xFF34D399)
+                                                .withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize:
+                                          MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.verified_rounded,
+                                          color: Color(0xFF34D399),
+                                          size: 11,
+                                        ),
+                                        const SizedBox(width: 3),
+                                        const Text('Verified',
+                                          style: TextStyle(
+                                            color:
+                                                Color(0xFF34D399),
+                                            fontSize: 10,
+                                            fontWeight:
+                                                FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              // Divider
+                              if (product.sellerPhone != null) ...[
+                                const SizedBox(height: 14),
+                                Divider(
+                                    color: borderColor, height: 1),
+                                const SizedBox(height: 14),
+
+                                // Phone row with call button
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 36, height: 36,
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                                0xFF8B5CF6)
+                                            .withOpacity(0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(
+                                                10),
+                                      ),
+                                      child: const Icon(
+                                        Icons.phone_rounded,
+                                        color: Color(0xFF8B5CF6),
+                                        size: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Phone',
+                                            style: TextStyle(
+                                              color: secondaryText,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          Text(
+                                            product.sellerPhone!,
+                                            style: TextStyle(
+                                              color: primaryText,
+                                              fontSize: 14,
+                                              fontWeight:
+                                                  FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Call button
+                                    GestureDetector(
+                                      onTap: () => _callSeller(
+                                          product.sellerPhone!),
+                                      child: Container(
+                                        height: 38,
+                                        padding: const EdgeInsets
+                                            .symmetric(
+                                                horizontal: 16),
+                                        decoration: BoxDecoration(
+                                          gradient:
+                                              const LinearGradient(
+                                            colors: [
+                                              Color(0xFF7C3AED),
+                                              Color(0xFF8B5CF6),
+                                            ],
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                                  10),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(
+                                                      0xFF8B5CF6)
+                                                  .withOpacity(0.35),
+                                              blurRadius: 10,
+                                              offset: const Offset(
+                                                  0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize:
+                                              MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                                Icons.call_rounded,
+                                                color: Colors.white,
+                                                size: 14),
+                                            SizedBox(width: 5),
+                                            Text('Call',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 13,
+                                                fontWeight:
+                                                    FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                      ],
+
+                      // ── Reviews header ───────────────────
                       Row(
                         mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
@@ -816,16 +1049,15 @@ class _ProductDetailsPageState
                                 Container(
                                   width: 36, height: 36,
                                   decoration: BoxDecoration(
-                                    color: const Color(
-                                            0xFF8B5CF6)
+                                    color: const Color(0xFF8B5CF6)
                                         .withOpacity(0.12),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Center(
                                     child: Text('K',
                                       style: TextStyle(
-                                        color: Color(
-                                            0xFF8B5CF6),
+                                        color:
+                                            Color(0xFF8B5CF6),
                                         fontWeight:
                                             FontWeight.w700,
                                       ),
@@ -848,12 +1080,10 @@ class _ProductDetailsPageState
                                         ),
                                       ),
                                       Row(
-                                        children:
-                                            List.generate(
+                                        children: List.generate(
                                           5,
                                           (i) => const Icon(
-                                            Icons
-                                                .star_rounded,
+                                            Icons.star_rounded,
                                             color: Color(
                                                 0xFFFBBF24),
                                             size: 13,
@@ -894,16 +1124,14 @@ class _ProductDetailsPageState
         ),
       ),
 
-      // ── BOTTOM ACTION BUTTONS ─────────────────────
+      // ── BOTTOM ACTION BUTTONS ───────────────────────
       bottomNavigationBar: SlideTransition(
         position: _slideAnim,
         child: Container(
-          padding:
-              const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           decoration: BoxDecoration(
             color: surfaceColor,
-            border:
-                Border(top: BorderSide(color: borderColor)),
+            border: Border(top: BorderSide(color: borderColor)),
             boxShadow: [
               BoxShadow(
                 color: isDark
@@ -918,7 +1146,6 @@ class _ProductDetailsPageState
             top: false,
             child: Row(
               children: [
-                // Total price
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -949,8 +1176,7 @@ class _ProductDetailsPageState
                   onTap: _simulateAddToCart,
                   child: Container(
                     width: 52, height: 52,
-                    margin:
-                        const EdgeInsets.only(right: 10),
+                    margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       color: const Color(0xFF8B5CF6)
                           .withOpacity(0.12),
@@ -1039,8 +1265,7 @@ class _ProductDetailsPageState
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 15,
-                                  fontWeight:
-                                      FontWeight.w700,
+                                  fontWeight: FontWeight.w700,
                                   letterSpacing: 0.3,
                                 ),
                               ),
@@ -1114,9 +1339,7 @@ class _SectionLabel extends StatelessWidget {
       children: [
         Text(label,
           style: TextStyle(
-            color: isDark
-                ? Colors.white
-                : const Color(0xFF0F172A),
+            color: isDark ? Colors.white : const Color(0xFF0F172A),
             fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
@@ -1127,8 +1350,7 @@ class _SectionLabel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
                 horizontal: 10, vertical: 3),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6)
-                  .withOpacity(0.1),
+              color: const Color(0xFF8B5CF6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(selected!,

@@ -18,7 +18,7 @@ class SellerShopPage extends StatefulWidget {
 
 class _SellerShopPageState extends State<SellerShopPage>
     with TickerProviderStateMixin {
-  // ✅ Key goes on ScaffoldMessenger, not Scaffold
+  // ✅ Key declared at state level — used on the outermost ScaffoldMessenger
   final _messengerKey = GlobalKey<ScaffoldMessengerState>();
 
   int _currentBanner = 0;
@@ -97,7 +97,6 @@ class _SellerShopPageState extends State<SellerShopPage>
     _showAddedSnackbar(product.name);
   }
 
-  // ✅ Always uses _messengerKey.currentState — no .of(context) ambiguity
   void _showAddedSnackbar(String productName) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final messenger = _messengerKey.currentState;
@@ -138,7 +137,6 @@ class _SellerShopPageState extends State<SellerShopPage>
               ),
             ),
             TextButton(
-              // ✅ OK button also uses the key, not .of(context)
               onPressed: () => _messengerKey.currentState?.hideCurrentSnackBar(),
               child: const Text(
                 'OK',
@@ -158,14 +156,12 @@ class _SellerShopPageState extends State<SellerShopPage>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ── Screen measurements ─────────────────────────────
     final screenW = MediaQuery.of(context).size.width;
     final screenH = MediaQuery.of(context).size.height;
     final isSmallPhone = screenH < 680;
     final isTablet = screenW >= 600;
     final isDesktop = screenW >= 1000;
 
-    // ── Responsive layout values ────────────────────────
     final hPad = isDesktop
         ? 200.0
         : isTablet
@@ -196,7 +192,6 @@ class _SellerShopPageState extends State<SellerShopPage>
     final bottomPad = isSmallPhone ? 60.0 : 80.0;
     final btnSize = isSmallPhone ? 36.0 : 42.0;
 
-    // ── Theme tokens ─────────────────────────────────────
     final scaffoldBg =
         isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
     final surfaceColor = isDark ? const Color(0xFF111827) : Colors.white;
@@ -226,16 +221,18 @@ class _SellerShopPageState extends State<SellerShopPage>
         ? Colors.white.withOpacity(0.6)
         : const Color(0xFF475569);
 
-    return Consumer<Cart>(
-      builder: (context, cart, _) {
-        final selectedLabel =
-            _categories[_selectedCategory]['label'] as String;
-        final displayProducts = cart.getProductsForCategory(selectedLabel);
+    // ✅ ScaffoldMessenger is the OUTERMOST widget — wraps everything including
+    //    Consumer and Scaffold, so snackbars always have a valid render target.
+    return ScaffoldMessenger(
+      key: _messengerKey,
+      child: Consumer<Cart>(
+        builder: (context, cart, _) {
+          final selectedLabel =
+              _categories[_selectedCategory]['label'] as String;
+          final displayProducts =
+              cart.getProductsForCategory(selectedLabel);
 
-        // ✅ ScaffoldMessenger wraps Scaffold and holds the key
-        return ScaffoldMessenger(
-          key: _messengerKey,
-          child: Scaffold(
+          return Scaffold(
             backgroundColor: scaffoldBg,
             bottomNavigationBar: SellerMainScreen(),
             body: SafeArea(
@@ -252,9 +249,9 @@ class _SellerShopPageState extends State<SellerShopPage>
                           padding: EdgeInsets.fromLTRB(
                               hPad, headerVPad, hPad, 0),
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.center,
                             children: [
-                              // ── Avatar + greeting ─────
                               Expanded(
                                 child: Row(
                                   children: [
@@ -276,7 +273,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: isSmallPhone ? 14 : 18,
+                                            fontSize:
+                                                isSmallPhone ? 14 : 18,
                                           ),
                                         ),
                                       ),
@@ -289,7 +287,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                                         children: [
                                           Text(
                                             'Good morning 👋',
-                                            overflow: TextOverflow.ellipsis,
+                                            overflow:
+                                                TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: greetingFs,
                                               color: secondaryText,
@@ -299,7 +298,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                                           const SizedBox(height: 2),
                                           Text(
                                             'Hi Systrom',
-                                            overflow: TextOverflow.ellipsis,
+                                            overflow:
+                                                TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: nameFs,
                                               fontWeight: FontWeight.w700,
@@ -313,13 +313,12 @@ class _SellerShopPageState extends State<SellerShopPage>
                                   ],
                                 ),
                               ),
-
-                              // ── Action buttons ────────
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _HeaderAction(
-                                    icon: Icons.notifications_none_rounded,
+                                    icon: Icons
+                                        .notifications_none_rounded,
                                     badge: true,
                                     onTap: () {},
                                     surfaceColor: surfaceColor,
@@ -328,7 +327,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                                     badgeBorderColor: scaffoldBg,
                                     size: btnSize,
                                   ),
-                                  SizedBox(width: isSmallPhone ? 6 : 10),
+                                  SizedBox(
+                                      width: isSmallPhone ? 6 : 10),
                                   ThemeToggleButton(
                                     surfaceColor: surfaceColor,
                                     borderColor: borderColor,
@@ -360,8 +360,10 @@ class _SellerShopPageState extends State<SellerShopPage>
                                 ),
                                 decoration: BoxDecoration(
                                   color: surfaceColor,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: borderColor),
+                                  borderRadius:
+                                      BorderRadius.circular(14),
+                                  border:
+                                      Border.all(color: borderColor),
                                 ),
                                 child: Row(
                                   children: [
@@ -417,7 +419,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                             options: CarouselOptions(
                               height: bannerHeight,
                               autoPlay: true,
-                              autoPlayInterval: const Duration(seconds: 4),
+                              autoPlayInterval:
+                                  const Duration(seconds: 4),
                               autoPlayCurve: Curves.easeInOut,
                               enlargeCenterPage: true,
                               viewportFraction: isDesktop
@@ -441,7 +444,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                             children: List.generate(
                               bannerItems.length,
                               (i) => AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
+                                duration:
+                                    const Duration(milliseconds: 300),
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 3),
                                 width: i == _currentBanner ? 18 : 5,
@@ -450,7 +454,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                                   color: i == _currentBanner
                                       ? const Color(0xFF8B5CF6)
                                       : dotInactive,
-                                  borderRadius: BorderRadius.circular(3),
+                                  borderRadius:
+                                      BorderRadius.circular(3),
                                 ),
                               ),
                             ),
@@ -463,8 +468,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                   // ── CATEGORIES ─────────────────────────
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding:
-                          EdgeInsets.fromLTRB(hPad, sectionGap, 0, 0),
+                      padding: EdgeInsets.fromLTRB(
+                          hPad, sectionGap, 0, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -516,7 +521,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                               padding: EdgeInsets.only(right: hPad),
                               itemCount: _categories.length,
                               itemBuilder: (_, i) {
-                                final selected = i == _selectedCategory;
+                                final selected =
+                                    i == _selectedCategory;
                                 final label =
                                     _categories[i]['label'] as String;
                                 final icon =
@@ -549,8 +555,8 @@ class _SellerShopPageState extends State<SellerShopPage>
                                                         0xFF8B5CF6)
                                                     .withOpacity(0.4),
                                                 blurRadius: 12,
-                                                offset:
-                                                    const Offset(0, 4),
+                                                offset: const Offset(
+                                                    0, 4),
                                               ),
                                             ]
                                           : [],
@@ -566,8 +572,9 @@ class _SellerShopPageState extends State<SellerShopPage>
                                               : chipTextUnselected,
                                         ),
                                         SizedBox(
-                                            width:
-                                                isSmallPhone ? 4 : 6),
+                                            width: isSmallPhone
+                                                ? 4
+                                                : 6),
                                         Text(
                                           label,
                                           style: TextStyle(
@@ -596,7 +603,9 @@ class _SellerShopPageState extends State<SellerShopPage>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(
-                          hPad, sectionGap, hPad,
+                          hPad,
+                          sectionGap,
+                          hPad,
                           isSmallPhone ? 10 : 16),
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
@@ -645,7 +654,6 @@ class _SellerShopPageState extends State<SellerShopPage>
                                     displayProducts[index];
                                 return ProductsTile(
                                   product: product,
-                                  // ✅ No messenger passed — method uses key internally
                                   onAddToCart: () =>
                                       addProductToCart(product),
                                   isInGrid: true,
@@ -663,17 +671,19 @@ class _SellerShopPageState extends State<SellerShopPage>
                                       : isSmallPhone
                                           ? 265.0
                                           : 335.0,
-                              crossAxisSpacing: isSmallPhone ? 8 : 10,
-                              mainAxisSpacing: isSmallPhone ? 10 : 14,
+                              crossAxisSpacing:
+                                  isSmallPhone ? 8 : 10,
+                              mainAxisSpacing:
+                                  isSmallPhone ? 10 : 14,
                             ),
                           ),
                         ),
                 ],
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

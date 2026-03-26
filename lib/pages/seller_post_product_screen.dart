@@ -20,15 +20,24 @@ class SellerPostProductScreen extends StatefulWidget {
 class _SellerPostProductScreenState
     extends State<SellerPostProductScreen>
     with SingleTickerProviderStateMixin {
-  final _formKey   = GlobalKey<FormState>();
-  final _nameCtrl  = TextEditingController();
-  final _descCtrl  = TextEditingController();
-  final _priceCtrl = TextEditingController();
+  final _formKey       = GlobalKey<FormState>();
+  final _nameCtrl      = TextEditingController();
+  final _descCtrl      = TextEditingController();
+  final _priceCtrl     = TextEditingController();
+  final _sellerNameCtrl     = TextEditingController();
+  final _sellerPhoneCtrl    = TextEditingController();
+  final _sellerLocationCtrl = TextEditingController();
 
   String?            _selectedCategory;
   final List<String> _selectedColors = [];
   final List<String> _selectedSizes  = [];
   final List<XFile>  _selectedImages = [];
+
+  /// Seller profile photo picked from camera/gallery
+  XFile? _sellerProfileImage;
+  /// Existing seller image path (when editing)
+  String? _existingSellerImagePath;
+
   bool _isSubmitting = false;
 
   late AnimationController _animController;
@@ -84,6 +93,10 @@ class _SellerPostProductScreenState
       _selectedCategory = p.category;
       _selectedColors.addAll(p.colors);
       _selectedSizes.addAll(p.sizes);
+      _sellerNameCtrl.text     = p.sellerName ?? '';
+      _sellerPhoneCtrl.text    = p.sellerPhone ?? '';
+      _sellerLocationCtrl.text = p.sellerLocation ?? '';
+      _existingSellerImagePath = p.sellerImagePath;
     }
   }
 
@@ -93,14 +106,18 @@ class _SellerPostProductScreenState
     _nameCtrl.dispose();
     _descCtrl.dispose();
     _priceCtrl.dispose();
+    _sellerNameCtrl.dispose();
+    _sellerPhoneCtrl.dispose();
+    _sellerLocationCtrl.dispose();
     super.dispose();
   }
+
+  // ── Image pickers ─────────────────────────────────────────────────────────
 
   Future<void> _pickImages() async {
     try {
       final List<XFile> images = await _picker.pickMultiImage(
-        imageQuality: 85, maxWidth: 1200,
-      );
+          imageQuality: 85, maxWidth: 1200);
       if (images.isNotEmpty && mounted) {
         setState(() => _selectedImages.addAll(images));
       }
@@ -112,9 +129,8 @@ class _SellerPostProductScreenState
   Future<void> _pickFromCamera() async {
     try {
       final XFile? image = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 85, maxWidth: 1200,
-      );
+          source: ImageSource.camera,
+          imageQuality: 85, maxWidth: 1200);
       if (image != null && mounted) {
         setState(() => _selectedImages.add(image));
       }
@@ -123,9 +139,28 @@ class _SellerPostProductScreenState
     }
   }
 
+  Future<void> _pickSellerProfileImage(
+      {required bool fromCamera}) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: fromCamera
+            ? ImageSource.camera
+            : ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 800,
+      );
+      if (image != null && mounted) {
+        setState(() => _sellerProfileImage = image);
+      }
+    } catch (e) {
+      _showError('Error picking profile photo: $e');
+    }
+  }
+
+  // ── Snackbars ─────────────────────────────────────────────────────────────
+
   void _showError(String msg) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
@@ -149,9 +184,7 @@ class _SellerPostProductScreenState
             Expanded(
               child: Text(msg,
                 style: TextStyle(
-                  color: isDark
-                      ? Colors.white
-                      : const Color(0xFF0F172A),
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                   fontSize: 13,
                 ),
               ),
@@ -163,8 +196,7 @@ class _SellerPostProductScreenState
   }
 
   void _showSuccess(String msg) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
@@ -178,8 +210,7 @@ class _SellerPostProductScreenState
             Container(
               width: 36, height: 36,
               decoration: BoxDecoration(
-                color:
-                    const Color(0xFF34D399).withOpacity(0.12),
+                color: const Color(0xFF34D399).withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.check_rounded,
@@ -189,9 +220,7 @@ class _SellerPostProductScreenState
             Expanded(
               child: Text(msg,
                 style: TextStyle(
-                  color: isDark
-                      ? Colors.white
-                      : const Color(0xFF0F172A),
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                   fontSize: 13,
                 ),
               ),
@@ -202,14 +231,15 @@ class _SellerPostProductScreenState
     );
   }
 
+  // ── Submit ────────────────────────────────────────────────────────────────
+
   Future<void> _submitProduct() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null) {
       _showError('Please select a category');
       return;
     }
-    if (_selectedImages.isEmpty &&
-        widget.productToEdit == null) {
+    if (_selectedImages.isEmpty && widget.productToEdit == null) {
       _showError('Please add at least one image');
       return;
     }
@@ -218,22 +248,39 @@ class _SellerPostProductScreenState
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
 
+    // Resolve seller image path
+    final resolvedSellerImagePath = _sellerProfileImage != null
+        ? _sellerProfileImage!.path
+        : _existingSellerImagePath;
+
     final newProduct = Products(
-  name: _nameCtrl.text.trim(),
-  imagePath: _selectedImages.isNotEmpty
-      ? _selectedImages.first.path
-      : (widget.productToEdit?.imagePath ?? 'assets/images/placeholder.jpg'),
-  imagePaths: _selectedImages.isNotEmpty          // ← add this
-      ? _selectedImages.map((x) => x.path).toList()
-      : (widget.productToEdit?.imagePaths ?? ['assets/images/placeholder.jpg']),
-  description: _descCtrl.text.trim(),
-  price: double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
-  colors: List.from(_selectedColors),
-  sizes: List.from(_selectedSizes),
-  category: _selectedCategory!,
-);
-    final cart =
-        Provider.of<Cart>(context, listen: false);
+      name: _nameCtrl.text.trim(),
+      imagePath: _selectedImages.isNotEmpty
+          ? _selectedImages.first.path
+          : (widget.productToEdit?.imagePath ??
+              'assets/images/placeholder.jpg'),
+      imagePaths: _selectedImages.isNotEmpty
+          ? _selectedImages.map((x) => x.path).toList()
+          : (widget.productToEdit?.imagePaths ??
+              ['assets/images/placeholder.jpg']),
+      description: _descCtrl.text.trim(),
+      price: double.tryParse(_priceCtrl.text.trim()) ?? 0.0,
+      colors: List.from(_selectedColors),
+      sizes: List.from(_selectedSizes),
+      category: _selectedCategory!,
+      sellerName: _sellerNameCtrl.text.trim().isNotEmpty
+          ? _sellerNameCtrl.text.trim()
+          : null,
+      sellerPhone: _sellerPhoneCtrl.text.trim().isNotEmpty
+          ? _sellerPhoneCtrl.text.trim()
+          : null,
+      sellerLocation: _sellerLocationCtrl.text.trim().isNotEmpty
+          ? _sellerLocationCtrl.text.trim()
+          : null,
+      sellerImagePath: resolvedSellerImagePath,
+    );
+
+    final cart = Provider.of<Cart>(context, listen: false);
     if (widget.productToEdit != null) {
       cart.updateProduct(widget.productToEdit!, newProduct);
       _showSuccess('Product updated successfully!');
@@ -246,13 +293,45 @@ class _SellerPostProductScreenState
     Navigator.pop(context);
   }
 
-  void _showImagePicker(
-      BuildContext context, bool isDark) {
+  // ── Image picker bottom sheet ─────────────────────────────────────────────
+
+  void _showProductImagePicker(BuildContext context, bool isDark) {
+    _showPickerSheet(
+      context: context,
+      isDark: isDark,
+      title: 'Add product photo',
+      onCamera: () { Navigator.pop(context); _pickFromCamera(); },
+      onGallery: () { Navigator.pop(context); _pickImages(); },
+    );
+  }
+
+  void _showSellerImagePicker(BuildContext context, bool isDark) {
+    _showPickerSheet(
+      context: context,
+      isDark: isDark,
+      title: 'Upload profile photo',
+      onCamera: () {
+        Navigator.pop(context);
+        _pickSellerProfileImage(fromCamera: true);
+      },
+      onGallery: () {
+        Navigator.pop(context);
+        _pickSellerProfileImage(fromCamera: false);
+      },
+    );
+  }
+
+  void _showPickerSheet({
+    required BuildContext context,
+    required bool isDark,
+    required String title,
+    required VoidCallback onCamera,
+    required VoidCallback onGallery,
+  }) {
     final surfaceColor =
         isDark ? const Color(0xFF111827) : Colors.white;
-    final borderColor = isDark
-        ? Colors.white.withOpacity(0.08)
-        : const Color(0xFFE2E8F0);
+    final borderColor =
+        isDark ? Colors.white.withOpacity(0.08) : const Color(0xFFE2E8F0);
     final primaryText =
         isDark ? Colors.white : const Color(0xFF0F172A);
 
@@ -280,13 +359,11 @@ class _SellerPostProductScreenState
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Text('Add photo',
+            Text(title,
               style: TextStyle(
-                color: primaryText,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+                  color: primaryText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700)),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -295,10 +372,7 @@ class _SellerPostProductScreenState
                     icon: Icons.camera_alt_rounded,
                     label: 'Camera',
                     isDark: isDark,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _pickFromCamera();
-                    },
+                    onTap: onCamera,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -307,10 +381,7 @@ class _SellerPostProductScreenState
                     icon: Icons.photo_library_rounded,
                     label: 'Gallery',
                     isDark: isDark,
-                    onTap: () {
-                      Navigator.pop(context);
-                      _pickImages();
-                    },
+                    onTap: onGallery,
                   ),
                 ),
               ],
@@ -322,35 +393,21 @@ class _SellerPostProductScreenState
     );
   }
 
+  // ── Build ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark       = Theme.of(context).brightness == Brightness.dark;
     final isEditMode   = widget.productToEdit != null;
-    final scaffoldBg   = isDark
-        ? const Color(0xFF080C14)
-        : const Color(0xFFF5F7FF);
-    final surfaceColor =
-        isDark ? const Color(0xFF111827) : Colors.white;
-    final cardBg       = isDark
-        ? const Color(0xFF1F2937)
-        : const Color(0xFFEEF1FB);
-    final borderColor  = isDark
-        ? Colors.white.withOpacity(0.06)
-        : const Color(0xFFE2E8F0);
-    final primaryText  =
-        isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryText = isDark
-        ? Colors.white.withOpacity(0.45)
-        : const Color(0xFF64748B);
-    final hintColor    = isDark
-        ? Colors.white.withOpacity(0.25)
-        : const Color(0xFFADB5C7);
-    final labelColor   = isDark
-        ? Colors.white.withOpacity(0.6)
-        : const Color(0xFF374151);
-    final inputColor   =
-        isDark ? Colors.white : const Color(0xFF0F172A);
+    final scaffoldBg   = isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
+    final surfaceColor = isDark ? const Color(0xFF111827) : Colors.white;
+    final cardBg       = isDark ? const Color(0xFF1F2937) : const Color(0xFFEEF1FB);
+    final borderColor  = isDark ? Colors.white.withOpacity(0.06) : const Color(0xFFE2E8F0);
+    final primaryText  = isDark ? Colors.white : const Color(0xFF0F172A);
+    final secondaryText = isDark ? Colors.white.withOpacity(0.45) : const Color(0xFF64748B);
+    final hintColor    = isDark ? Colors.white.withOpacity(0.25) : const Color(0xFFADB5C7);
+    final labelColor   = isDark ? Colors.white.withOpacity(0.6) : const Color(0xFF374151);
+    final inputColor   = isDark ? Colors.white : const Color(0xFF0F172A);
     const iconColor    = Color(0xFF8B5CF6);
 
     return Scaffold(
@@ -359,8 +416,7 @@ class _SellerPostProductScreenState
         backgroundColor: surfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        shape:
-            Border(bottom: BorderSide(color: borderColor)),
+        shape: Border(bottom: BorderSide(color: borderColor)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new_rounded,
               color: primaryText, size: 18),
@@ -376,23 +432,18 @@ class _SellerPostProductScreenState
           ),
         ),
         actions: [
-
-          // ✅ Theme toggle button
           ThemeToggleButton(
             surfaceColor: surfaceColor,
             borderColor: borderColor,
             size: 38,
           ),
           const SizedBox(width: 8),
-
-          // Mode badge
           Container(
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(
                 horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6)
-                  .withOpacity(0.12),
+              color: const Color(0xFF8B5CF6).withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -417,14 +468,201 @@ class _SellerPostProductScreenState
               physics: const BouncingScrollPhysics(),
               slivers: [
 
-                // ── IMAGE PICKER ──────────────────────────
+                // ══════════════════════════════════════════
+                // SELLER PROFILE SECTION
+                // ══════════════════════════════════════════
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 20, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                    child: _SectionLabel(
+                      label: 'Seller profile',
+                      subtitle: 'Your info shown on product listings',
+                      isDark: isDark,
+                    ),
+                  ),
+                ),
+
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: Column(
+                        children: [
+
+                          // ── Profile image picker ──────────
+                          GestureDetector(
+                            onTap: () =>
+                                _showSellerImagePicker(context, isDark),
+                            child: Column(
+                              children: [
+                                Stack(
+                                  alignment: Alignment.bottomRight,
+                                  children: [
+                                    // Avatar
+                                    Container(
+                                      width: 90,
+                                      height: 90,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFF8B5CF6)
+                                              .withOpacity(0.5),
+                                          width: 2.5,
+                                        ),
+                                        color: const Color(0xFF8B5CF6)
+                                            .withOpacity(0.08),
+                                      ),
+                                      child: ClipOval(
+                                        child: _sellerProfileImage != null
+                                            ? Image.file(
+                                                File(_sellerProfileImage!.path),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : _existingSellerImagePath != null
+                                                ? (_existingSellerImagePath!
+                                                        .startsWith('assets/')
+                                                    ? Image.asset(
+                                                        _existingSellerImagePath!,
+                                                        fit: BoxFit.cover,
+                                                      )
+                                                    : Image.file(
+                                                        File(
+                                                            _existingSellerImagePath!),
+                                                        fit: BoxFit.cover,
+                                                      ))
+                                                : Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .person_rounded,
+                                                        size: 36,
+                                                        color: const Color(
+                                                                0xFF8B5CF6)
+                                                            .withOpacity(0.5),
+                                                      ),
+                                                    ],
+                                                  ),
+                                      ),
+                                    ),
+                                    // Edit badge
+                                    Container(
+                                      width: 28,
+                                      height: 28,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF8B5CF6),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.camera_alt_rounded,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _sellerProfileImage != null ||
+                                          _existingSellerImagePath != null
+                                      ? 'Tap to change photo'
+                                      : 'Upload profile photo',
+                                  style: TextStyle(
+                                    color: const Color(0xFF8B5CF6)
+                                        .withOpacity(0.8),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // ── Seller name ───────────────────
+                          _FormField(
+                            controller: _sellerNameCtrl,
+                            label: 'Seller / Store name',
+                            hint: 'e.g. Ama\'s Boutique',
+                            icon: Icons.storefront_rounded,
+                            cardBg: surfaceColor,
+                            borderColor: borderColor,
+                            inputColor: inputColor,
+                            hintColor: hintColor,
+                            labelColor: labelColor,
+                            isDark: isDark,
+                            textCapitalization:
+                                TextCapitalization.words,
+                            validator: (v) =>
+                                v?.trim().isEmpty ?? true
+                                    ? 'Seller name is required'
+                                    : null,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // ── Phone number ──────────────────
+                          _FormField(
+                            controller: _sellerPhoneCtrl,
+                            label: 'Phone number',
+                            hint: '+233 24 000 0000',
+                            icon: Icons.phone_rounded,
+                            cardBg: surfaceColor,
+                            borderColor: borderColor,
+                            inputColor: inputColor,
+                            hintColor: hintColor,
+                            labelColor: labelColor,
+                            isDark: isDark,
+                            keyboardType: TextInputType.phone,
+                            validator: (v) =>
+                                v?.trim().isEmpty ?? true
+                                    ? 'Phone number is required'
+                                    : null,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // ── Location ──────────────────────
+                          _FormField(
+                            controller: _sellerLocationCtrl,
+                            label: 'Location',
+                            hint: 'e.g. Accra, Ghana',
+                            icon: Icons.location_on_rounded,
+                            cardBg: surfaceColor,
+                            borderColor: borderColor,
+                            inputColor: inputColor,
+                            hintColor: hintColor,
+                            labelColor: labelColor,
+                            isDark: isDark,
+                            textCapitalization:
+                                TextCapitalization.words,
+                            validator: (v) =>
+                                v?.trim().isEmpty ?? true
+                                    ? 'Location is required'
+                                    : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ══════════════════════════════════════════
+                // PRODUCT IMAGES
+                // ══════════════════════════════════════════
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 28, 16, 0),
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _SectionLabel(
                           label: 'Product photos',
@@ -432,7 +670,6 @@ class _SellerPostProductScreenState
                           isDark: isDark,
                         ),
                         const SizedBox(height: 12),
-
                         SizedBox(
                           height: 110,
                           child: ListView(
@@ -440,58 +677,44 @@ class _SellerPostProductScreenState
                             children: [
                               // Add button
                               GestureDetector(
-                                onTap: () =>
-                                    _showImagePicker(
-                                        context, isDark),
+                                onTap: () => _showProductImagePicker(
+                                    context, isDark),
                                 child: Container(
                                   width: 100, height: 100,
-                                  margin: const EdgeInsets
-                                      .only(right: 10),
+                                  margin: const EdgeInsets.only(right: 10),
                                   decoration: BoxDecoration(
                                     color: cardBg,
                                     borderRadius:
-                                        BorderRadius.circular(
-                                            16),
+                                        BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: const Color(
-                                              0xFF8B5CF6)
+                                      color: const Color(0xFF8B5CF6)
                                           .withOpacity(0.35),
                                       width: 1.5,
                                     ),
                                   ),
                                   child: Column(
                                     mainAxisAlignment:
-                                        MainAxisAlignment
-                                            .center,
+                                        MainAxisAlignment.center,
                                     children: [
                                       Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration:
-                                            BoxDecoration(
-                                          color: const Color(
-                                                  0xFF8B5CF6)
-                                              .withOpacity(
-                                                  0.12),
-                                          shape:
-                                              BoxShape.circle,
+                                        width: 36, height: 36,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF8B5CF6)
+                                              .withOpacity(0.12),
+                                          shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
                                           Icons.add_rounded,
-                                          color: Color(
-                                              0xFF8B5CF6),
+                                          color: Color(0xFF8B5CF6),
                                           size: 20,
                                         ),
                                       ),
-                                      const SizedBox(
-                                          height: 6),
+                                      const SizedBox(height: 6),
                                       const Text('Add photo',
                                         style: TextStyle(
-                                          color: Color(
-                                              0xFF8B5CF6),
+                                          color: Color(0xFF8B5CF6),
                                           fontSize: 11,
-                                          fontWeight:
-                                              FontWeight.w500,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ],
@@ -500,39 +723,26 @@ class _SellerPostProductScreenState
                               ),
 
                               // Selected images
-                              ..._selectedImages
-                                  .asMap()
-                                  .entries
-                                  .map((e) => Stack(
+                              ..._selectedImages.asMap().entries.map((e) =>
+                                  Stack(
                                     children: [
                                       Container(
-                                        width: 100,
-                                        height: 100,
-                                        margin:
-                                            const EdgeInsets
-                                                .only(
-                                                    right: 10),
-                                        decoration:
-                                            BoxDecoration(
+                                        width: 100, height: 100,
+                                        margin: const EdgeInsets.only(
+                                            right: 10),
+                                        decoration: BoxDecoration(
                                           borderRadius:
-                                              BorderRadius
-                                                  .circular(
-                                                      16),
+                                              BorderRadius.circular(16),
                                           border: Border.all(
                                             color: e.key == 0
-                                                ? const Color(
-                                                    0xFF8B5CF6)
+                                                ? const Color(0xFF8B5CF6)
                                                 : borderColor,
-                                            width: e.key == 0
-                                                ? 2
-                                                : 1,
+                                            width: e.key == 0 ? 2 : 1,
                                           ),
                                         ),
                                         child: ClipRRect(
                                           borderRadius:
-                                              BorderRadius
-                                                  .circular(
-                                                      15),
+                                              BorderRadius.circular(15),
                                           child: Image.file(
                                             File(e.value.path),
                                             fit: BoxFit.cover,
@@ -541,63 +751,43 @@ class _SellerPostProductScreenState
                                       ),
                                       if (e.key == 0)
                                         Positioned(
-                                          bottom: 6,
-                                          left: 6,
+                                          bottom: 6, left: 6,
                                           child: Container(
-                                            padding:
-                                                const EdgeInsets
-                                                    .symmetric(
-                                              horizontal: 6,
-                                              vertical: 2,
-                                            ),
-                                            decoration:
-                                                BoxDecoration(
-                                              color: const Color(
-                                                  0xFF8B5CF6),
+                                            padding: const EdgeInsets
+                                                .symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  const Color(0xFF8B5CF6),
                                               borderRadius:
-                                                  BorderRadius
-                                                      .circular(
-                                                          6),
+                                                  BorderRadius.circular(6),
                                             ),
-                                            child: const Text(
-                                              'Cover',
+                                            child: const Text('Cover',
                                               style: TextStyle(
-                                                color: Colors
-                                                    .white,
+                                                color: Colors.white,
                                                 fontSize: 9,
-                                                fontWeight:
-                                                    FontWeight
-                                                        .w700,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                           ),
                                         ),
                                       Positioned(
-                                        top: 4,
-                                        right: 14,
+                                        top: 4, right: 14,
                                         child: GestureDetector(
-                                          onTap: () => setState(
-                                              () =>
-                                                  _selectedImages
-                                                      .removeAt(
-                                                          e.key)),
+                                          onTap: () => setState(() =>
+                                              _selectedImages
+                                                  .removeAt(e.key)),
                                           child: Container(
-                                            width: 22,
-                                            height: 22,
-                                            decoration:
-                                                const BoxDecoration(
-                                              color: Color(
-                                                  0xFFEF4444),
-                                              shape: BoxShape
-                                                  .circle,
+                                            width: 22, height: 22,
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFFEF4444),
+                                              shape: BoxShape.circle,
                                             ),
                                             child: const Icon(
-                                              Icons
-                                                  .close_rounded,
-                                              color:
-                                                  Colors.white,
-                                              size: 12,
-                                            ),
+                                                Icons.close_rounded,
+                                                color: Colors.white,
+                                                size: 12),
                                           ),
                                         ),
                                       ),
@@ -611,11 +801,12 @@ class _SellerPostProductScreenState
                   ),
                 ),
 
-                // ── BASIC INFO ────────────────────────────
+                // ══════════════════════════════════════════
+                // BASIC INFO
+                // ══════════════════════════════════════════
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 28, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 28, 16, 0),
                     child: _SectionLabel(
                       label: 'Basic information',
                       subtitle: 'Name, category & price',
@@ -626,12 +817,9 @@ class _SellerPostProductScreenState
 
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 14, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                     child: Column(
                       children: [
-
-                        // Product name
                         _FormField(
                           controller: _nameCtrl,
                           label: 'Product title',
@@ -653,33 +841,27 @@ class _SellerPostProductScreenState
 
                         const SizedBox(height: 14),
 
-                        // Category dropdown
                         Container(
                           decoration: BoxDecoration(
                             color: cardBg,
                             borderRadius:
                                 BorderRadius.circular(14),
-                            border: Border.all(
-                                color: borderColor),
+                            border: Border.all(color: borderColor),
                           ),
-                          child:
-                              DropdownButtonFormField<String>(
+                          child: DropdownButtonFormField<String>(
                             value: _selectedCategory,
                             style: TextStyle(
-                                color: inputColor,
-                                fontSize: 15),
+                                color: inputColor, fontSize: 15),
                             dropdownColor: isDark
                                 ? const Color(0xFF1F2937)
                                 : Colors.white,
                             icon: Icon(
-                                Icons
-                                    .keyboard_arrow_down_rounded,
+                                Icons.keyboard_arrow_down_rounded,
                                 color: iconColor),
                             decoration: InputDecoration(
                               hintText: 'Select category',
                               hintStyle: TextStyle(
-                                  color: hintColor,
-                                  fontSize: 14),
+                                  color: hintColor, fontSize: 14),
                               prefixIcon: Icon(
                                   Icons.category_rounded,
                                   color: iconColor,
@@ -695,14 +877,12 @@ class _SellerPostProductScreenState
                                 value: cat,
                                 child: Text(cat,
                                   style: TextStyle(
-                                    color: inputColor,
-                                    fontSize: 14,
-                                  ),
-                                ),
+                                      color: inputColor,
+                                      fontSize: 14)),
                               );
                             }).toList(),
-                            onChanged: (val) => setState(
-                                () =>
+                            onChanged: (val) =>
+                                setState(() =>
                                     _selectedCategory = val),
                             validator: (v) => v == null
                                 ? 'Please select a category'
@@ -712,7 +892,6 @@ class _SellerPostProductScreenState
 
                         const SizedBox(height: 14),
 
-                        // Price
                         _FormField(
                           controller: _priceCtrl,
                           label: 'Price',
@@ -726,9 +905,8 @@ class _SellerPostProductScreenState
                           labelColor: labelColor,
                           isDark: isDark,
                           keyboardType:
-                              const TextInputType
-                                  .numberWithOptions(
-                                      decimal: true),
+                              const TextInputType.numberWithOptions(
+                                  decimal: true),
                           validator: (v) {
                             if (v == null || v.isEmpty)
                               return 'Price is required';
@@ -744,15 +922,15 @@ class _SellerPostProductScreenState
                   ),
                 ),
 
-                // ── DESCRIPTION ───────────────────────────
+                // ══════════════════════════════════════════
+                // DESCRIPTION
+                // ══════════════════════════════════════════
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 28, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 28, 16, 0),
                     child: _SectionLabel(
                       label: 'Description',
-                      subtitle:
-                          'Help buyers understand your product',
+                      subtitle: 'Help buyers understand your product',
                       isDark: isDark,
                     ),
                   ),
@@ -760,8 +938,7 @@ class _SellerPostProductScreenState
 
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 14, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                     child: _FormField(
                       controller: _descCtrl,
                       label: 'Product description',
@@ -781,11 +958,12 @@ class _SellerPostProductScreenState
                   ),
                 ),
 
-                // ── COLORS ────────────────────────────────
+                // ══════════════════════════════════════════
+                // COLORS
+                // ══════════════════════════════════════════
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 28, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 28, 16, 0),
                     child: _SectionLabel(
                       label: 'Available colors',
                       subtitle: 'Tap to select',
@@ -796,8 +974,7 @@ class _SellerPostProductScreenState
 
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 14, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                     child: Wrap(
                       spacing: 10,
                       runSpacing: 10,
@@ -811,18 +988,15 @@ class _SellerPostProductScreenState
                             HapticFeedback.selectionClick();
                             setState(() {
                               selected
-                                  ? _selectedColors
-                                      .remove(name)
+                                  ? _selectedColors.remove(name)
                                   : _selectedColors.add(name);
                             });
                           },
                           child: AnimatedContainer(
-                            duration: const Duration(
-                                milliseconds: 200),
-                            padding: const EdgeInsets
-                                .symmetric(
-                                    horizontal: 12,
-                                    vertical: 8),
+                            duration:
+                                const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
                               color: selected
                                   ? color.withOpacity(0.15)
@@ -849,8 +1023,7 @@ class _SellerPostProductScreenState
                                           ? Colors.white
                                               .withOpacity(0.2)
                                           : Colors.black
-                                              .withOpacity(
-                                                  0.1),
+                                              .withOpacity(0.1),
                                       width: 1,
                                     ),
                                   ),
@@ -884,11 +1057,12 @@ class _SellerPostProductScreenState
                   ),
                 ),
 
-                // ── SIZES ─────────────────────────────────
+                // ══════════════════════════════════════════
+                // SIZES
+                // ══════════════════════════════════════════
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 28, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 28, 16, 0),
                     child: _SectionLabel(
                       label: 'Available sizes',
                       subtitle: 'Tap to select',
@@ -899,13 +1073,11 @@ class _SellerPostProductScreenState
 
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 14, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children:
-                          _availableSizes.map((size) {
+                      children: _availableSizes.map((size) {
                         final selected =
                             _selectedSizes.contains(size);
                         return GestureDetector(
@@ -913,14 +1085,13 @@ class _SellerPostProductScreenState
                             HapticFeedback.selectionClick();
                             setState(() {
                               selected
-                                  ? _selectedSizes
-                                      .remove(size)
+                                  ? _selectedSizes.remove(size)
                                   : _selectedSizes.add(size);
                             });
                           },
                           child: AnimatedContainer(
-                            duration: const Duration(
-                                milliseconds: 200),
+                            duration:
+                                const Duration(milliseconds: 200),
                             width: 54, height: 44,
                             decoration: BoxDecoration(
                               color: selected
@@ -940,8 +1111,7 @@ class _SellerPostProductScreenState
                               child: Text(size,
                                 style: TextStyle(
                                   color: selected
-                                      ? const Color(
-                                          0xFF8B5CF6)
+                                      ? const Color(0xFF8B5CF6)
                                       : secondaryText,
                                   fontSize: 12,
                                   fontWeight: selected
@@ -957,7 +1127,9 @@ class _SellerPostProductScreenState
                   ),
                 ),
 
-                // ── SUBMIT ────────────────────────────────
+                // ══════════════════════════════════════════
+                // SUBMIT
+                // ══════════════════════════════════════════
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
@@ -965,9 +1137,8 @@ class _SellerPostProductScreenState
                     child: SizedBox(
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isSubmitting
-                            ? null
-                            : _submitProduct,
+                        onPressed:
+                            _isSubmitting ? null : _submitProduct,
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color(0xFF7C3AED),
@@ -996,8 +1167,7 @@ class _SellerPostProductScreenState
                                   Icon(
                                     isEditMode
                                         ? Icons.save_rounded
-                                        : Icons
-                                            .upload_rounded,
+                                        : Icons.upload_rounded,
                                     color: Colors.white,
                                     size: 18,
                                   ),
@@ -1009,8 +1179,7 @@ class _SellerPostProductScreenState
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
-                                      fontWeight:
-                                          FontWeight.w700,
+                                      fontWeight: FontWeight.w700,
                                       letterSpacing: 0.3,
                                     ),
                                   ),
@@ -1127,8 +1296,7 @@ class _FormField extends StatelessWidget {
       style: TextStyle(color: inputColor, fontSize: 15),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle:
-            TextStyle(color: hintColor, fontSize: 14),
+        hintStyle: TextStyle(color: hintColor, fontSize: 14),
         filled: true,
         fillColor: cardBg,
         prefixIcon: icon != null
@@ -1151,8 +1319,7 @@ class _FormField extends StatelessWidget {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-              BorderSide(color: borderColor, width: 1),
+          borderSide: BorderSide(color: borderColor, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -1196,15 +1363,12 @@ class _PickerOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(vertical: 18),
+        padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color:
-              const Color(0xFF8B5CF6).withOpacity(0.08),
+          color: const Color(0xFF8B5CF6).withOpacity(0.08),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFF8B5CF6)
-                .withOpacity(0.2),
+            color: const Color(0xFF8B5CF6).withOpacity(0.2),
           ),
         ),
         child: Column(
@@ -1212,13 +1376,11 @@ class _PickerOption extends StatelessWidget {
             Container(
               width: 44, height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFF8B5CF6)
-                    .withOpacity(0.12),
+                color: const Color(0xFF8B5CF6).withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon,
-                  color: const Color(0xFF8B5CF6),
-                  size: 22),
+                  color: const Color(0xFF8B5CF6), size: 22),
             ),
             const SizedBox(height: 8),
             Text(label,

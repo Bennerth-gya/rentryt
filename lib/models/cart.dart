@@ -15,15 +15,21 @@ class Cart extends ChangeNotifier {
       category: "Electronics",
       colors: [],
       sizes: [],
+      sellerName: "Ama Electronics",
+      sellerPhone: "+233 24 000 1111",
+      sellerLocation: "Accra, Ghana",
     ),
     Products(
       name: "Laptop",
-      price: 4800.0, // ← realistic price (was probably typo)
+      price: 4800.0,
       imagePath: "assets/images/laptops.jpg",
       description: "Powerful 16GB RAM laptop",
       category: "Electronics",
       colors: [],
       sizes: [],
+      sellerName: "TechHub GH",
+      sellerPhone: "+233 20 555 2222",
+      sellerLocation: "Kumasi, Ghana",
     ),
 
     // Men
@@ -35,6 +41,9 @@ class Cart extends ChangeNotifier {
       category: "Men",
       colors: ["Black", "White", "Grey"],
       sizes: ["40", "41", "42", "43", "44"],
+      sellerName: "Kwame Styles",
+      sellerPhone: "+233 55 123 4567",
+      sellerLocation: "Takoradi, Ghana",
     ),
     Products(
       name: "Men's Slippers",
@@ -44,6 +53,9 @@ class Cart extends ChangeNotifier {
       category: "Men",
       colors: [],
       sizes: [],
+      sellerName: "Kwame Styles",
+      sellerPhone: "+233 55 123 4567",
+      sellerLocation: "Takoradi, Ghana",
     ),
     Products(
       name: "Men's T-Shirt",
@@ -53,6 +65,9 @@ class Cart extends ChangeNotifier {
       category: "Men",
       colors: ["Black", "Navy", "White"],
       sizes: ["S", "M", "L", "XL"],
+      sellerName: "Kofi Fashion",
+      sellerPhone: "+233 27 888 9999",
+      sellerLocation: "Accra, Ghana",
     ),
 
     // Ladies
@@ -64,6 +79,9 @@ class Cart extends ChangeNotifier {
       category: "Ladies",
       colors: ["Tan", "Black", "Red"],
       sizes: [],
+      sellerName: "Abena's Boutique",
+      sellerPhone: "+233 50 777 3344",
+      sellerLocation: "Accra, Ghana",
     ),
     Products(
       name: "Ladies Dress",
@@ -73,6 +91,9 @@ class Cart extends ChangeNotifier {
       category: "Ladies",
       colors: ["Burgundy", "Navy", "Emerald"],
       sizes: ["S", "M", "L"],
+      sellerName: "Abena's Boutique",
+      sellerPhone: "+233 50 777 3344",
+      sellerLocation: "Accra, Ghana",
     ),
 
     // Education / Books
@@ -84,42 +105,36 @@ class Cart extends ChangeNotifier {
       category: "Education",
       colors: [],
       sizes: [],
+      sellerName: "BookWorm GH",
+      sellerPhone: "+233 24 321 6543",
+      sellerLocation: "Kumasi, Ghana",
     ),
   ];
 
   // ================================
-  // DERIVED LISTS (computed when needed)
+  // DERIVED LISTS
   // ================================
-  List<Products> getFeaturedList() {
-    // You can choose any logic — here: first 3 or most expensive, etc.
-    return _allProducts.take(3).toList();
-  }
+  List<Products> getFeaturedList() => _allProducts.take(3).toList();
 
-  List<Products> getRecommendedList() {
-    // Example: random or last added or highest rated, etc.
-    return _allProducts.skip(3).take(4).toList();
-  }
+  List<Products> getRecommendedList() =>
+      _allProducts.skip(3).take(4).toList();
 
   // ================================
   // CATEGORY FILTER
   // ================================
   List<Products> getProductsForCategory(String category) {
-    if (category == "All") {
-      return List.unmodifiable(_allProducts);
-    }
-    return _allProducts.where((p) => p.category == category).toList();
+    if (category == "All") return List.unmodifiable(_allProducts);
+    return _allProducts
+        .where((p) => p.category == category)
+        .toList();
   }
 
   // ================================
-  // SEARCH (this is what you need for the search bar)
+  // SEARCH
   // ================================
   List<Products> searchProducts(String query) {
-    if (query.trim().isEmpty) {
-      return List.unmodifiable(_allProducts);
-    }
-
+    if (query.trim().isEmpty) return List.unmodifiable(_allProducts);
     final lowerQuery = query.toLowerCase().trim();
-
     return _allProducts.where((product) {
       return product.name.toLowerCase().contains(lowerQuery) ||
           product.description.toLowerCase().contains(lowerQuery) ||
@@ -135,7 +150,7 @@ class Cart extends ChangeNotifier {
   Map<Products, int> get userCart => Map.unmodifiable(_userCart);
 
   void addItemToCart(Products product) {
-    _userCart.update(product, (quantity) => quantity + 1, ifAbsent: () => 1);
+    _userCart.update(product, (qty) => qty + 1, ifAbsent: () => 1);
     notifyListeners();
   }
 
@@ -144,9 +159,7 @@ class Cart extends ChangeNotifier {
     notifyListeners();
   }
 
-  void increaseQuantity(Products product) {
-    addItemToCart(product); // reuse logic
-  }
+  void increaseQuantity(Products product) => addItemToCart(product);
 
   void decreaseQuantity(Products product) {
     if (_userCart.containsKey(product)) {
@@ -161,17 +174,17 @@ class Cart extends ChangeNotifier {
 
   double getTotalPrice() {
     double total = 0;
-    _userCart.forEach((product, qty) {
-      total += product.price * qty;
-    });
+    _userCart.forEach((product, qty) => total += product.price * qty);
     return total;
   }
-  // ====================== SELLER FEATURES ======================
-  // (This makes products dynamic for sellers)
 
+  // ================================
+  // SELLER FEATURES
+  // ================================
   final List<Products> _sellerProducts = [];
 
-  List<Products> get sellerProducts => List.unmodifiable(_sellerProducts);
+  List<Products> get sellerProducts =>
+      List.unmodifiable(_sellerProducts);
 
   void addNewProduct(Products product) {
     _allProducts.add(product);
