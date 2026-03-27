@@ -220,7 +220,7 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text('Good morning 👋',
+                                          Text('Hello 👋',
                                             style: TextStyle(
                                               fontSize: 11,
                                               color: secondaryText,
