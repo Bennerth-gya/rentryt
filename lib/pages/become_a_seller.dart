@@ -228,7 +228,7 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
                                             ),
                                           ),
                                           const SizedBox(height: 2),
-                                          Text('Hi Systrom',
+                                          Text('Hi Kessie',
                                             style: TextStyle(
                                               fontSize: 17,
                                               fontWeight: FontWeight.w700,
