@@ -1,4 +1,3 @@
-
 import 'package:comfi/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
@@ -27,6 +26,7 @@ class LoginPage extends StatelessWidget {
     final screenW      = MediaQuery.of(context).size.width;
     final screenH      = MediaQuery.of(context).size.height;
     final topPad       = MediaQuery.of(context).padding.top;
+    final bottomPad    = MediaQuery.of(context).padding.bottom;
     final isSmallPhone = screenH < 680;
     final isTablet     = screenW >= 600;
     final isDesktop    = screenW >= 1000;
@@ -53,7 +53,6 @@ class LoginPage extends StatelessWidget {
     final inputFs      = isSmallPhone ? 13.0 : 15.0;
     final labelFs      = isSmallPhone ? 12.0 : 14.0;
     final buttonFs     = isSmallPhone ? 14.0 : 16.0;
-    final footerPad    = isSmallPhone ? 12.0 : 24.0;
     final cardRadius   = isTablet ? 32.0 : isSmallPhone ? 20.0 : 28.0;
     final toggleSize   = isSmallPhone ? 36.0 : 42.0;
 
@@ -86,6 +85,11 @@ class LoginPage extends StatelessWidget {
         ? const Color(0xFF8B5CF6).withOpacity(0.2)
         : const Color(0xFFA78BFA).withOpacity(0.1);
     final gridOpacity = isDark ? 0.025 : 0.06;
+
+    // ── Footer text style ─────────────────────────────────
+    final footerColor = isDark
+        ? Colors.white.withOpacity(0.28)
+        : const Color(0xFF9CA3AF);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -131,7 +135,9 @@ class LoginPage extends StatelessWidget {
                 painter: _GridPainter(opacity: gridOpacity)),
           ),
 
-          // ── FlutterLogin ───────────────────────────────
+          // ── FlutterLogin — footer prop removed ─────────
+          // We pass footerBottomPadding: 0 and no footer string
+          // so FlutterLogin doesn't reserve any space for it.
           Center(
             child: FlutterLogin(
               title: 'Comfi',
@@ -159,17 +165,13 @@ class LoginPage extends StatelessWidget {
               },
               theme: LoginTheme(
                 cardTheme: CardTheme(
-                  color: cardColor
-                      .withOpacity(isDark ? 0.95 : 1.0),
+                  color: cardColor.withOpacity(isDark ? 0.95 : 1.0),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(cardRadius),
-                    side: BorderSide(
-                        color: cardBorder, width: 1),
+                    borderRadius: BorderRadius.circular(cardRadius),
+                    side: BorderSide(color: cardBorder, width: 1),
                   ),
-                  margin: EdgeInsets.symmetric(
-                      horizontal: cardHPad),
+                  margin: EdgeInsets.symmetric(horizontal: cardHPad),
                 ),
                 titleStyle: const TextStyle(
                   fontSize: 0,
@@ -185,8 +187,7 @@ class LoginPage extends StatelessWidget {
                     ? Colors.white.withOpacity(0.55)
                     : const Color(0xFF4C1D95),
                 textFieldStyle: TextStyle(
-                    color: inputTextColor,
-                    fontSize: inputFs),
+                    color: inputTextColor, fontSize: inputFs),
                 inputTheme: InputDecorationTheme(
                   filled: true,
                   fillColor: inputFill,
@@ -201,36 +202,34 @@ class LoginPage extends StatelessWidget {
                     fontSize: labelFs,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                        isSmallPhone ? 10 : 14),
+                    borderRadius:
+                        BorderRadius.circular(isSmallPhone ? 10 : 14),
                     borderSide: BorderSide.none,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                        isSmallPhone ? 10 : 14),
-                    borderSide: BorderSide(
-                        color: inputBorder, width: 1),
+                    borderRadius:
+                        BorderRadius.circular(isSmallPhone ? 10 : 14),
+                    borderSide:
+                        BorderSide(color: inputBorder, width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                        isSmallPhone ? 10 : 14),
+                    borderRadius:
+                        BorderRadius.circular(isSmallPhone ? 10 : 14),
                     borderSide: const BorderSide(
                       color: Color(0xFF8B5CF6),
                       width: 1.8,
                     ),
                   ),
-                  prefixIconColor:
-                      const Color(0xFF8B5CF6),
+                  prefixIconColor: const Color(0xFF8B5CF6),
                 ),
                 buttonTheme: LoginButtonTheme(
-                  backgroundColor:
-                      const Color(0xFF7C3AED),
+                  backgroundColor: const Color(0xFF7C3AED),
                   splashColor: const Color(0xFF6D28D9),
                   elevation: 0,
                   highlightElevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                        isSmallPhone ? 10 : 14),
+                    borderRadius:
+                        BorderRadius.circular(isSmallPhone ? 10 : 14),
                   ),
                 ),
                 buttonStyle: TextStyle(
@@ -242,22 +241,40 @@ class LoginPage extends StatelessWidget {
                 primaryColor: bgColor,
                 accentColor: const Color(0xFF8B5CF6),
                 errorColor: const Color(0xFFEF4444),
-                footerBottomPadding: footerPad,
+                // Zero padding — footer is handled outside FlutterLogin
+                footerBottomPadding: 0,
               ),
-              footer: '© 2025 Comfi — Shop with ease',
-              additionalSignupFields: const [],
+              // No footer prop — we render our own below
+            ),
+          ),
+
+          // ── Footer — pinned to bottom, never moves ──────
+          // Sits in the Stack above FlutterLogin so the form
+          // expanding upward never affects its position.
+          Positioned(
+            bottom: bottomPad + (isSmallPhone ? 10 : 16),
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Text(
+                '© 2025 Comfi — Shop with ease',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isSmallPhone ? 10.5 : 12.0,
+                  color: footerColor,
+                  letterSpacing: 0.3,
+                ),
+              ),
             ),
           ),
 
           // ── Theme toggle — top right corner ────────────
-          // ✅ Sits above FlutterLogin so it's always visible
-          // topPad accounts for status bar height on all devices
           Positioned(
             top: topPad + 12,
             right: 16,
             child: ThemeToggleButton(
-              surfaceColor: cardColor.withOpacity(
-                  isDark ? 0.85 : 0.92),
+              surfaceColor:
+                  cardColor.withOpacity(isDark ? 0.85 : 0.92),
               borderColor: cardBorder,
               size: toggleSize,
             ),
@@ -294,9 +311,8 @@ class _ComfiHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isDark
-        ? Colors.white
-        : const Color(0xFF1E1B4B);
+    final titleColor =
+        isDark ? Colors.white : const Color(0xFF1E1B4B);
     final taglineColor = isDark
         ? Colors.white.withOpacity(0.45)
         : const Color(0xFF4C1D95);
@@ -307,8 +323,6 @@ class _ComfiHeader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-
-        // ── Logo icon ──────────────────────────────────
         Container(
           width: logoSize,
           height: logoSize,
@@ -316,10 +330,7 @@ class _ComfiHeader extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF7C3AED),
-                Color(0xFF8B5CF6),
-              ],
+              colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)],
             ),
             borderRadius: BorderRadius.circular(logoRadius),
             boxShadow: [
@@ -344,9 +355,8 @@ class _ComfiHeader extends StatelessWidget {
           ),
         ),
 
-        SizedBox(height: gapTop),
+        const SizedBox(height: 30),
 
-        // ── App name ────────────────────────────────────
         Center(
           child: Text(
             'Comfi',
@@ -362,7 +372,6 @@ class _ComfiHeader extends StatelessWidget {
 
         SizedBox(height: gapMiddle),
 
-        // ── Tagline with rules ──────────────────────────
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -427,12 +436,10 @@ class _GridPainter extends CustomPainter {
       ..strokeWidth = 0.8;
     const spacing = 36.0;
     for (double x = 0; x < size.width; x += spacing) {
-      canvas.drawLine(
-          Offset(x, 0), Offset(x, size.height), paint);
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
     for (double y = 0; y < size.height; y += spacing) {
-      canvas.drawLine(
-          Offset(0, y), Offset(size.width, y), paint);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 

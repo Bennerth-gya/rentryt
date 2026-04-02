@@ -46,6 +46,14 @@ dependencies:
   flutter_paystack_plus: ^2.4.0
   http: ^1.2.2
   webview_flutter: ^4.13.1
+  flutter_launcher_icons: ^0.14.4
+
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/YS513.jpg"
+  min_sdk_android: 21 
  # flutter_inappwebview: ^6.1.5
 
 
