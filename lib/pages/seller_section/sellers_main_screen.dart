@@ -1,3 +1,4 @@
+import 'package:comfi/pages/sellers_shoppage.dart';
 import 'package:comfi/pages/shop_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,7 +49,7 @@ class _SellerMainScreenState extends State<SellerMainScreen>
   ];
 
   final List<Widget> _pages = [
-    const ShopPage(),
+    const SellerShopPage(),
     const MyProductsScreen(),
     const SellerPostProductScreen(),
     const SellerDashboardScreen(),

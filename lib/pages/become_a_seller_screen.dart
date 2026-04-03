@@ -1,8 +1,7 @@
 import 'package:comfi/consts/app_theme.dart';
-import 'package:comfi/pages/sellers_shoppage.dart';
+import 'package:comfi/pages/seller_section/sellers_main_screen.dart'; // ✅ correct import
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'seller_section/sellers_main_screen.dart';
 
 class BecomeSellerScreen extends StatefulWidget {
   const BecomeSellerScreen({super.key});
@@ -25,6 +24,8 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
   late Animation<double>   _fadeAnim;
   late Animation<Offset>   _slideAnim;
 
+  final List<XFile> _shopImages = [];
+
   @override
   void initState() {
     super.initState();
@@ -45,21 +46,18 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
     _animController.dispose();
     super.dispose();
   }
-  // In BecomeSellerScreen
 
-final List<XFile> _shopImages = [];   // Add this
-
-// Add this method
-Future<void> _pickShopImage() async {
-  try {
-    final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() => _shopImages.add(image));  // or just keep one
+  Future<void> _pickShopImage() async {
+    try {
+      final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() => _shopImages.add(image));
+      }
+    } catch (e) {
+      // handle error
     }
-  } catch (e) {
-    // show error
   }
-}
+
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
@@ -102,9 +100,10 @@ Future<void> _pickShopImage() async {
       ),
     );
 
+    // ✅ Navigate to SellerMainScreen — the proper shell for the seller flow
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const SellerShopPage()),
+      MaterialPageRoute(builder: (_) => const SellerMainScreen()),
     );
   }
 
@@ -112,7 +111,6 @@ Future<void> _pickShopImage() async {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ── Theme tokens ──────────────────────────────────────
     final scaffoldBg    = isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
     final surfaceColor  = isDark ? const Color(0xFF111827) : Colors.white;
     final cardBg        = isDark ? const Color(0xFF1F2937) : const Color(0xFFEEF1FB);
@@ -154,7 +152,6 @@ Future<void> _pickShopImage() async {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Gradient background
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -168,8 +165,6 @@ Future<void> _pickShopImage() async {
                       ),
                     ),
                   ),
-
-                  // Decorative orbs
                   Positioned(
                     top: -40, right: -40,
                     child: Container(
@@ -190,16 +185,12 @@ Future<void> _pickShopImage() async {
                       ),
                     ),
                   ),
-
-                  // Content
                   Positioned.fill(
                     child: SafeArea(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(height: 32),
-
-                          // Store icon badge
                           Container(
                             width: 80, height: 80,
                             decoration: BoxDecoration(
@@ -211,8 +202,7 @@ Future<void> _pickShopImage() async {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4C1D95)
-                                      .withOpacity(0.5),
+                                  color: const Color(0xFF4C1D95).withOpacity(0.5),
                                   blurRadius: 30,
                                   offset: const Offset(0, 10),
                                 ),
@@ -223,9 +213,7 @@ Future<void> _pickShopImage() async {
                               size: 40, color: Colors.white,
                             ),
                           ),
-
                           const SizedBox(height: 18),
-
                           const Text(
                             'Become a Seller',
                             style: TextStyle(
@@ -235,9 +223,7 @@ Future<void> _pickShopImage() async {
                               letterSpacing: -0.5,
                             ),
                           ),
-
                           const SizedBox(height: 6),
-
                           Text(
                             'Start selling your products on Comfi',
                             style: TextStyle(
@@ -245,10 +231,7 @@ Future<void> _pickShopImage() async {
                               fontSize: 14,
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
-                          // Feature badges
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -284,7 +267,6 @@ Future<void> _pickShopImage() async {
 
                         const SizedBox(height: 4),
 
-                        // ── Section label ─────────────────
                         Text('Shop details',
                           style: TextStyle(
                             color: primaryText,
@@ -304,8 +286,7 @@ Future<void> _pickShopImage() async {
                         const SizedBox(height: 20),
 
                         // ── Shop Name ─────────────────────
-                        _FieldLabel(
-                            label: 'Shop name', isDark: isDark),
+                        _FieldLabel(label: 'Shop name', isDark: isDark),
                         const SizedBox(height: 8),
                         _InputField(
                           hintText: 'e.g. Bennerth Fashion Hub',
@@ -328,8 +309,7 @@ Future<void> _pickShopImage() async {
                         const SizedBox(height: 18),
 
                         // ── Phone ─────────────────────────
-                        _FieldLabel(
-                            label: 'Phone number', isDark: isDark),
+                        _FieldLabel(label: 'Phone number', isDark: isDark),
                         const SizedBox(height: 8),
                         _InputField(
                           hintText: '+233 24 123 4567',
@@ -352,8 +332,7 @@ Future<void> _pickShopImage() async {
                         const SizedBox(height: 18),
 
                         // ── Location ──────────────────────
-                        _FieldLabel(
-                            label: 'Location', isDark: isDark),
+                        _FieldLabel(label: 'Location', isDark: isDark),
                         const SizedBox(height: 8),
                         _InputField(
                           hintText: 'Market Street, Tarkwa',
@@ -373,9 +352,7 @@ Future<void> _pickShopImage() async {
                         const SizedBox(height: 18),
 
                         // ── Description ───────────────────
-                        _FieldLabel(
-                            label: 'About your shop',
-                            isDark: isDark),
+                        _FieldLabel(label: 'About your shop', isDark: isDark),
                         const SizedBox(height: 8),
                         _InputField(
                           hintText: 'Tell customers what you sell...',
@@ -399,17 +376,14 @@ Future<void> _pickShopImage() async {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6)
-                                .withOpacity(0.08),
+                            color: const Color(0xFF8B5CF6).withOpacity(0.08),
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: const Color(0xFF8B5CF6)
-                                  .withOpacity(0.2),
+                              color: const Color(0xFF8B5CF6).withOpacity(0.2),
                             ),
                           ),
                           child: Row(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Icon(
                                 Icons.info_outline_rounded,
@@ -459,8 +433,7 @@ Future<void> _pickShopImage() async {
                                     ),
                                   )
                                 : const Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.storefront_rounded,
                                           color: Colors.white, size: 18),
@@ -577,10 +550,7 @@ class _InputField extends StatelessWidget {
     return TextFormField(
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: TextStyle(
-        color: inputTextColor,
-        fontSize: 15,
-      ),
+      style: TextStyle(color: inputTextColor, fontSize: 15),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: hintColor, fontSize: 14),
@@ -599,23 +569,17 @@ class _InputField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-              color: Color(0xFF8B5CF6), width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-              color: Color(0xFFEF4444), width: 1),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-              color: Color(0xFFEF4444), width: 1.8),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.8),
         ),
-        errorStyle: const TextStyle(
-          color: Color(0xFFEF4444),
-          fontSize: 12,
-        ),
+        errorStyle: const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
       ),
       validator: validator,
       onSaved: onSaved,

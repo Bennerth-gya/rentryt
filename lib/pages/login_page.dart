@@ -134,10 +134,6 @@ class LoginPage extends StatelessWidget {
             child: CustomPaint(
                 painter: _GridPainter(opacity: gridOpacity)),
           ),
-
-          // ── FlutterLogin — footer prop removed ─────────
-          // We pass footerBottomPadding: 0 and no footer string
-          // so FlutterLogin doesn't reserve any space for it.
           Center(
             child: FlutterLogin(
               title: 'Comfi',
