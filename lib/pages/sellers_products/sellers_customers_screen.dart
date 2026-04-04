@@ -314,9 +314,6 @@ class _SellersCustomersScreenState
         : const Color(0xFFF5F7FF);
     final surfaceColor =
         isDark ? const Color(0xFF111827) : Colors.white;
-    final cardBg = isDark
-        ? const Color(0xFF1F2937)
-        : const Color(0xFFEEF1FB);
     final borderColor = isDark
         ? Colors.white.withOpacity(0.06)
         : const Color(0xFFE2E8F0);

@@ -6,7 +6,7 @@ import 'package:comfi/components/cart_item.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:provider/provider.dart';
 
-import '../consts/theme_toggle_button.dart';
+//import '../consts/theme_toggle_button.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});

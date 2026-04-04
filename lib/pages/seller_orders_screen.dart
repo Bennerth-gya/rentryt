@@ -203,7 +203,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                   horizontal: 8),
               tabs: tabs.map((t) {
                 final count =
-                    _countFor(t['status'] as String?);
+                    _countFor(t['status']);
                 return Tab(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -242,7 +242,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
       body: TabBarView(
         controller: _tabController,
         children: tabs.map((t) {
-          final status = t['status'] as String?;
+          final status = t['status'];
           final orders = status == null
               ? _dummyOrders
               : _dummyOrders

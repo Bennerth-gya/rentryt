@@ -1,5 +1,5 @@
 import 'package:comfi/components/products_details.dart';
-import 'package:comfi/consts/colors.dart';
+// import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/products.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

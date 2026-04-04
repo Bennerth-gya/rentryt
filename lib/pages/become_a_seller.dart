@@ -3,7 +3,7 @@ import 'package:comfi/components/sellers_main_screen_nav.dart';
 import 'package:comfi/consts/app_theme.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
-import 'package:comfi/pages/become_a_seller_screen.dart';
+//import 'package:comfi/pages/become_a_seller_screen.dart';
 import 'package:comfi/pages/product_search_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';

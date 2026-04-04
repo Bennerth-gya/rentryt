@@ -108,8 +108,6 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
 
     // ── Theme-aware tokens ──────────────────────────────────
     final scaffoldBg = isDark ? kDarkBg : kLightBg;
-    final surfaceColor = isDark ? kDarkSurface : kLightSurface;
-    final cardBg = isDark ? kDarkCard : kLightCard;
     final primaryText = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleText = isDark
         ? Colors.white.withOpacity(0.45)

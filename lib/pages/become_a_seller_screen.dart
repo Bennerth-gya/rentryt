@@ -1,8 +1,8 @@
-import 'package:comfi/consts/app_theme.dart';
-import 'package:comfi/pages/seller_section/sellers_main_screen.dart'; // ✅ correct import
+//import 'package:comfi/consts/app_theme.dart';
+//import 'package:comfi/pages/seller_section/sellers_main_screen.dart'; // ✅ correct import
 import 'package:comfi/pages/seller_verification_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+//import 'package:image_picker/image_picker.dart';
 
 class BecomeSellerScreen extends StatefulWidget {
   const BecomeSellerScreen({super.key});
@@ -25,7 +25,6 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
   late Animation<double>   _fadeAnim;
   late Animation<Offset>   _slideAnim;
 
-  final List<XFile> _shopImages = [];
 
   @override
   void initState() {
@@ -48,16 +47,6 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
     super.dispose();
   }
 
-  Future<void> _pickShopImage() async {
-    try {
-      final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        setState(() => _shopImages.add(image));
-      }
-    } catch (e) {
-      // handle error
-    }
-  }
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;

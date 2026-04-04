@@ -1,5 +1,5 @@
 import 'package:comfi/pages/sellers_shoppage.dart';
-import 'package:comfi/pages/shop_page.dart';
+//import 'package:comfi/pages/shop_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../products/my_products_screen.dart';
@@ -19,7 +19,6 @@ class _SellerMainScreenState extends State<SellerMainScreen>
 
   late List<AnimationController> _itemControllers;
   late List<Animation<double>> _scaleAnims;
-  late List<Animation<double>> _fadeAnims;
 
   final List<_NavItem> _navItems = const [
     _NavItem(
@@ -69,11 +68,6 @@ class _SellerMainScreenState extends State<SellerMainScreen>
     _scaleAnims = _itemControllers
         .map((c) => Tween<double>(begin: 0.85, end: 1.0).animate(
               CurvedAnimation(parent: c, curve: Curves.easeOutBack),
-            ))
-        .toList();
-    _fadeAnims = _itemControllers
-        .map((c) => Tween<double>(begin: 0.4, end: 1.0).animate(
-              CurvedAnimation(parent: c, curve: Curves.easeOut),
             ))
         .toList();
   }

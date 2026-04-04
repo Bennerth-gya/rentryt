@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:comfi/components/products_tile.dart';
-import 'package:comfi/consts/app_theme.dart';
+//import 'package:comfi/consts/app_theme.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
 import 'package:provider/provider.dart';
 import '../consts/colors.dart';
-import '../consts/theme_toggle_button.dart';
+//import '../consts/theme_toggle_button.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});

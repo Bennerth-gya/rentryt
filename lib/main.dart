@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+//import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

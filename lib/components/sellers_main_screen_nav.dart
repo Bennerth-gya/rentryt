@@ -1,5 +1,5 @@
 // lib/pages/seller/seller_main_screen.dart
-import 'package:comfi/consts/colors.dart';
+// import 'package:comfi/consts/colors.dart';
 import 'package:comfi/pages/sellers_dashboard_screen.dart';
 import 'package:comfi/pages/seller_orders_screen.dart';
 import 'package:comfi/pages/seller_post_product_screen.dart';
