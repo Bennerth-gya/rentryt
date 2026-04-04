@@ -1,5 +1,6 @@
 import 'package:comfi/consts/app_theme.dart';
 import 'package:comfi/pages/seller_section/sellers_main_screen.dart'; // ✅ correct import
+import 'package:comfi/pages/seller_verification_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -103,7 +104,7 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
     // ✅ Navigate to SellerMainScreen — the proper shell for the seller flow
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const SellerMainScreen()),
+      MaterialPageRoute(builder: (_) => const SellerVerificationScreen(phoneNumber: '')), // Pass phone number if needed
     );
   }
 
