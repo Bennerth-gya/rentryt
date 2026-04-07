@@ -76,7 +76,7 @@ class _FloatingItem {
         size = rng.nextDouble() * 24 + 16,
         opacity = rng.nextDouble() * 0.13 + 0.04,
         rotation = rng.nextDouble() * 2 * pi,
-        rotationSpeed = (rng.nextDouble() - 0.5) * 0.004,
+        rotationSpeed = (rng.nextDouble() - 1.0) * 0.04,
         type = _ItemType.values[rng.nextInt(_ItemType.values.length)],
         color = accent;
 

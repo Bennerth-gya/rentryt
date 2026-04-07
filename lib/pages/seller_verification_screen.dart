@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:comfi/components/sellers_main_screen_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,18 +28,14 @@ class SellerVerificationScreen extends StatefulWidget {
   /// The phone number already collected on BecomeSellerScreen.
   final String phoneNumber;
 
-  const SellerVerificationScreen({
-    super.key,
-    required this.phoneNumber,
-  });
+  const SellerVerificationScreen({super.key, required this.phoneNumber});
 
   @override
   State<SellerVerificationScreen> createState() =>
       _SellerVerificationScreenState();
 }
 
-class _SellerVerificationScreenState
-    extends State<SellerVerificationScreen>
+class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     with TickerProviderStateMixin {
   // ── Step state ───────────────────────────────────────────────────────────
   int _currentStep = 0; // 0-4
@@ -57,10 +54,11 @@ class _SellerVerificationScreenState
   XFile? _idBackPhoto;
 
   // ── Step 2 – Phone OTP ───────────────────────────────────────────────────
-  final List<TextEditingController> _otpCtrl =
-      List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _otpFocus =
-      List.generate(6, (_) => FocusNode());
+  final List<TextEditingController> _otpCtrl = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
+  final List<FocusNode> _otpFocus = List.generate(6, (_) => FocusNode());
   bool _otpSent = false;
   bool _otpVerified = false;
   bool _sendingOtp = false;
@@ -86,13 +84,11 @@ class _SellerVerificationScreenState
       vsync: this,
       duration: const Duration(milliseconds: 420),
     );
-    _fadeAnim =
-        CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
       begin: const Offset(0.04, 0),
       end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut));
     _fadeCtrl.forward();
   }
 
@@ -125,10 +121,11 @@ class _SellerVerificationScreenState
     });
   }
 
-  Future<void> _pickPhoto(
-      {required bool isIdFront,
-      required bool isIdBack,
-      required bool isSelfie}) async {
+  Future<void> _pickPhoto({
+    required bool isIdFront,
+    required bool isIdBack,
+    required bool isSelfie,
+  }) async {
     final source = isSelfie ? ImageSource.camera : ImageSource.gallery;
     final XFile? file = await _picker.pickImage(source: source);
     if (file == null) return;
@@ -194,11 +191,12 @@ class _SellerVerificationScreenState
       SnackBar(
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: const Color(0xFFEF4444),
-        content: Text(msg,
-            style: const TextStyle(color: Colors.white, fontSize: 13)),
+        content: Text(
+          msg,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+        ),
       ),
     );
   }
@@ -209,12 +207,12 @@ class _SellerVerificationScreenState
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        backgroundColor:
-            isDark ? const Color(0xFF111827) : Colors.white,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        backgroundColor: isDark ? const Color(0xFF111827) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 32,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -225,17 +223,22 @@ class _SellerVerificationScreenState
                 color: const Color(0xFF8B5CF6).withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.hourglass_top_rounded,
-                  color: Color(0xFF8B5CF6), size: 34),
+              child: const Icon(
+                Icons.hourglass_top_rounded,
+                color: Color(0xFF8B5CF6),
+                size: 34,
+              ),
             ),
             const SizedBox(height: 20),
-            Text('Under Review',
-                style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
-                )),
+            Text(
+              'Under Review',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
+            ),
             const SizedBox(height: 10),
             Text(
               'Your application has been submitted and is being reviewed. '
@@ -255,23 +258,34 @@ class _SellerVerificationScreenState
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
+                // onPressed: () {
+                //   Navigator.pop(context); // close dialog
+                //   Navigator.pop(context); // back to shop
+                //   // TODO: Navigator.pushReplacement to SellerMainScreen
+                //   // once admin has approved
+                // },
                 onPressed: () {
                   Navigator.pop(context); // close dialog
-                  Navigator.pop(context); // back to shop
-                  // TODO: Navigator.pushReplacement to SellerMainScreen
-                  // once admin has approved
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SellerMainScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7C3AED),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
-                child: const Text('Got it',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
+                child: const Text(
+                  'Got it',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ],
@@ -320,15 +334,14 @@ class _SellerVerificationScreenState
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final scaffoldBg =
-        isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
-    final surfaceColor =
-        isDark ? const Color(0xFF111827) : Colors.white;
+    final scaffoldBg = isDark
+        ? const Color(0xFF080C14)
+        : const Color(0xFFF5F7FF);
+    final surfaceColor = isDark ? const Color(0xFF111827) : Colors.white;
     final borderColor = isDark
         ? Colors.white.withOpacity(0.06)
         : const Color(0xFFE2E8F0);
-    final primaryText =
-        isDark ? Colors.white : const Color(0xFF0F172A);
+    final primaryText = isDark ? Colors.white : const Color(0xFF0F172A);
     final secondaryText = isDark
         ? Colors.white.withOpacity(0.45)
         : const Color(0xFF64748B);
@@ -343,8 +356,13 @@ class _SellerVerificationScreenState
         body: Column(
           children: [
             // ── HEADER ────────────────────────────────────────────────────
-            _buildHeader(isDark, surfaceColor, borderColor, primaryText,
-                secondaryText),
+            _buildHeader(
+              isDark,
+              surfaceColor,
+              borderColor,
+              primaryText,
+              secondaryText,
+            ),
 
             // ── STEP PROGRESS ─────────────────────────────────────────────
             _buildStepIndicator(isDark, borderColor),
@@ -358,8 +376,13 @@ class _SellerVerificationScreenState
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                     physics: const BouncingScrollPhysics(),
-                    child: _buildCurrentStep(isDark, surfaceColor,
-                        borderColor, primaryText, secondaryText),
+                    child: _buildCurrentStep(
+                      isDark,
+                      surfaceColor,
+                      borderColor,
+                      primaryText,
+                      secondaryText,
+                    ),
                   ),
                 ),
               ),
@@ -374,8 +397,13 @@ class _SellerVerificationScreenState
   }
 
   // ── HEADER ────────────────────────────────────────────────────────────────
-  Widget _buildHeader(bool isDark, Color surfaceColor, Color borderColor,
-      Color primaryText, Color secondaryText) {
+  Widget _buildHeader(
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
@@ -417,11 +445,13 @@ class _SellerVerificationScreenState
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: Colors.white.withOpacity(0.2)),
+                      border: Border.all(color: Colors.white.withOpacity(0.2)),
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white, size: 15),
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 15,
+                    ),
                   ),
                 )
               else
@@ -434,11 +464,13 @@ class _SellerVerificationScreenState
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: Colors.white.withOpacity(0.2)),
+                      border: Border.all(color: Colors.white.withOpacity(0.2)),
                     ),
-                    child: const Icon(Icons.close_rounded,
-                        color: Colors.white, size: 18),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   ),
                 ),
               Expanded(
@@ -472,11 +504,13 @@ class _SellerVerificationScreenState
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(14),
-                  border:
-                      Border.all(color: Colors.white.withOpacity(0.2)),
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
                 ),
-                child: Icon(_stepIcons[_currentStep],
-                    color: Colors.white, size: 22),
+                child: Icon(
+                  _stepIcons[_currentStep],
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
             ],
           ),
@@ -503,8 +537,8 @@ class _SellerVerificationScreenState
                   color: passed
                       ? const Color(0xFF8B5CF6)
                       : isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : const Color(0xFFE2E8F0),
+                      ? Colors.white.withOpacity(0.08)
+                      : const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -521,42 +555,44 @@ class _SellerVerificationScreenState
               color: isDone
                   ? const Color(0xFF8B5CF6)
                   : isActive
-                      ? const Color(0xFF8B5CF6)
-                      : isDark
-                          ? Colors.white.withOpacity(0.07)
-                          : const Color(0xFFEEF1FB),
+                  ? const Color(0xFF8B5CF6)
+                  : isDark
+                  ? Colors.white.withOpacity(0.07)
+                  : const Color(0xFFEEF1FB),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isActive || isDone
                     ? const Color(0xFF8B5CF6)
                     : isDark
-                        ? Colors.white.withOpacity(0.12)
-                        : const Color(0xFFE2E8F0),
+                    ? Colors.white.withOpacity(0.12)
+                    : const Color(0xFFE2E8F0),
                 width: isActive ? 2 : 1,
               ),
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color:
-                            const Color(0xFF8B5CF6).withOpacity(0.4),
+                        color: const Color(0xFF8B5CF6).withOpacity(0.4),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
-                      )
+                      ),
                     ]
                   : [],
             ),
             child: Center(
               child: isDone
-                  ? const Icon(Icons.check_rounded,
-                      color: Colors.white, size: 14)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    )
                   : Text(
                       '${stepIdx + 1}',
                       style: TextStyle(
                         color: isActive
                             ? Colors.white
                             : isDark
-                                ? Colors.white.withOpacity(0.3)
-                                : const Color(0xFF94A3B8),
+                            ? Colors.white.withOpacity(0.3)
+                            : const Color(0xFF94A3B8),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -569,34 +605,68 @@ class _SellerVerificationScreenState
   }
 
   // ── CURRENT STEP ─────────────────────────────────────────────────────────
-  Widget _buildCurrentStep(bool isDark, Color surfaceColor,
-      Color borderColor, Color primaryText, Color secondaryText) {
+  Widget _buildCurrentStep(
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
     switch (_currentStep) {
       case 0:
         return _buildIdentityStep(
-            isDark, surfaceColor, borderColor, primaryText, secondaryText);
+          isDark,
+          surfaceColor,
+          borderColor,
+          primaryText,
+          secondaryText,
+        );
       case 1:
         return _buildOtpStep(
-            isDark, surfaceColor, borderColor, primaryText, secondaryText);
+          isDark,
+          surfaceColor,
+          borderColor,
+          primaryText,
+          secondaryText,
+        );
       case 2:
         return _buildSelfieStep(
-            isDark, surfaceColor, borderColor, primaryText, secondaryText);
+          isDark,
+          surfaceColor,
+          borderColor,
+          primaryText,
+          secondaryText,
+        );
       case 3:
         return _buildTierStep(
-            isDark, surfaceColor, borderColor, primaryText, secondaryText);
+          isDark,
+          surfaceColor,
+          borderColor,
+          primaryText,
+          secondaryText,
+        );
       case 4:
         return _buildReviewStep(
-            isDark, surfaceColor, borderColor, primaryText, secondaryText);
+          isDark,
+          surfaceColor,
+          borderColor,
+          primaryText,
+          secondaryText,
+        );
       default:
         return const SizedBox.shrink();
     }
   }
 
   // ── STEP 1: IDENTITY ──────────────────────────────────────────────────────
-  Widget _buildIdentityStep(bool isDark, Color surfaceColor,
-      Color borderColor, Color primaryText, Color secondaryText) {
-    final cardBg =
-        isDark ? const Color(0xFF1F2937) : const Color(0xFFEEF1FB);
+  Widget _buildIdentityStep(
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
+    final cardBg = isDark ? const Color(0xFF1F2937) : const Color(0xFFEEF1FB);
     final hintColor = isDark
         ? Colors.white.withOpacity(0.25)
         : const Color(0xFFADB5C7);
@@ -618,19 +688,18 @@ class _SellerVerificationScreenState
           const SizedBox(height: 24),
 
           // Ghana Card number
-          _FieldLabel(
-              label: 'Ghana Card Number', isDark: isDark),
+          _FieldLabel(label: 'Ghana Card Number', isDark: isDark),
           const SizedBox(height: 8),
           TextFormField(
             controller: _idNumberCtrl,
             style: TextStyle(
-                color: primaryText,
-                fontSize: 15,
-                letterSpacing: 1.2),
+              color: primaryText,
+              fontSize: 15,
+              letterSpacing: 1.2,
+            ),
             textCapitalization: TextCapitalization.characters,
             inputFormatters: [
-              FilteringTextInputFormatter.allow(
-                  RegExp(r'[A-Z0-9\-]')),
+              FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9\-]')),
               LengthLimitingTextInputFormatter(15),
               _GhanaCardFormatter(),
             ],
@@ -688,8 +757,7 @@ class _SellerVerificationScreenState
           const SizedBox(height: 28),
 
           // Photo uploads
-          _SectionTitle(
-              label: 'Upload ID Photos', primaryText: primaryText),
+          _SectionTitle(label: 'Upload ID Photos', primaryText: primaryText),
           const SizedBox(height: 14),
 
           Row(
@@ -703,9 +771,10 @@ class _SellerVerificationScreenState
                   surfaceColor: surfaceColor,
                   borderColor: borderColor,
                   onTap: () => _pickPhoto(
-                      isIdFront: true,
-                      isIdBack: false,
-                      isSelfie: false),
+                    isIdFront: true,
+                    isIdBack: false,
+                    isSelfie: false,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -718,9 +787,10 @@ class _SellerVerificationScreenState
                   surfaceColor: surfaceColor,
                   borderColor: borderColor,
                   onTap: () => _pickPhoto(
-                      isIdFront: false,
-                      isIdBack: true,
-                      isSelfie: false),
+                    isIdFront: false,
+                    isIdBack: true,
+                    isSelfie: false,
+                  ),
                 ),
               ),
             ],
@@ -743,8 +813,13 @@ class _SellerVerificationScreenState
   }
 
   // ── STEP 2: OTP ───────────────────────────────────────────────────────────
-  Widget _buildOtpStep(bool isDark, Color surfaceColor,
-      Color borderColor, Color primaryText, Color secondaryText) {
+  Widget _buildOtpStep(
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -763,20 +838,22 @@ class _SellerVerificationScreenState
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color:
-                      const Color(0xFF8B5CF6).withOpacity(0.1),
+                  color: const Color(0xFF8B5CF6).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.sms_rounded,
-                    color: Color(0xFF8B5CF6), size: 36),
+                child: const Icon(
+                  Icons.sms_rounded,
+                  color: Color(0xFF8B5CF6),
+                  size: 36,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 _otpVerified
                     ? 'Phone Verified ✓'
                     : _otpSent
-                        ? 'Enter the code sent to'
-                        : 'Verify your phone number',
+                    ? 'Enter the code sent to'
+                    : 'Verify your phone number',
                 style: TextStyle(
                   color: primaryText,
                   fontSize: 17,
@@ -808,27 +885,35 @@ class _SellerVerificationScreenState
               onPressed: _sendingOtp ? null : _sendOtp,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7C3AED),
-                disabledBackgroundColor:
-                    const Color(0xFF7C3AED).withOpacity(0.5),
+                disabledBackgroundColor: const Color(
+                  0xFF7C3AED,
+                ).withOpacity(0.5),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               icon: _sendingOtp
                   ? const SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2),
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
-                  : const Icon(Icons.send_rounded,
-                      color: Colors.white, size: 18),
+                  : const Icon(
+                      Icons.send_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
               label: Text(
                 _sendingOtp ? 'Sending...' : 'Send OTP',
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700),
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -855,9 +940,7 @@ class _SellerVerificationScreenState
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly
-                  ],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     counterText: '',
                     filled: true,
@@ -868,13 +951,14 @@ class _SellerVerificationScreenState
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          BorderSide(color: borderColor),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                          color: Color(0xFF8B5CF6), width: 2),
+                        color: Color(0xFF8B5CF6),
+                        width: 2,
+                      ),
                     ),
                   ),
                   onChanged: (v) {
@@ -899,24 +983,31 @@ class _SellerVerificationScreenState
               onPressed: _verifyingOtp ? null : _verifyOtp,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7C3AED),
-                disabledBackgroundColor:
-                    const Color(0xFF7C3AED).withOpacity(0.5),
+                disabledBackgroundColor: const Color(
+                  0xFF7C3AED,
+                ).withOpacity(0.5),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               child: _verifyingOtp
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2.5),
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
                     )
-                  : const Text('Verify Code',
+                  : const Text(
+                      'Verify Code',
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700)),
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ),
           ),
 
@@ -926,8 +1017,7 @@ class _SellerVerificationScreenState
             child: _resendCountdown > 0
                 ? Text(
                     'Resend code in ${_resendCountdown}s',
-                    style: TextStyle(
-                        color: secondaryText, fontSize: 13),
+                    style: TextStyle(color: secondaryText, fontSize: 13),
                   )
                 : TextButton(
                     onPressed: _sendOtp,
@@ -945,19 +1035,22 @@ class _SellerVerificationScreenState
         if (_otpVerified) ...[
           Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFF34D399).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                    color: const Color(0xFF34D399).withOpacity(0.3)),
+                  color: const Color(0xFF34D399).withOpacity(0.3),
+                ),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle_rounded,
-                      color: Color(0xFF34D399), size: 20),
+                  Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF34D399),
+                    size: 20,
+                  ),
                   SizedBox(width: 10),
                   Text(
                     'Phone number verified',
@@ -977,8 +1070,13 @@ class _SellerVerificationScreenState
   }
 
   // ── STEP 3: SELFIE ────────────────────────────────────────────────────────
-  Widget _buildSelfieStep(bool isDark, Color surfaceColor,
-      Color borderColor, Color primaryText, Color secondaryText) {
+  Widget _buildSelfieStep(
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -993,8 +1091,8 @@ class _SellerVerificationScreenState
 
         Center(
           child: GestureDetector(
-            onTap: () => _pickPhoto(
-                isIdFront: false, isIdBack: false, isSelfie: true),
+            onTap: () =>
+                _pickPhoto(isIdFront: false, isIdBack: false, isSelfie: true),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 220,
@@ -1012,10 +1110,11 @@ class _SellerVerificationScreenState
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (_selfiePhoto != null
-                            ? const Color(0xFF34D399)
-                            : const Color(0xFF8B5CF6))
-                        .withOpacity(0.2),
+                    color:
+                        (_selfiePhoto != null
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFF8B5CF6))
+                            .withOpacity(0.2),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -1033,8 +1132,11 @@ class _SellerVerificationScreenState
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.camera_alt_rounded,
-                            color: Color(0xFF8B5CF6), size: 44),
+                        const Icon(
+                          Icons.camera_alt_rounded,
+                          color: Color(0xFF8B5CF6),
+                          size: 44,
+                        ),
                         const SizedBox(height: 10),
                         Text(
                           'Tap to take selfie',
@@ -1067,14 +1169,20 @@ class _SellerVerificationScreenState
           const SizedBox(height: 20),
           Center(
             child: TextButton.icon(
-              onPressed: () => _pickPhoto(
-                  isIdFront: false, isIdBack: false, isSelfie: true),
-              icon: const Icon(Icons.refresh_rounded,
-                  color: Color(0xFF8B5CF6), size: 18),
-              label: const Text('Retake selfie',
-                  style: TextStyle(
-                      color: Color(0xFF8B5CF6),
-                      fontWeight: FontWeight.w600)),
+              onPressed: () =>
+                  _pickPhoto(isIdFront: false, isIdBack: false, isSelfie: true),
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: Color(0xFF8B5CF6),
+                size: 18,
+              ),
+              label: const Text(
+                'Retake selfie',
+                style: TextStyle(
+                  color: Color(0xFF8B5CF6),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
@@ -1083,8 +1191,13 @@ class _SellerVerificationScreenState
   }
 
   // ── STEP 4: TIER ──────────────────────────────────────────────────────────
-  Widget _buildTierStep(bool isDark, Color surfaceColor,
-      Color borderColor, Color primaryText, Color secondaryText) {
+  Widget _buildTierStep(
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
     final tiers = [
       _TierInfo(
         tier: 1,
@@ -1155,15 +1268,15 @@ class _SellerVerificationScreenState
                 color: selected
                     ? t.color.withOpacity(0.07)
                     : isDark
-                        ? const Color(0xFF111827)
-                        : Colors.white,
+                    ? const Color(0xFF111827)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: selected
                       ? t.color
                       : isDark
-                          ? Colors.white.withOpacity(0.06)
-                          : const Color(0xFFE2E8F0),
+                      ? Colors.white.withOpacity(0.06)
+                      : const Color(0xFFE2E8F0),
                   width: selected ? 2 : 1,
                 ),
                 boxShadow: selected
@@ -1172,7 +1285,7 @@ class _SellerVerificationScreenState
                           color: t.color.withOpacity(0.2),
                           blurRadius: 16,
                           offset: const Offset(0, 4),
-                        )
+                        ),
                       ]
                     : [],
               ),
@@ -1193,12 +1306,12 @@ class _SellerVerificationScreenState
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                Text('Tier ${t.tier} — ${t.title}',
+                                Text(
+                                  'Tier ${t.tier} — ${t.title}',
                                   style: TextStyle(
                                     color: primaryText,
                                     fontSize: 15,
@@ -1207,7 +1320,8 @@ class _SellerVerificationScreenState
                                 ),
                               ],
                             ),
-                            Text(t.subtitle,
+                            Text(
+                              t.subtitle,
                               style: TextStyle(
                                 color: secondaryText,
                                 fontSize: 12,
@@ -1227,14 +1341,17 @@ class _SellerVerificationScreenState
                             color: selected
                                 ? t.color
                                 : isDark
-                                    ? Colors.white.withOpacity(0.2)
-                                    : const Color(0xFFCBD5E1),
+                                ? Colors.white.withOpacity(0.2)
+                                : const Color(0xFFCBD5E1),
                             width: 2,
                           ),
                         ),
                         child: selected
-                            ? const Icon(Icons.check_rounded,
-                                color: Colors.white, size: 13)
+                            ? const Icon(
+                                Icons.check_rounded,
+                                color: Colors.white,
+                                size: 13,
+                              )
                             : null,
                       ),
                     ],
@@ -1243,37 +1360,51 @@ class _SellerVerificationScreenState
                   const SizedBox(height: 14),
 
                   // Limits
-                  ...t.limits.map((l) => Padding(
-                        padding: const EdgeInsets.only(bottom: 5),
-                        child: Row(
-                          children: [
-                            Icon(Icons.check_circle_outline_rounded,
-                                color: t.color, size: 14),
-                            const SizedBox(width: 8),
-                            Text(l,
-                                style: TextStyle(
-                                    color: secondaryText,
-                                    fontSize: 12)),
-                          ],
-                        ),
-                      )),
+                  ...t.limits.map(
+                    (l) => Padding(
+                      padding: const EdgeInsets.only(bottom: 5),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle_outline_rounded,
+                            color: t.color,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l,
+                            style: TextStyle(
+                              color: secondaryText,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 10),
 
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: t.color.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline_rounded,
-                            color: t.color, size: 13),
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: t.color,
+                          size: 13,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
-                          child: Text(t.requirement,
+                          child: Text(
+                            t.requirement,
                             style: TextStyle(
                               color: t.color,
                               fontSize: 11,
@@ -1294,9 +1425,18 @@ class _SellerVerificationScreenState
   }
 
   // ── STEP 5: REVIEW ────────────────────────────────────────────────────────
-  Widget _buildReviewStep(bool isDark, Color surfaceColor,
-      Color borderColor, Color primaryText, Color secondaryText) {
-    final tierNames = {1: 'Starter', 2: 'Verified Individual', 3: 'Verified Business'};
+  Widget _buildReviewStep(
+    bool isDark,
+    Color surfaceColor,
+    Color borderColor,
+    Color primaryText,
+    Color secondaryText,
+  ) {
+    final tierNames = {
+      1: 'Starter',
+      2: 'Verified Individual',
+      3: 'Verified Business',
+    };
     final tierColors = {
       1: const Color(0xFF06B6D4),
       2: const Color(0xFF8B5CF6),
@@ -1315,8 +1455,7 @@ class _SellerVerificationScreenState
 
         const SizedBox(height: 24),
 
-        _SectionTitle(
-            label: 'Submitted Information', primaryText: primaryText),
+        _SectionTitle(label: 'Submitted Information', primaryText: primaryText),
         const SizedBox(height: 14),
 
         // Review card
@@ -1341,9 +1480,7 @@ class _SellerVerificationScreenState
               _divider(isDark),
               _ReviewRow(
                 label: 'Ghana Card',
-                value: _idNumberCtrl.text.isEmpty
-                    ? '—'
-                    : _idNumberCtrl.text,
+                value: _idNumberCtrl.text.isEmpty ? '—' : _idNumberCtrl.text,
                 icon: Icons.credit_card_rounded,
                 verified: _idFrontPhoto != null && _idBackPhoto != null,
                 isDark: isDark,
@@ -1353,9 +1490,7 @@ class _SellerVerificationScreenState
               _divider(isDark),
               _ReviewRow(
                 label: 'Selfie',
-                value: _selfiePhoto != null
-                    ? 'Photo captured'
-                    : '—',
+                value: _selfiePhoto != null ? 'Photo captured' : '—',
                 icon: Icons.face_rounded,
                 verified: _selfiePhoto != null,
                 isDark: isDark,
@@ -1385,8 +1520,7 @@ class _SellerVerificationScreenState
 
         // ID photos preview
         if (_idFrontPhoto != null || _idBackPhoto != null) ...[
-          _SectionTitle(
-              label: 'ID Card Photos', primaryText: primaryText),
+          _SectionTitle(label: 'ID Card Photos', primaryText: primaryText),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -1420,7 +1554,8 @@ class _SellerVerificationScreenState
             color: const Color(0xFF8B5CF6).withOpacity(0.06),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: const Color(0xFF8B5CF6).withOpacity(0.18)),
+              color: const Color(0xFF8B5CF6).withOpacity(0.18),
+            ),
           ),
           child: Text(
             'By submitting, you confirm that all information provided is '
@@ -1442,15 +1577,12 @@ class _SellerVerificationScreenState
   }
 
   Widget _divider(bool isDark) => Divider(
-        height: 24,
-        color: isDark
-            ? Colors.white.withOpacity(0.05)
-            : const Color(0xFFE2E8F0),
-      );
+    height: 24,
+    color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFE2E8F0),
+  );
 
   // ── BOTTOM CTA ────────────────────────────────────────────────────────────
-  Widget _buildBottomCta(
-      bool isDark, Color surfaceColor, Color borderColor) {
+  Widget _buildBottomCta(bool isDark, Color surfaceColor, Color borderColor) {
     final isLastStep = _currentStep == _totalSteps - 1;
 
     String label;
@@ -1470,7 +1602,11 @@ class _SellerVerificationScreenState
 
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 16),
+        20,
+        12,
+        20,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
       decoration: BoxDecoration(
         color: surfaceColor,
         border: Border(top: BorderSide(color: borderColor)),
@@ -1500,14 +1636,17 @@ class _SellerVerificationScreenState
                 : const Color(0xFFE2E8F0),
             elevation: 0,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
           child: _isSubmitting
               ? const SizedBox(
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2.5),
+                    color: Colors.white,
+                    strokeWidth: 2.5,
+                  ),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1518,8 +1657,8 @@ class _SellerVerificationScreenState
                         color: enabled
                             ? Colors.white
                             : isDark
-                                ? Colors.white.withOpacity(0.25)
-                                : const Color(0xFFCBD5E1),
+                            ? Colors.white.withOpacity(0.25)
+                            : const Color(0xFFCBD5E1),
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1531,8 +1670,8 @@ class _SellerVerificationScreenState
                         color: enabled
                             ? Colors.white
                             : isDark
-                                ? Colors.white.withOpacity(0.25)
-                                : const Color(0xFFCBD5E1),
+                            ? Colors.white.withOpacity(0.25)
+                            : const Color(0xFFCBD5E1),
                         size: 18,
                       ),
                     ],
@@ -1558,8 +1697,7 @@ class _SellerVerificationScreenState
       prefixIcon: Icon(icon, color: iconColor, size: 20),
       filled: true,
       fillColor: cardBg,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -1570,21 +1708,17 @@ class _SellerVerificationScreenState
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide:
-            const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
+        borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide:
-            const BorderSide(color: Color(0xFFEF4444), width: 1),
+        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide:
-            const BorderSide(color: Color(0xFFEF4444), width: 1.8),
+        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.8),
       ),
-      errorStyle:
-          const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
+      errorStyle: const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
     );
   }
 }
@@ -1606,14 +1740,16 @@ class _InfoBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF8B5CF6).withOpacity(0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: const Color(0xFF8B5CF6).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline_rounded,
-              color: Color(0xFF8B5CF6), size: 17),
+          const Icon(
+            Icons.info_outline_rounded,
+            color: Color(0xFF8B5CF6),
+            size: 17,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -1637,8 +1773,7 @@ class _SectionTitle extends StatelessWidget {
   final String label;
   final Color primaryText;
 
-  const _SectionTitle(
-      {required this.label, required this.primaryText});
+  const _SectionTitle({required this.label, required this.primaryText});
 
   @override
   Widget build(BuildContext context) {
@@ -1707,8 +1842,8 @@ class _PhotoUploadCard extends StatelessWidget {
           color: hasPhoto
               ? Colors.transparent
               : isDark
-                  ? const Color(0xFF1F2937)
-                  : const Color(0xFFEEF1FB),
+              ? const Color(0xFF1F2937)
+              : const Color(0xFFEEF1FB),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: hasPhoto
@@ -1734,8 +1869,11 @@ class _PhotoUploadCard extends StatelessWidget {
                           color: const Color(0xFF34D399),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.check_rounded,
-                            color: Colors.white, size: 12),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -1748,15 +1886,14 @@ class _PhotoUploadCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color:
-                          const Color(0xFF8B5CF6).withOpacity(0.1),
+                      color: const Color(0xFF8B5CF6).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon,
-                        color: const Color(0xFF8B5CF6), size: 22),
+                    child: Icon(icon, color: const Color(0xFF8B5CF6), size: 22),
                   ),
                   const SizedBox(height: 10),
-                  Text(label,
+                  Text(
+                    label,
                     style: TextStyle(
                       color: isDark
                           ? Colors.white.withOpacity(0.6)
@@ -1766,7 +1903,8 @@ class _PhotoUploadCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text('Tap to upload',
+                  Text(
+                    'Tap to upload',
                     style: TextStyle(
                       color: isDark
                           ? Colors.white.withOpacity(0.3)
@@ -1794,18 +1932,21 @@ class _TipsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF34D399).withOpacity(0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: const Color(0xFF34D399).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF34D399).withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
-              Icon(Icons.tips_and_updates_rounded,
-                  color: Color(0xFF34D399), size: 15),
+              Icon(
+                Icons.tips_and_updates_rounded,
+                color: Color(0xFF34D399),
+                size: 15,
+              ),
               SizedBox(width: 6),
-              Text('Tips',
+              Text(
+                'Tips',
                 style: TextStyle(
                   color: Color(0xFF34D399),
                   fontSize: 12,
@@ -1815,29 +1956,32 @@ class _TipsCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          ...tips.map((t) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('• ',
-                        style: TextStyle(
-                            color: Color(0xFF34D399),
-                            fontSize: 11)),
-                    Expanded(
-                      child: Text(t,
-                        style: TextStyle(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.55)
-                              : const Color(0xFF64748B),
-                          fontSize: 11.5,
-                          height: 1.5,
-                        ),
+          ...tips.map(
+            (t) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '• ',
+                    style: TextStyle(color: Color(0xFF34D399), fontSize: 11),
+                  ),
+                  Expanded(
+                    child: Text(
+                      t,
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.55)
+                            : const Color(0xFF64748B),
+                        fontSize: 11.5,
+                        height: 1.5,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1873,24 +2017,24 @@ class _ReviewRow extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: (accentColor ?? const Color(0xFF8B5CF6))
-                .withOpacity(0.1),
+            color: (accentColor ?? const Color(0xFF8B5CF6)).withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon,
-              color: accentColor ?? const Color(0xFF8B5CF6),
-              size: 18),
+          child: Icon(
+            icon,
+            color: accentColor ?? const Color(0xFF8B5CF6),
+            size: 18,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label,
-                style: TextStyle(
-                    color: secondaryText, fontSize: 11)),
+              Text(label, style: TextStyle(color: secondaryText, fontSize: 11)),
               const SizedBox(height: 2),
-              Text(value,
+              Text(
+                value,
                 style: TextStyle(
                   color: primaryText,
                   fontSize: 13,
@@ -1901,8 +2045,7 @@ class _ReviewRow extends StatelessWidget {
           ),
         ),
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: verified
                 ? const Color(0xFF34D399).withOpacity(0.1)
@@ -1930,8 +2073,11 @@ class _PhotoPreview extends StatelessWidget {
   final String label;
   final bool isDark;
 
-  const _PhotoPreview(
-      {required this.file, required this.label, required this.isDark});
+  const _PhotoPreview({
+    required this.file,
+    required this.label,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1948,7 +2094,8 @@ class _PhotoPreview extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Text(label,
+        Text(
+          label,
           style: TextStyle(
             color: isDark
                 ? Colors.white.withOpacity(0.5)
@@ -1993,9 +2140,10 @@ class _TierInfo {
 class _GhanaCardFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    final raw =
-        newValue.text.replaceAll(RegExp(r'[^A-Z0-9]'), '');
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final raw = newValue.text.replaceAll(RegExp(r'[^A-Z0-9]'), '');
     final buffer = StringBuffer();
 
     for (int i = 0; i < raw.length && i < 13; i++) {
@@ -2006,8 +2154,7 @@ class _GhanaCardFormatter extends TextInputFormatter {
     final formatted = buffer.toString();
     return TextEditingValue(
       text: formatted,
-      selection:
-          TextSelection.collapsed(offset: formatted.length),
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
@@ -2016,17 +2163,17 @@ class _GhanaCardFormatter extends TextInputFormatter {
 class _ExpiryFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    final digits =
-        newValue.text.replaceAll(RegExp(r'\D'), '');
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     String formatted = digits;
     if (digits.length >= 2) {
       formatted = '${digits.substring(0, 2)}/${digits.substring(2)}';
     }
     return TextEditingValue(
       text: formatted,
-      selection:
-          TextSelection.collapsed(offset: formatted.length),
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
