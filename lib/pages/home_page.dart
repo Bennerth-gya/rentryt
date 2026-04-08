@@ -1,11 +1,13 @@
-
 //import 'package:comfi/consts/app_theme.dart';
 import 'package:comfi/consts/theme_toggle_button.dart' show ThemeToggleButton;
+import 'package:comfi/core/constants/app_routes.dart';
+import 'package:comfi/core/widgets/double_back_to_exit_scope.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/pages/cart_page.dart';
 import 'package:comfi/pages/categories_screen.dart';
 import 'package:comfi/pages/profile_screen.dart';
 import 'package:comfi/pages/shop_page.dart';
+import 'package:comfi/presentation/state/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late AnimationController _drawerAnimCtrl;
   late Animation<double> _drawerFade;
@@ -40,7 +43,9 @@ class _HomePageState extends State<HomePage>
       duration: const Duration(milliseconds: 400),
     );
     _drawerFade = CurvedAnimation(
-        parent: _drawerAnimCtrl, curve: Curves.easeOut);
+      parent: _drawerAnimCtrl,
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -57,164 +62,157 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = isDark
         ? const Color(0xFF080C14)
         : const Color(0xFFF5F7FF);
-    final surfaceColor =
-        isDark ? const Color(0xFF111827) : Colors.white;
+    final surfaceColor = isDark ? const Color(0xFF111827) : Colors.white;
     final borderColor = isDark
         ? Colors.white.withOpacity(0.06)
         : const Color(0xFFE2E8F0);
-    final primaryText =
-        isDark ? Colors.white : const Color(0xFF0F172A);
+    final primaryText = isDark ? Colors.white : const Color(0xFF0F172A);
     final secondaryText = isDark
         ? Colors.white.withOpacity(0.45)
         : const Color(0xFF64748B);
 
-    final cartCount =
-        Provider.of<Cart>(context).userCart.length;
+    final cartCount = Provider.of<Cart>(context).userCart.length;
 
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: scaffoldBg,
-      drawer: _ComfiDrawer(
-        isDark: isDark,
-        scaffoldBg: scaffoldBg,
-        surfaceColor: surfaceColor,
-        borderColor: borderColor,
-        primaryText: primaryText,
-        secondaryText: secondaryText,
-        selectedIndex: _selectedIndex,
-        onNavigate: (index) {
-          Navigator.pop(context);
-          _onTabChange(index);
-        },
-        fadeAnim: _drawerFade,
-        onDrawerOpen: () => _drawerAnimCtrl.forward(from: 0),
-      ),
-      appBar: _selectedIndex == 0
-          ? null // ShopPage has its own header
-          : AppBar(
-              backgroundColor: scaffoldBg,
-              elevation: 0,
-              scrolledUnderElevation: 0,
-              leading: Builder(
-                builder: (ctx) => GestureDetector(
-                  onTap: () {
-                    Scaffold.of(ctx).openDrawer();
-                    _drawerAnimCtrl.forward(from: 0);
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: surfaceColor,
-                      borderRadius:
-                          BorderRadius.circular(12),
-                      border:
-                          Border.all(color: borderColor),
-                    ),
-                    child: Icon(Icons.menu_rounded,
-                        color: primaryText, size: 20),
-                  ),
-                ),
-              ),
-              title: AnimatedSwitcher(
-                duration:
-                    const Duration(milliseconds: 250),
-                child: Text(
-                  _pageTitle(_selectedIndex),
-                  key: ValueKey(_selectedIndex),
-                  style: TextStyle(
-                    color: primaryText,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-              ),
-              actions: [
-                // Cart badge
-                if (_selectedIndex != 2)
-                  GestureDetector(
-                    onTap: () => _onTabChange(2),
+    return DoubleBackToExitScope(
+      scaffoldKey: _scaffoldKey,
+      child: Scaffold(
+        key: _scaffoldKey,
+        extendBody: true,
+        backgroundColor: scaffoldBg,
+        drawer: _ComfiDrawer(
+          isDark: isDark,
+          scaffoldBg: scaffoldBg,
+          surfaceColor: surfaceColor,
+          borderColor: borderColor,
+          primaryText: primaryText,
+          secondaryText: secondaryText,
+          selectedIndex: _selectedIndex,
+          onNavigate: (index) {
+            Navigator.pop(context);
+            _onTabChange(index);
+          },
+          fadeAnim: _drawerFade,
+          onDrawerOpen: () => _drawerAnimCtrl.forward(from: 0),
+        ),
+        appBar: _selectedIndex == 0
+            ? null // ShopPage has its own header
+            : AppBar(
+                backgroundColor: scaffoldBg,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                leading: Builder(
+                  builder: (ctx) => GestureDetector(
+                    onTap: () {
+                      Scaffold.of(ctx).openDrawer();
+                      _drawerAnimCtrl.forward(from: 0);
+                    },
                     child: Container(
-                      margin: const EdgeInsets.only(
-                          right: 8),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 40, height: 40,
-                            decoration: BoxDecoration(
-                              color: surfaceColor,
-                              borderRadius:
-                                  BorderRadius.circular(
-                                      12),
-                              border: Border.all(
-                                  color: borderColor),
+                      margin: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: surfaceColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: Icon(
+                        Icons.menu_rounded,
+                        color: primaryText,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+                title: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: Text(
+                    _pageTitle(_selectedIndex),
+                    key: ValueKey(_selectedIndex),
+                    style: TextStyle(
+                      color: primaryText,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+                actions: [
+                  // Cart badge
+                  if (_selectedIndex != 2)
+                    GestureDetector(
+                      onTap: () => _onTabChange(2),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: surfaceColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: borderColor),
+                              ),
+                              child: Icon(
+                                Icons.shopping_bag_outlined,
+                                color: primaryText,
+                                size: 20,
+                              ),
                             ),
-                            child: Icon(
-                              Icons
-                                  .shopping_bag_outlined,
-                              color: primaryText,
-                              size: 20,
-                            ),
-                          ),
-                          if (cartCount > 0)
-                            Positioned(
-                              top: -4, right: -4,
-                              child: Container(
-                                width: 18, height: 18,
-                                decoration:
-                                    const BoxDecoration(
-                                  color:
-                                      Color(0xFF8B5CF6),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    '$cartCount',
-                                    style:
-                                        const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight:
-                                          FontWeight.w700,
+                            if (cartCount > 0)
+                              Positioned(
+                                top: -4,
+                                right: -4,
+                                child: Container(
+                                  width: 18,
+                                  height: 18,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF8B5CF6),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '$cartCount',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
+
+                  // Theme toggle
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: ThemeToggleButton(
+                      surfaceColor: surfaceColor,
+                      borderColor: borderColor,
+                      size: 40,
+                    ),
                   ),
+                ],
+              ),
 
-                // Theme toggle
-                Padding(
-                  padding: const EdgeInsets.only(
-                      right: 16),
-                  child: ThemeToggleButton(
-                    surfaceColor: surfaceColor,
-                    borderColor: borderColor,
-                    size: 40,
-                  ),
-                ),
-              ],
-            ),
+        bottomNavigationBar: MyBottomNavigation(
+          onTabChange: _onTabChange,
+          selectedIndex: _selectedIndex,
+        ),
 
-      bottomNavigationBar: MyBottomNavigation(
-        onTabChange: _onTabChange,
-        selectedIndex: _selectedIndex,
-      ),
-
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: KeyedSubtree(
-          key: ValueKey(_selectedIndex),
-          child: _pages[_selectedIndex],
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: KeyedSubtree(
+            key: ValueKey(_selectedIndex),
+            child: _pages[_selectedIndex],
+          ),
         ),
       ),
     );
@@ -222,10 +220,14 @@ class _HomePageState extends State<HomePage>
 
   String _pageTitle(int index) {
     switch (index) {
-      case 1: return 'Categories';
-      case 2: return 'My Cart';
-      case 3: return 'Profile';
-      default: return 'Comfi';
+      case 1:
+        return 'Categories';
+      case 2:
+        return 'My Cart';
+      case 3:
+        return 'Profile';
+      default:
+        return 'Comfi';
     }
   }
 }
@@ -293,12 +295,10 @@ class _ComfiDrawer extends StatelessWidget {
           opacity: fadeAnim,
           child: Column(
             children: [
-
               // ── Header ─────────────────────────────
               Container(
                 width: double.infinity,
-                margin: const EdgeInsets.fromLTRB(
-                    16, 16, 16, 0),
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -316,31 +316,29 @@ class _ComfiDrawer extends StatelessWidget {
                   children: [
                     // Decorative orb
                     Positioned(
-                      top: -20, right: -20,
+                      top: -20,
+                      right: -20,
                       child: Container(
-                        width: 100, height: 100,
+                        width: 100,
+                        height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white
-                              .withOpacity(0.06),
+                          color: Colors.white.withOpacity(0.06),
                         ),
                       ),
                     ),
                     Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Logo badge
                         Container(
-                          width: 52, height: 52,
+                          width: 52,
+                          height: 52,
                           decoration: BoxDecoration(
-                            color: Colors.white
-                                .withOpacity(0.15),
-                            borderRadius:
-                                BorderRadius.circular(16),
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.white
-                                  .withOpacity(0.25),
+                              color: Colors.white.withOpacity(0.25),
                             ),
                           ),
                           child: const Icon(
@@ -350,7 +348,8 @@ class _ComfiDrawer extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        const Text('Comfi',
+                        const Text(
+                          'Comfi',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 26,
@@ -359,10 +358,10 @@ class _ComfiDrawer extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 3),
-                        Text('shop with ease',
+                        Text(
+                          'shop with ease',
                           style: TextStyle(
-                            color: Colors.white
-                                .withOpacity(0.65),
+                            color: Colors.white.withOpacity(0.65),
                             fontSize: 13,
                             fontStyle: FontStyle.italic,
                             letterSpacing: 0.5,
@@ -378,11 +377,11 @@ class _ComfiDrawer extends StatelessWidget {
 
               // ── Section label ───────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('NAVIGATION',
+                  child: Text(
+                    'NAVIGATION',
                     style: TextStyle(
                       color: secondaryText,
                       fontSize: 10,
@@ -396,23 +395,24 @@ class _ComfiDrawer extends StatelessWidget {
               const SizedBox(height: 10),
 
               // ── Nav items ───────────────────────────
-              ...items.map((item) => _DrawerTile(
-                item: item,
-                isSelected: selectedIndex == item.index,
-                isDark: isDark,
-                surfaceColor: surfaceColor,
-                borderColor: borderColor,
-                primaryText: primaryText,
-                secondaryText: secondaryText,
-                onTap: () => onNavigate(item.index),
-              )),
+              ...items.map(
+                (item) => _DrawerTile(
+                  item: item,
+                  isSelected: selectedIndex == item.index,
+                  isDark: isDark,
+                  surfaceColor: surfaceColor,
+                  borderColor: borderColor,
+                  primaryText: primaryText,
+                  secondaryText: secondaryText,
+                  onTap: () => onNavigate(item.index),
+                ),
+              ),
 
               const Spacer(),
 
               // ── Divider ─────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Divider(color: borderColor),
               ),
 
@@ -420,17 +420,15 @@ class _ComfiDrawer extends StatelessWidget {
 
               // ── Theme toggle row ────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
                     Container(
-                      width: 40, height: 40,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6)
-                            .withOpacity(0.1),
-                        borderRadius:
-                            BorderRadius.circular(12),
+                        color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.palette_rounded,
@@ -440,7 +438,8 @@ class _ComfiDrawer extends StatelessWidget {
                     ),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Text('Theme',
+                      child: Text(
+                        'Theme',
                         style: TextStyle(
                           color: primaryText,
                           fontSize: 14.5,
@@ -461,30 +460,31 @@ class _ComfiDrawer extends StatelessWidget {
 
               // ── Logout ──────────────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    20, 0, 20, 8),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                 child: GestureDetector(
-                  onTap: () {
+                  onTap: () async {
                     HapticFeedback.lightImpact();
                     Navigator.pop(context);
+                    await context.read<AuthController>().logoutUser();
+                    if (!context.mounted) return;
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.login,
+                      (route) => false,
+                    );
                   },
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444)
-                          .withOpacity(0.08),
-                      borderRadius:
-                          BorderRadius.circular(16),
+                      color: const Color(0xFFEF4444).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: const Color(0xFFEF4444)
-                            .withOpacity(0.18),
+                        color: const Color(0xFFEF4444).withOpacity(0.18),
                       ),
                     ),
                     child: const Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.logout_rounded,
@@ -492,7 +492,8 @@ class _ComfiDrawer extends StatelessWidget {
                           size: 18,
                         ),
                         SizedBox(width: 8),
-                        Text('Logout',
+                        Text(
+                          'Logout',
                           style: TextStyle(
                             color: Color(0xFFEF4444),
                             fontSize: 14,
@@ -507,12 +508,11 @@ class _ComfiDrawer extends StatelessWidget {
 
               // ── Version ─────────────────────────────
               Padding(
-                padding:
-                    const EdgeInsets.only(bottom: 16),
-                child: Text('Comfi v1.0.0',
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'Comfi v1.0.0',
                   style: TextStyle(
-                    color: secondaryText
-                        .withOpacity(0.5),
+                    color: secondaryText.withOpacity(0.5),
                     fontSize: 11,
                   ),
                 ),
@@ -565,14 +565,12 @@ class _DrawerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 16, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(
-              horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: isSelected
                 ? item.color.withOpacity(0.12)
@@ -588,23 +586,20 @@ class _DrawerTile extends StatelessWidget {
             children: [
               // Icon container
               AnimatedContainer(
-                duration:
-                    const Duration(milliseconds: 250),
-                width: 40, height: 40,
+                duration: const Duration(milliseconds: 250),
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: isSelected
                       ? item.color.withOpacity(0.15)
                       : isDark
-                          ? const Color(0xFF1F2937)
-                          : const Color(0xFFEEF1FB),
-                  borderRadius:
-                      BorderRadius.circular(12),
+                      ? const Color(0xFF1F2937)
+                      : const Color(0xFFEEF1FB),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   item.icon,
-                  color: isSelected
-                      ? item.color
-                      : secondaryText,
+                  color: isSelected ? item.color : secondaryText,
                   size: 20,
                 ),
               ),
@@ -613,15 +608,12 @@ class _DrawerTile extends StatelessWidget {
 
               // Label
               Expanded(
-                child: Text(item.label,
+                child: Text(
+                  item.label,
                   style: TextStyle(
-                    color: isSelected
-                        ? item.color
-                        : primaryText,
+                    color: isSelected ? item.color : primaryText,
                     fontSize: 14.5,
-                    fontWeight: isSelected
-                        ? FontWeight.w700
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
               ),
@@ -629,14 +621,14 @@ class _DrawerTile extends StatelessWidget {
               // Active dot
               if (isSelected)
                 Container(
-                  width: 8, height: 8,
+                  width: 8,
+                  height: 8,
                   decoration: BoxDecoration(
                     color: item.color,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            item.color.withOpacity(0.5),
+                        color: item.color.withOpacity(0.5),
                         blurRadius: 6,
                       ),
                     ],

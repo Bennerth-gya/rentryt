@@ -1,7 +1,9 @@
 
+import 'package:comfi/models/cart.dart';
 import 'package:comfi/pages/seller_order_details_screen.dart';
 import 'package:comfi/pages/sellers_refund_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../consts/theme_toggle_button.dart';
 
@@ -17,54 +19,6 @@ class SellerOrdersScreen extends StatefulWidget {
 class _SellerOrdersScreenState extends State<SellerOrdersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<Map<String, dynamic>> _dummyOrders = [
-    {
-      'id': '100140',
-      'date': '12 Oct, 2024',
-      'amount': '583.00',
-      'status': 'Pending',
-      'payment': 'Cash on Delivery',
-      'customer': 'Kwame Asante',
-      'items': 2,
-    },
-    {
-      'id': '100138',
-      'date': '11 Oct, 2024',
-      'amount': '23,040.00',
-      'status': 'Delivered',
-      'payment': 'Mobile Money',
-      'customer': 'Abena Mensah',
-      'items': 5,
-    },
-    {
-      'id': '100137',
-      'date': '10 Oct, 2024',
-      'amount': '5,400.00',
-      'status': 'Delivered',
-      'payment': 'Mobile Money',
-      'customer': 'Kofi Boateng',
-      'items': 3,
-    },
-    {
-      'id': '100135',
-      'date': '09 Oct, 2024',
-      'amount': '4,808.00',
-      'status': 'Pending',
-      'payment': 'Cash on Delivery',
-      'customer': 'Ama Owusu',
-      'items': 1,
-    },
-    {
-      'id': '100134',
-      'date': '08 Oct, 2024',
-      'amount': '6,490.00',
-      'status': 'Packaging',
-      'payment': 'Mobile Money',
-      'customer': 'Yaw Darko',
-      'items': 4,
-    },
-  ];
 
   @override
   void initState() {
@@ -101,9 +55,9 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
     }
   }
 
-  int _countFor(String? status) {
-    if (status == null) return _dummyOrders.length;
-    return _dummyOrders
+  int _countFor(String? status, List<dynamic> orders) {
+    if (status == null) return orders.length;
+    return orders
         .where((o) => o['status'] == status)
         .length;
   }
@@ -125,6 +79,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
     final secondaryText = isDark
         ? Colors.white.withOpacity(0.45)
         : const Color(0xFF64748B);
+    final allOrders = context.watch<Cart>().sellerOrders;
 
     final tabs = [
       {'label': 'All',       'status': null},
@@ -203,7 +158,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                   horizontal: 8),
               tabs: tabs.map((t) {
                 final count =
-                    _countFor(t['status']);
+                    _countFor(t['status'], allOrders);
                 return Tab(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -244,8 +199,8 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
         children: tabs.map((t) {
           final status = t['status'];
           final orders = status == null
-              ? _dummyOrders
-              : _dummyOrders
+              ? allOrders
+              : allOrders
                   .where((o) => o['status'] == status)
                   .toList();
 
@@ -274,7 +229,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                   MaterialPageRoute(
                     builder: (_) =>
                         SellerOrderDetailsScreen(
-                      order: order,
+                      order: order as Map<String, dynamic>,
                     ),
                   ),
                 ),
@@ -568,8 +523,7 @@ class _SellerOrdersScreenState extends State<SellerOrdersScreen>
                                       MaterialPageRoute(
                                         builder: (_) =>
                                             SellerRefundScreen(
-                                          order:
-                                              order,
+                                          order: order as Map<String, dynamic>,
                                         ),
                                       ),
                                     ),

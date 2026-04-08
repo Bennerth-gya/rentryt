@@ -3,6 +3,8 @@ import 'package:comfi/components/products_tile.dart';
 //import 'package:comfi/consts/app_theme.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
+import 'package:comfi/presentation/widgets/app_error_state.dart';
+import 'package:comfi/presentation/widgets/app_loading_state.dart';
 import 'package:provider/provider.dart';
 import '../consts/colors.dart';
 //import '../consts/theme_toggle_button.dart';
@@ -172,6 +174,17 @@ class _CategoriesScreenState extends State<CategoriesScreen>
       body: SafeArea(
         child: Consumer<Cart>(
           builder: (context, cart, _) {
+            if (cart.isBootstrapping && cart.allProducts.isEmpty) {
+              return const AppLoadingState(label: 'Loading categories...');
+            }
+
+            if (cart.errorMessage != null && cart.allProducts.isEmpty) {
+              return AppErrorState(
+                message: cart.errorMessage!,
+                onRetry: cart.bootstrap,
+              );
+            }
+
             final selectedLabel = _categories[_selectedCategoryIndex]['label'] as String;
             final products = cart.getProductsForCategory(selectedLabel);
 

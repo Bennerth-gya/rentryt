@@ -1,5 +1,5 @@
-import 'package:comfi/pages/login_page.dart';
 import 'package:comfi/consts/colors.dart';
+import 'package:comfi/core/constants/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class IntroPage extends StatefulWidget {
@@ -10,6 +10,9 @@ class IntroPage extends StatefulWidget {
 }
 
 class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
+  static const String _appLogoAsset =
+      'assets/images/dark_theme_real_app_logo.png';
+
   late AnimationController _logoAnim;
   late AnimationController _contentAnim;
   late AnimationController _buttonAnim;
@@ -90,15 +93,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
     await Future.delayed(const Duration(milliseconds: 160));
     if (!mounted) return;
     setState(() => _buttonPressed = false);
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const LoginPage(),
-        transitionsBuilder: (_, animation, __, child) =>
-            FadeTransition(opacity: animation, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+    Navigator.pushNamed(context, AppRoutes.login);
   }
 
   @override
@@ -260,7 +255,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                             child: ClipOval(
                               // ✅ clips logo to circle
                               child: Image.asset(
-                                'assets/images/grandma_round.jpg', // ✅ your logo asset
+                                _appLogoAsset,
                                 fit: BoxFit
                                     .cover, // ✅ fills the circle perfectly
                                 width: 148,

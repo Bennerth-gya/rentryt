@@ -1,7 +1,10 @@
 import 'package:comfi/pages/seller_section/seller_profile_screen.dart';
 import 'package:comfi/pages/seller_section/seller_settings_screen.dart';
 import 'package:comfi/pages/seller_section/sellers_theme_screen.dart';
+import 'package:comfi/core/constants/app_routes.dart';
+import 'package:comfi/presentation/state/auth_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../consts/colors.dart';
 
 // Import your destination screens (create them if they don't exist yet)
@@ -91,12 +94,17 @@ class SellerMenuScreen extends StatelessWidget {
 
               /// Logout – also made tappable (with confirmation recommended)
               InkWell(
-                onTap: () {
-                  // Simple version – replace with real logout logic later
+                onTap: () async {
+                  await context.read<AuthController>().logoutUser();
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Logging out...")),
                   );
-                  // Example: Navigator.pushReplacementNamed(context, '/login');
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    AppRoutes.login,
+                    (route) => false,
+                  );
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(

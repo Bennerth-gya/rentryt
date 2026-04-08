@@ -1,6 +1,6 @@
 
+import 'package:comfi/core/constants/app_routes.dart';
 import 'package:comfi/pages/shop_page.dart';
-import 'package:comfi/payment/payment_method.dart';
 import 'package:flutter/material.dart';
 import 'package:comfi/components/cart_item.dart';
 import 'package:comfi/models/cart.dart';
@@ -154,9 +154,7 @@ class _CartPageState extends State<CartPage>
                       child: _EmptyCart(
                         onShopNow: () => Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (_) =>
-                                  const ShopPage()),
+                          MaterialPageRoute(builder: (_) => const ShopPage()),
                         ),
                       ),
                     ),
@@ -213,12 +211,8 @@ class _CartPageState extends State<CartPage>
                         surfaceColor: surfaceColor,
                         borderColor: borderColor,
                         primaryText: primaryText,
-                        onCheckout: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) =>
-                                  const PaymentMethod()),
-                        ),
+                        onCheckout: () =>
+                            Navigator.pushNamed(context, AppRoutes.payment),
                       ),
                     ),
                   ),

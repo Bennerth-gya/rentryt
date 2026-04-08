@@ -1,0 +1,9 @@
+export 'package:comfi/pages/become_a_seller_screen.dart';
+export 'package:comfi/pages/cart_page.dart';
+export 'package:comfi/pages/home_page.dart';
+export 'package:comfi/pages/intro_page.dart';
+export 'package:comfi/pages/login_page.dart';
+export 'package:comfi/pages/onboarding_screen.dart';
+export 'package:comfi/pages/seller_section/sellers_main_screen.dart';
+export 'package:comfi/pages/seller_verification_screen.dart';
+export 'package:comfi/pages/shop_page.dart';

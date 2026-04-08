@@ -4,6 +4,8 @@ import 'package:comfi/consts/theme_toggle_button.dart' show ThemeToggleButton;
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
 import 'package:comfi/pages/product_search_delegate.dart';
+import 'package:comfi/presentation/widgets/app_error_state.dart';
+import 'package:comfi/presentation/widgets/app_loading_state.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
@@ -224,6 +226,23 @@ class _SellerShopPageState extends State<SellerShopPage>
       key: _messengerKey,
       child: Consumer<Cart>(
         builder: (context, cart, _) {
+          if (cart.isBootstrapping && cart.allProducts.isEmpty) {
+            return Scaffold(
+              backgroundColor: scaffoldBg,
+              body: const AppLoadingState(label: 'Loading storefront...'),
+            );
+          }
+
+          if (cart.errorMessage != null && cart.allProducts.isEmpty) {
+            return Scaffold(
+              backgroundColor: scaffoldBg,
+              body: AppErrorState(
+                message: cart.errorMessage!,
+                onRetry: cart.bootstrap,
+              ),
+            );
+          }
+
           final selectedLabel =
               _categories[_selectedCategory]['label'] as String;
           final displayProducts =

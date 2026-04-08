@@ -1,9 +1,9 @@
 import 'dart:math';
 
+import 'package:comfi/core/constants/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:comfi/pages/intro_page.dart';
 
 // ── Page data ─────────────────────────────────────────────────────────────────
 class _PageData {
@@ -427,15 +427,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 
   void _finish() {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, a, __) => const IntroPage(),
-        transitionsBuilder: (_, a, __, child) =>
-            FadeTransition(opacity: a, child: child),
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+    Navigator.pushReplacementNamed(context, AppRoutes.intro);
   }
 
   @override

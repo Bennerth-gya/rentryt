@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:comfi/consts/colors.dart';
+import 'package:comfi/core/constants/app_routes.dart';
+import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
-import 'package:comfi/payment/payment_method.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../consts/theme_toggle_button.dart';
@@ -117,6 +119,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
 
   void _simulateAddToCart() {
     HapticFeedback.lightImpact();
+    Provider.of<Cart>(context, listen: false).addItemToCart(widget.product);
     _showSnackbar('${widget.product.name} added to cart!');
   }
 
@@ -1214,13 +1217,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                                 isError: true);
                             return;
                           }
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  const PaymentMethod(),
-                            ),
-                          );
+                          Provider.of<Cart>(context, listen: false)
+                              .addItemToCart(product);
+                          Navigator.pushNamed(context, AppRoutes.payment);
                         },
                   child: Container(
                     height: 52,

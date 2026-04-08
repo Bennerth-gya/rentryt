@@ -1,31 +1,12 @@
 import 'dart:io';
-import 'package:comfi/components/sellers_main_screen_nav.dart';
+import 'package:comfi/core/constants/app_routes.dart';
+import 'package:comfi/presentation/state/seller_onboarding_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-
-// ── Navigation target after approval ─────────────────────────────────────────
-// Replace with your actual import:
-// import 'package:comfi/pages/seller_section/sellers_main_screen.dart';
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  SellerVerificationScreen
-//
-//  A multi-step verification wizard that sits between BecomeSellerScreen
-//  and SellerMainScreen.  It collects:
-//
-//   Step 1 — Identity      Ghana Card number + expiry + front/back photos
-//   Step 2 — Phone         OTP sent to the seller's phone number
-//   Step 3 — Selfie        Live selfie matched against the ID card photo
-//   Step 4 — Tier choice   Tier 1 / 2 / 3 (see in-app descriptions)
-//   Step 5 — Review        Summary before submission
-//
-//  The bottom "Continue" button advances through steps; back arrow goes back.
-//  All API calls are stubbed with Future.delayed – wire them to your backend.
-// ─────────────────────────────────────────────────────────────────────────────
+import 'package:provider/provider.dart';
 
 class SellerVerificationScreen extends StatefulWidget {
-  /// The phone number already collected on BecomeSellerScreen.
   final String phoneNumber;
 
   const SellerVerificationScreen({super.key, required this.phoneNumber});
@@ -38,8 +19,8 @@ class SellerVerificationScreen extends StatefulWidget {
 class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     with TickerProviderStateMixin {
   // ── Step state ───────────────────────────────────────────────────────────
-  int _currentStep = 0; // 0-4
-  static const int _totalSteps = 5;
+  int _currentStep = 0;
+  static const int _totalSteps = 4;
 
   // ── Animation ────────────────────────────────────────────────────────────
   late AnimationController _fadeCtrl;
@@ -54,10 +35,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   XFile? _idBackPhoto;
 
   // ── Step 2 – Phone OTP ───────────────────────────────────────────────────
-  final List<TextEditingController> _otpCtrl = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
+  final List<TextEditingController> _otpCtrl =
+      List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _otpFocus = List.generate(6, (_) => FocusNode());
   bool _otpSent = false;
   bool _otpVerified = false;
@@ -65,13 +44,10 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   bool _verifyingOtp = false;
   int _resendCountdown = 0;
 
-  // ── Step 3 – Selfie ──────────────────────────────────────────────────────
-  XFile? _selfiePhoto;
+  // ── Step 3 – Tier ────────────────────────────────────────────────────────
+  int _selectedTier = -1;
 
-  // ── Step 4 – Tier ────────────────────────────────────────────────────────
-  int _selectedTier = -1; // -1 = none chosen yet
-
-  // ── Step 5 – Submitting ──────────────────────────────────────────────────
+  // ── Step 4 – Submitting ──────────────────────────────────────────────────
   bool _isSubmitting = false;
 
   // ── Misc ─────────────────────────────────────────────────────────────────
@@ -97,16 +73,21 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     _fadeCtrl.dispose();
     _idNumberCtrl.dispose();
     _idExpiryCtrl.dispose();
-    for (final c in _otpCtrl) {
-      c.dispose();
-    }
-    for (final f in _otpFocus) {
-      f.dispose();
-    }
+    for (final c in _otpCtrl) c.dispose();
+    for (final f in _otpFocus) f.dispose();
     super.dispose();
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+  String get _phoneNumber {
+    final submittedPhone =
+        context.read<SellerOnboardingController>().lastSubmittedPhoneNumber;
+    if (widget.phoneNumber.trim().isNotEmpty) {
+      return widget.phoneNumber.trim();
+    }
+    return submittedPhone?.trim() ?? '';
+  }
+
   void _animateToNextStep() {
     _fadeCtrl.reverse().then((_) {
       setState(() => _currentStep++);
@@ -124,15 +105,12 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   Future<void> _pickPhoto({
     required bool isIdFront,
     required bool isIdBack,
-    required bool isSelfie,
   }) async {
-    final source = isSelfie ? ImageSource.camera : ImageSource.gallery;
-    final XFile? file = await _picker.pickImage(source: source);
+    final XFile? file = await _picker.pickImage(source: ImageSource.gallery);
     if (file == null) return;
     setState(() {
       if (isIdFront) _idFrontPhoto = file;
       if (isIdBack) _idBackPhoto = file;
-      if (isSelfie) _selfiePhoto = file;
     });
   }
 
@@ -141,9 +119,16 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
       _sendingOtp = true;
       _otpSent = false;
     });
-    // ── TODO: POST /api/otp/send { phone: widget.phoneNumber } ──
-    await Future.delayed(const Duration(seconds: 2));
+    final message =
+        await context.read<SellerOnboardingController>().sendOtp(_phoneNumber);
     if (!mounted) return;
+
+    if (message != null) {
+      setState(() => _sendingOtp = false);
+      _showError(message);
+      return;
+    }
+
     setState(() {
       _sendingOtp = false;
       _otpSent = true;
@@ -168,9 +153,18 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
       return;
     }
     setState(() => _verifyingOtp = true);
-    // ── TODO: POST /api/otp/verify { phone, code } ──
-    await Future.delayed(const Duration(seconds: 2));
+    final message = await context.read<SellerOnboardingController>().verifyOtp(
+          phoneNumber: _phoneNumber,
+          code: code,
+        );
     if (!mounted) return;
+
+    if (message != null) {
+      setState(() => _verifyingOtp = false);
+      _showError(message);
+      return;
+    }
+
     setState(() {
       _verifyingOtp = false;
       _otpVerified = true;
@@ -179,10 +173,21 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
 
   Future<void> _submitVerification() async {
     setState(() => _isSubmitting = true);
-    // ── TODO: POST /api/seller/verify with all collected data ──
-    await Future.delayed(const Duration(seconds: 3));
+    final message =
+        await context.read<SellerOnboardingController>().submitVerification(
+              phoneNumber: _phoneNumber,
+              idNumber: _idNumberCtrl.text.trim(),
+              idExpiry: _idExpiryCtrl.text.trim(),
+              selectedTier: _selectedTier,
+            );
     if (!mounted) return;
     setState(() => _isSubmitting = false);
+
+    if (message != null) {
+      _showError(message);
+      return;
+    }
+
     _showPendingDialog();
   }
 
@@ -209,10 +214,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
       builder: (_) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF111827) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 24,
-          vertical: 32,
-        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -243,7 +246,7 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
             Text(
               'Your application has been submitted and is being reviewed. '
               'This usually takes 1–2 business days.\n\n'
-              'You\'ll receive an SMS on ${widget.phoneNumber} once approved.',
+              'You\'ll receive an SMS on $_phoneNumber once approved.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDark
@@ -258,18 +261,9 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                // onPressed: () {
-                //   Navigator.pop(context); // close dialog
-                //   Navigator.pop(context); // back to shop
-                //   // TODO: Navigator.pushReplacement to SellerMainScreen
-                //   // once admin has approved
-                // },
                 onPressed: () {
-                  Navigator.pop(context); // close dialog
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SellerMainScreen()),
-                  );
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, AppRoutes.sellerMain);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7C3AED),
@@ -301,11 +295,9 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
         return _idFrontPhoto != null && _idBackPhoto != null;
       case 1: // otp
         return _otpVerified;
-      case 2: // selfie
-        return _selfiePhoto != null;
-      case 3: // tier
+      case 2: // tier
         return _selectedTier >= 0;
-      case 4: // review – submit button handles it
+      case 3: // review – submit button handles it
         return true;
       default:
         return false;
@@ -316,7 +308,6 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   static const _stepTitles = [
     'Identity',
     'Phone OTP',
-    'Selfie',
     'Seller Tier',
     'Review',
   ];
@@ -324,7 +315,6 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   static const _stepIcons = [
     Icons.badge_rounded,
     Icons.sms_rounded,
-    Icons.face_rounded,
     Icons.workspace_premium_rounded,
     Icons.fact_check_rounded,
   ];
@@ -334,9 +324,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final scaffoldBg = isDark
-        ? const Color(0xFF080C14)
-        : const Color(0xFFF5F7FF);
+    final scaffoldBg =
+        isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
     final surfaceColor = isDark ? const Color(0xFF111827) : Colors.white;
     final borderColor = isDark
         ? Colors.white.withOpacity(0.06)
@@ -355,19 +344,9 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
         backgroundColor: scaffoldBg,
         body: Column(
           children: [
-            // ── HEADER ────────────────────────────────────────────────────
             _buildHeader(
-              isDark,
-              surfaceColor,
-              borderColor,
-              primaryText,
-              secondaryText,
-            ),
-
-            // ── STEP PROGRESS ─────────────────────────────────────────────
+                isDark, surfaceColor, borderColor, primaryText, secondaryText),
             _buildStepIndicator(isDark, borderColor),
-
-            // ── BODY ─────────────────────────────────────────────────────
             Expanded(
               child: FadeTransition(
                 opacity: _fadeAnim,
@@ -377,18 +356,11 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                     physics: const BouncingScrollPhysics(),
                     child: _buildCurrentStep(
-                      isDark,
-                      surfaceColor,
-                      borderColor,
-                      primaryText,
-                      secondaryText,
-                    ),
+                        isDark, surfaceColor, borderColor, primaryText, secondaryText),
                   ),
                 ),
               ),
             ),
-
-            // ── BOTTOM CTA ────────────────────────────────────────────────
             _buildBottomCta(isDark, surfaceColor, borderColor),
           ],
         ),
@@ -420,7 +392,6 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
       ),
       child: Stack(
         children: [
-          // Decorative orb
           Positioned(
             top: -20,
             right: -20,
@@ -445,7 +416,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      border:
+                          Border.all(color: Colors.white.withOpacity(0.2)),
                     ),
                     child: const Icon(
                       Icons.arrow_back_ios_new_rounded,
@@ -464,7 +436,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      border:
+                          Border.all(color: Colors.white.withOpacity(0.2)),
                     ),
                     child: const Icon(
                       Icons.close_rounded,
@@ -506,11 +479,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: Colors.white.withOpacity(0.2)),
                 ),
-                child: Icon(
-                  _stepIcons[_currentStep],
-                  color: Colors.white,
-                  size: 22,
-                ),
+                child: Icon(_stepIcons[_currentStep],
+                    color: Colors.white, size: 22),
               ),
             ],
           ),
@@ -526,7 +496,6 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
       child: Row(
         children: List.generate(_totalSteps * 2 - 1, (i) {
           if (i.isOdd) {
-            // connector line
             final stepIdx = i ~/ 2;
             final passed = stepIdx < _currentStep;
             return Expanded(
@@ -537,8 +506,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                   color: passed
                       ? const Color(0xFF8B5CF6)
                       : isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : const Color(0xFFE2E8F0),
+                          ? Colors.white.withOpacity(0.08)
+                          : const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -555,17 +524,17 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               color: isDone
                   ? const Color(0xFF8B5CF6)
                   : isActive
-                  ? const Color(0xFF8B5CF6)
-                  : isDark
-                  ? Colors.white.withOpacity(0.07)
-                  : const Color(0xFFEEF1FB),
+                      ? const Color(0xFF8B5CF6)
+                      : isDark
+                          ? Colors.white.withOpacity(0.07)
+                          : const Color(0xFFEEF1FB),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isActive || isDone
                     ? const Color(0xFF8B5CF6)
                     : isDark
-                    ? Colors.white.withOpacity(0.12)
-                    : const Color(0xFFE2E8F0),
+                        ? Colors.white.withOpacity(0.12)
+                        : const Color(0xFFE2E8F0),
                 width: isActive ? 2 : 1,
               ),
               boxShadow: isActive
@@ -580,19 +549,16 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
             ),
             child: Center(
               child: isDone
-                  ? const Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 14,
-                    )
+                  ? const Icon(Icons.check_rounded,
+                      color: Colors.white, size: 14)
                   : Text(
                       '${stepIdx + 1}',
                       style: TextStyle(
                         color: isActive
                             ? Colors.white
                             : isDark
-                            ? Colors.white.withOpacity(0.3)
-                            : const Color(0xFF94A3B8),
+                                ? Colors.white.withOpacity(0.3)
+                                : const Color(0xFF94A3B8),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -615,44 +581,16 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     switch (_currentStep) {
       case 0:
         return _buildIdentityStep(
-          isDark,
-          surfaceColor,
-          borderColor,
-          primaryText,
-          secondaryText,
-        );
+            isDark, surfaceColor, borderColor, primaryText, secondaryText);
       case 1:
         return _buildOtpStep(
-          isDark,
-          surfaceColor,
-          borderColor,
-          primaryText,
-          secondaryText,
-        );
+            isDark, surfaceColor, borderColor, primaryText, secondaryText);
       case 2:
-        return _buildSelfieStep(
-          isDark,
-          surfaceColor,
-          borderColor,
-          primaryText,
-          secondaryText,
-        );
-      case 3:
         return _buildTierStep(
-          isDark,
-          surfaceColor,
-          borderColor,
-          primaryText,
-          secondaryText,
-        );
-      case 4:
+            isDark, surfaceColor, borderColor, primaryText, secondaryText);
+      case 3:
         return _buildReviewStep(
-          isDark,
-          surfaceColor,
-          borderColor,
-          primaryText,
-          secondaryText,
-        );
+            isDark, surfaceColor, borderColor, primaryText, secondaryText);
       default:
         return const SizedBox.shrink();
     }
@@ -667,9 +605,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     Color secondaryText,
   ) {
     final cardBg = isDark ? const Color(0xFF1F2937) : const Color(0xFFEEF1FB);
-    final hintColor = isDark
-        ? Colors.white.withOpacity(0.25)
-        : const Color(0xFFADB5C7);
+    final hintColor =
+        isDark ? Colors.white.withOpacity(0.25) : const Color(0xFFADB5C7);
     final iconColor = const Color(0xFF8B5CF6);
 
     return Form(
@@ -677,26 +614,19 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Info banner
           _InfoBanner(
             isDark: isDark,
             message:
                 'We use your Ghana Card to verify your identity. '
                 'Your information is encrypted and never shared.',
           ),
-
           const SizedBox(height: 24),
-
-          // Ghana Card number
           _FieldLabel(label: 'Ghana Card Number', isDark: isDark),
           const SizedBox(height: 8),
           TextFormField(
             controller: _idNumberCtrl,
             style: TextStyle(
-              color: primaryText,
-              fontSize: 15,
-              letterSpacing: 1.2,
-            ),
+                color: primaryText, fontSize: 15, letterSpacing: 1.2),
             textCapitalization: TextCapitalization.characters,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9\-]')),
@@ -712,21 +642,13 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               iconColor: iconColor,
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) {
-                return 'Ghana Card number is required';
-              }
-              // Basic format: GHA-000000000-0
+              if (v == null || v.isEmpty) return 'Ghana Card number is required';
               final re = RegExp(r'^GHA-\d{9}-\d$');
-              if (!re.hasMatch(v)) {
-                return 'Format must be GHA-XXXXXXXXX-X';
-              }
+              if (!re.hasMatch(v)) return 'Format must be GHA-XXXXXXXXX-X';
               return null;
             },
           ),
-
           const SizedBox(height: 18),
-
-          // Expiry date
           _FieldLabel(label: 'Card Expiry Date', isDark: isDark),
           const SizedBox(height: 8),
           TextFormField(
@@ -747,19 +669,13 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               iconColor: iconColor,
             ),
             validator: (v) {
-              if (v == null || v.length < 5) {
-                return 'Enter a valid expiry date';
-              }
+              if (v == null || v.length < 5) return 'Enter a valid expiry date';
               return null;
             },
           ),
-
           const SizedBox(height: 28),
-
-          // Photo uploads
           _SectionTitle(label: 'Upload ID Photos', primaryText: primaryText),
           const SizedBox(height: 14),
-
           Row(
             children: [
               Expanded(
@@ -770,11 +686,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                   isDark: isDark,
                   surfaceColor: surfaceColor,
                   borderColor: borderColor,
-                  onTap: () => _pickPhoto(
-                    isIdFront: true,
-                    isIdBack: false,
-                    isSelfie: false,
-                  ),
+                  onTap: () =>
+                      _pickPhoto(isIdFront: true, isIdBack: false),
                 ),
               ),
               const SizedBox(width: 12),
@@ -786,19 +699,13 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                   isDark: isDark,
                   surfaceColor: surfaceColor,
                   borderColor: borderColor,
-                  onTap: () => _pickPhoto(
-                    isIdFront: false,
-                    isIdBack: true,
-                    isSelfie: false,
-                  ),
+                  onTap: () =>
+                      _pickPhoto(isIdFront: false, isIdBack: true),
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
-          // Tips
           _TipsCard(
             isDark: isDark,
             tips: const [
@@ -826,11 +733,9 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
         _InfoBanner(
           isDark: isDark,
           message:
-              'We\'ll send a 6-digit code to ${widget.phoneNumber} to confirm ownership.',
+              'We\'ll send a 6-digit code to $_phoneNumber to confirm ownership.',
         ),
-
         const SizedBox(height: 28),
-
         Center(
           child: Column(
             children: [
@@ -841,42 +746,35 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                   color: const Color(0xFF8B5CF6).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.sms_rounded,
-                  color: Color(0xFF8B5CF6),
-                  size: 36,
-                ),
+                child: const Icon(Icons.sms_rounded,
+                    color: Color(0xFF8B5CF6), size: 36),
               ),
               const SizedBox(height: 16),
               Text(
                 _otpVerified
                     ? 'Phone Verified ✓'
                     : _otpSent
-                    ? 'Enter the code sent to'
-                    : 'Verify your phone number',
+                        ? 'Enter the code sent to'
+                        : 'Verify your phone number',
                 style: TextStyle(
-                  color: primaryText,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
+                    color: primaryText,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700),
               ),
               if (_otpSent && !_otpVerified) ...[
                 const SizedBox(height: 4),
                 Text(
-                  widget.phoneNumber,
+                  _phoneNumber,
                   style: const TextStyle(
-                    color: Color(0xFF8B5CF6),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      color: Color(0xFF8B5CF6),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ],
           ),
         ),
-
         const SizedBox(height: 32),
-
         if (!_otpSent && !_otpVerified)
           SizedBox(
             width: double.infinity,
@@ -885,47 +783,35 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               onPressed: _sendingOtp ? null : _sendOtp,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7C3AED),
-                disabledBackgroundColor: const Color(
-                  0xFF7C3AED,
-                ).withOpacity(0.5),
+                disabledBackgroundColor:
+                    const Color(0xFF7C3AED).withOpacity(0.5),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                    borderRadius: BorderRadius.circular(14)),
               ),
               icon: _sendingOtp
                   ? const SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Icon(
-                      Icons.send_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                          color: Colors.white, strokeWidth: 2))
+                  : const Icon(Icons.send_rounded,
+                      color: Colors.white, size: 18),
               label: Text(
                 _sendingOtp ? 'Sending...' : 'Send OTP',
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700),
               ),
             ),
           ),
-
         if (_otpSent && !_otpVerified) ...[
-          // OTP boxes
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(6, (i) {
-              final boxBg = isDark
-                  ? const Color(0xFF1F2937)
-                  : const Color(0xFFEEF1FB);
+              final boxBg =
+                  isDark ? const Color(0xFF1F2937) : const Color(0xFFEEF1FB);
               return SizedBox(
                 width: 46,
                 height: 56,
@@ -936,46 +822,35 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                   keyboardType: TextInputType.number,
                   maxLength: 1,
                   style: TextStyle(
-                    color: primaryText,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
+                      color: primaryText,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800),
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     counterText: '',
                     filled: true,
                     fillColor: boxBg,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: borderColor),
-                    ),
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: borderColor)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(
-                        color: Color(0xFF8B5CF6),
-                        width: 2,
-                      ),
+                          color: Color(0xFF8B5CF6), width: 2),
                     ),
                   ),
                   onChanged: (v) {
-                    if (v.isNotEmpty && i < 5) {
-                      _otpFocus[i + 1].requestFocus();
-                    }
-                    if (v.isEmpty && i > 0) {
-                      _otpFocus[i - 1].requestFocus();
-                    }
+                    if (v.isNotEmpty && i < 5) _otpFocus[i + 1].requestFocus();
+                    if (v.isEmpty && i > 0) _otpFocus[i - 1].requestFocus();
                   },
                 ),
               );
             }),
           ),
-
           const SizedBox(height: 24),
-
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -983,82 +858,66 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               onPressed: _verifyingOtp ? null : _verifyOtp,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF7C3AED),
-                disabledBackgroundColor: const Color(
-                  0xFF7C3AED,
-                ).withOpacity(0.5),
+                disabledBackgroundColor:
+                    const Color(0xFF7C3AED).withOpacity(0.5),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                    borderRadius: BorderRadius.circular(14)),
               ),
               child: _verifyingOtp
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.5,
-                      ),
-                    )
+                          color: Colors.white, strokeWidth: 2.5))
                   : const Text(
                       'Verify Code',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700),
                     ),
             ),
           ),
-
           const SizedBox(height: 16),
-
           Center(
             child: _resendCountdown > 0
-                ? Text(
-                    'Resend code in ${_resendCountdown}s',
-                    style: TextStyle(color: secondaryText, fontSize: 13),
-                  )
+                ? Text('Resend code in ${_resendCountdown}s',
+                    style: TextStyle(color: secondaryText, fontSize: 13))
                 : TextButton(
                     onPressed: _sendOtp,
                     child: const Text(
                       'Resend Code',
                       style: TextStyle(
-                        color: Color(0xFF8B5CF6),
-                        fontWeight: FontWeight.w600,
-                      ),
+                          color: Color(0xFF8B5CF6),
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
           ),
         ],
-
         if (_otpVerified) ...[
           Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFF34D399).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF34D399).withOpacity(0.3),
-                ),
+                    color: const Color(0xFF34D399).withOpacity(0.3)),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    color: Color(0xFF34D399),
-                    size: 20,
-                  ),
+                  Icon(Icons.check_circle_rounded,
+                      color: Color(0xFF34D399), size: 20),
                   SizedBox(width: 10),
                   Text(
                     'Phone number verified',
                     style: TextStyle(
-                      color: Color(0xFF34D399),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
+                        color: Color(0xFF34D399),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14),
                   ),
                 ],
               ),
@@ -1069,128 +928,7 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     );
   }
 
-  // ── STEP 3: SELFIE ────────────────────────────────────────────────────────
-  Widget _buildSelfieStep(
-    bool isDark,
-    Color surfaceColor,
-    Color borderColor,
-    Color primaryText,
-    Color secondaryText,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _InfoBanner(
-          isDark: isDark,
-          message:
-              'Take a selfie holding your Ghana Card next to your face. '
-              'Our system will match it against the card photo.',
-        ),
-
-        const SizedBox(height: 28),
-
-        Center(
-          child: GestureDetector(
-            onTap: () =>
-                _pickPhoto(isIdFront: false, isIdBack: false, isSelfie: true),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDark
-                    ? const Color(0xFF1F2937)
-                    : const Color(0xFFEEF1FB),
-                border: Border.all(
-                  color: _selfiePhoto != null
-                      ? const Color(0xFF34D399)
-                      : const Color(0xFF8B5CF6).withOpacity(0.4),
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color:
-                        (_selfiePhoto != null
-                                ? const Color(0xFF34D399)
-                                : const Color(0xFF8B5CF6))
-                            .withOpacity(0.2),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: _selfiePhoto != null
-                  ? ClipOval(
-                      child: Image.file(
-                        File(_selfiePhoto!.path),
-                        fit: BoxFit.cover,
-                        width: 220,
-                        height: 220,
-                      ),
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.camera_alt_rounded,
-                          color: Color(0xFF8B5CF6),
-                          size: 44,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Tap to take selfie',
-                          style: TextStyle(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.5)
-                                : const Color(0xFF64748B),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 28),
-
-        _TipsCard(
-          isDark: isDark,
-          tips: const [
-            'Hold your Ghana Card clearly next to your face',
-            'Ensure your face is well-lit',
-            'Remove glasses or hats if possible',
-            'Look directly at the camera',
-          ],
-        ),
-
-        if (_selfiePhoto != null) ...[
-          const SizedBox(height: 20),
-          Center(
-            child: TextButton.icon(
-              onPressed: () =>
-                  _pickPhoto(isIdFront: false, isIdBack: false, isSelfie: true),
-              icon: const Icon(
-                Icons.refresh_rounded,
-                color: Color(0xFF8B5CF6),
-                size: 18,
-              ),
-              label: const Text(
-                'Retake selfie',
-                style: TextStyle(
-                  color: Color(0xFF8B5CF6),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  // ── STEP 4: TIER ──────────────────────────────────────────────────────────
+  // ── STEP 3: TIER ──────────────────────────────────────────────────────────
   Widget _buildTierStep(
     bool isDark,
     Color surfaceColor,
@@ -1250,9 +988,7 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               'Choose the tier that fits your business. '
               'You can always upgrade later.',
         ),
-
         const SizedBox(height: 24),
-
         ...tiers.map((t) {
           final selected = _selectedTier == t.tier;
           return GestureDetector(
@@ -1268,15 +1004,15 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                 color: selected
                     ? t.color.withOpacity(0.07)
                     : isDark
-                    ? const Color(0xFF111827)
-                    : Colors.white,
+                        ? const Color(0xFF111827)
+                        : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: selected
                       ? t.color
                       : isDark
-                      ? Colors.white.withOpacity(0.06)
-                      : const Color(0xFFE2E8F0),
+                          ? Colors.white.withOpacity(0.06)
+                          : const Color(0xFFE2E8F0),
                   width: selected ? 2 : 1,
                 ),
                 boxShadow: selected
@@ -1308,25 +1044,16 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'Tier ${t.tier} — ${t.title}',
-                                  style: TextStyle(
-                                    color: primaryText,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
                             Text(
-                              t.subtitle,
+                              'Tier ${t.tier} — ${t.title}',
                               style: TextStyle(
-                                color: secondaryText,
-                                fontSize: 12,
-                              ),
+                                  color: primaryText,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700),
                             ),
+                            Text(t.subtitle,
+                                style: TextStyle(
+                                    color: secondaryText, fontSize: 12)),
                           ],
                         ),
                       ),
@@ -1341,75 +1068,54 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                             color: selected
                                 ? t.color
                                 : isDark
-                                ? Colors.white.withOpacity(0.2)
-                                : const Color(0xFFCBD5E1),
+                                    ? Colors.white.withOpacity(0.2)
+                                    : const Color(0xFFCBD5E1),
                             width: 2,
                           ),
                         ),
                         child: selected
-                            ? const Icon(
-                                Icons.check_rounded,
-                                color: Colors.white,
-                                size: 13,
-                              )
+                            ? const Icon(Icons.check_rounded,
+                                color: Colors.white, size: 13)
                             : null,
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 14),
-
-                  // Limits
                   ...t.limits.map(
                     (l) => Padding(
                       padding: const EdgeInsets.only(bottom: 5),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.check_circle_outline_rounded,
-                            color: t.color,
-                            size: 14,
-                          ),
+                          Icon(Icons.check_circle_outline_rounded,
+                              color: t.color, size: 14),
                           const SizedBox(width: 8),
-                          Text(
-                            l,
-                            style: TextStyle(
-                              color: secondaryText,
-                              fontSize: 12,
-                            ),
-                          ),
+                          Text(l,
+                              style: TextStyle(
+                                  color: secondaryText, fontSize: 12)),
                         ],
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
+                        horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: t.color.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: t.color,
-                          size: 13,
-                        ),
+                        Icon(Icons.info_outline_rounded,
+                            color: t.color, size: 13),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             t.requirement,
                             style: TextStyle(
-                              color: t.color,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
+                                color: t.color,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
@@ -1424,7 +1130,7 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     );
   }
 
-  // ── STEP 5: REVIEW ────────────────────────────────────────────────────────
+  // ── STEP 4: REVIEW ────────────────────────────────────────────────────────
   Widget _buildReviewStep(
     bool isDark,
     Color surfaceColor,
@@ -1452,13 +1158,9 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               'Please review your information before submitting. '
               'Once submitted, changes require contacting support.',
         ),
-
         const SizedBox(height: 24),
-
         _SectionTitle(label: 'Submitted Information', primaryText: primaryText),
         const SizedBox(height: 14),
-
-        // Review card
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -1470,7 +1172,7 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
             children: [
               _ReviewRow(
                 label: 'Phone Number',
-                value: widget.phoneNumber,
+                value: _phoneNumber,
                 icon: Icons.phone_rounded,
                 verified: true,
                 isDark: isDark,
@@ -1489,16 +1191,6 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               ),
               _divider(isDark),
               _ReviewRow(
-                label: 'Selfie',
-                value: _selfiePhoto != null ? 'Photo captured' : '—',
-                icon: Icons.face_rounded,
-                verified: _selfiePhoto != null,
-                isDark: isDark,
-                secondaryText: secondaryText,
-                primaryText: primaryText,
-              ),
-              _divider(isDark),
-              _ReviewRow(
                 label: 'Selected Tier',
                 value: _selectedTier >= 0
                     ? 'Tier $_selectedTier — ${tierNames[_selectedTier]}'
@@ -1508,17 +1200,13 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                 isDark: isDark,
                 secondaryText: secondaryText,
                 primaryText: primaryText,
-                accentColor: _selectedTier >= 0
-                    ? tierColors[_selectedTier]
-                    : null,
+                accentColor:
+                    _selectedTier >= 0 ? tierColors[_selectedTier] : null,
               ),
             ],
           ),
         ),
-
         const SizedBox(height: 24),
-
-        // ID photos preview
         if (_idFrontPhoto != null || _idBackPhoto != null) ...[
           _SectionTitle(label: 'ID Card Photos', primaryText: primaryText),
           const SizedBox(height: 14),
@@ -1527,35 +1215,26 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               if (_idFrontPhoto != null)
                 Expanded(
                   child: _PhotoPreview(
-                    file: _idFrontPhoto!,
-                    label: 'Front',
-                    isDark: isDark,
-                  ),
+                      file: _idFrontPhoto!, label: 'Front', isDark: isDark),
                 ),
               if (_idFrontPhoto != null && _idBackPhoto != null)
                 const SizedBox(width: 12),
               if (_idBackPhoto != null)
                 Expanded(
                   child: _PhotoPreview(
-                    file: _idBackPhoto!,
-                    label: 'Back',
-                    isDark: isDark,
-                  ),
+                      file: _idBackPhoto!, label: 'Back', isDark: isDark),
                 ),
             ],
           ),
           const SizedBox(height: 16),
         ],
-
-        // Terms agreement
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFF8B5CF6).withOpacity(0.06),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFF8B5CF6).withOpacity(0.18),
-            ),
+                color: const Color(0xFF8B5CF6).withOpacity(0.18)),
           ),
           child: Text(
             'By submitting, you confirm that all information provided is '
@@ -1570,43 +1249,28 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
             ),
           ),
         ),
-
         const SizedBox(height: 8),
       ],
     );
   }
 
   Widget _divider(bool isDark) => Divider(
-    height: 24,
-    color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFE2E8F0),
-  );
+        height: 24,
+        color: isDark
+            ? Colors.white.withOpacity(0.05)
+            : const Color(0xFFE2E8F0),
+      );
 
   // ── BOTTOM CTA ────────────────────────────────────────────────────────────
   Widget _buildBottomCta(bool isDark, Color surfaceColor, Color borderColor) {
     final isLastStep = _currentStep == _totalSteps - 1;
-
-    String label;
-    if (isLastStep) {
-      label = 'Submit for Review';
-    } else if (_currentStep == 1 && !_otpSent) {
-      label = 'Continue';
-    } else {
-      label = 'Continue';
-    }
-
-    // OTP step — "Continue" only active after verification
     final isOtpStep = _currentStep == 1;
     final canContinueOnOtp = !isOtpStep || _otpVerified;
-
     final enabled = _canAdvance && canContinueOnOtp && !_isSubmitting;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        MediaQuery.of(context).padding.bottom + 16,
-      ),
+          20, 12, 20, MediaQuery.of(context).padding.bottom + 16),
       decoration: BoxDecoration(
         color: surfaceColor,
         border: Border(top: BorderSide(color: borderColor)),
@@ -1636,29 +1300,25 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                 : const Color(0xFFE2E8F0),
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+                borderRadius: BorderRadius.circular(16)),
           ),
           child: _isSubmitting
               ? const SizedBox(
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2.5,
-                  ),
-                )
+                      color: Colors.white, strokeWidth: 2.5))
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      label,
+                      isLastStep ? 'Submit for Review' : 'Continue',
                       style: TextStyle(
                         color: enabled
                             ? Colors.white
                             : isDark
-                            ? Colors.white.withOpacity(0.25)
-                            : const Color(0xFFCBD5E1),
+                                ? Colors.white.withOpacity(0.25)
+                                : const Color(0xFFCBD5E1),
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1670,8 +1330,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                         color: enabled
                             ? Colors.white
                             : isDark
-                            ? Colors.white.withOpacity(0.25)
-                            : const Color(0xFFCBD5E1),
+                                ? Colors.white.withOpacity(0.25)
+                                : const Color(0xFFCBD5E1),
                         size: 18,
                       ),
                     ],
@@ -1697,40 +1357,39 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
       prefixIcon: Icon(icon, color: iconColor, size: 20),
       filled: true,
       fillColor: cardBg,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
-      ),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: borderColor),
-      ),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: borderColor)),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.8),
-      ),
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              const BorderSide(color: Color(0xFF8B5CF6), width: 1.8)),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
-      ),
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              const BorderSide(color: Color(0xFFEF4444), width: 1)),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.8),
-      ),
-      errorStyle: const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              const BorderSide(color: Color(0xFFEF4444), width: 1.8)),
+      errorStyle:
+          const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Sub-widgets
+//  Sub-widgets (unchanged)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _InfoBanner extends StatelessWidget {
   final bool isDark;
   final String message;
-
   const _InfoBanner({required this.isDark, required this.message});
 
   @override
@@ -1745,11 +1404,8 @@ class _InfoBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            color: Color(0xFF8B5CF6),
-            size: 17,
-          ),
+          const Icon(Icons.info_outline_rounded,
+              color: Color(0xFF8B5CF6), size: 17),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -1772,7 +1428,6 @@ class _InfoBanner extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final String label;
   final Color primaryText;
-
   const _SectionTitle({required this.label, required this.primaryText});
 
   @override
@@ -1780,11 +1435,10 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       label,
       style: TextStyle(
-        color: primaryText,
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.3,
-      ),
+          color: primaryText,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3),
     );
   }
 }
@@ -1792,7 +1446,6 @@ class _SectionTitle extends StatelessWidget {
 class _FieldLabel extends StatelessWidget {
   final String label;
   final bool isDark;
-
   const _FieldLabel({required this.label, required this.isDark});
 
   @override
@@ -1842,15 +1495,14 @@ class _PhotoUploadCard extends StatelessWidget {
           color: hasPhoto
               ? Colors.transparent
               : isDark
-              ? const Color(0xFF1F2937)
-              : const Color(0xFFEEF1FB),
+                  ? const Color(0xFF1F2937)
+                  : const Color(0xFFEEF1FB),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: hasPhoto
                 ? const Color(0xFF34D399)
                 : const Color(0xFF8B5CF6).withOpacity(0.3),
             width: hasPhoto ? 2 : 1.5,
-            style: hasPhoto ? BorderStyle.solid : BorderStyle.solid,
           ),
         ),
         child: hasPhoto
@@ -1869,11 +1521,8 @@ class _PhotoUploadCard extends StatelessWidget {
                           color: const Color(0xFF34D399),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: Colors.white,
-                          size: 12,
-                        ),
+                        child: const Icon(Icons.check_rounded,
+                            color: Colors.white, size: 12),
                       ),
                     ),
                   ],
@@ -1922,7 +1571,6 @@ class _PhotoUploadCard extends StatelessWidget {
 class _TipsCard extends StatelessWidget {
   final bool isDark;
   final List<String> tips;
-
   const _TipsCard({required this.isDark, required this.tips});
 
   @override
@@ -1939,19 +1587,15 @@ class _TipsCard extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(
-                Icons.tips_and_updates_rounded,
-                color: Color(0xFF34D399),
-                size: 15,
-              ),
+              Icon(Icons.tips_and_updates_rounded,
+                  color: Color(0xFF34D399), size: 15),
               SizedBox(width: 6),
               Text(
                 'Tips',
                 style: TextStyle(
-                  color: Color(0xFF34D399),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                    color: Color(0xFF34D399),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -1962,10 +1606,9 @@ class _TipsCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '• ',
-                    style: TextStyle(color: Color(0xFF34D399), fontSize: 11),
-                  ),
+                  const Text('• ',
+                      style: TextStyle(
+                          color: Color(0xFF34D399), fontSize: 11)),
                   Expanded(
                     child: Text(
                       t,
@@ -2017,35 +1660,32 @@ class _ReviewRow extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: (accentColor ?? const Color(0xFF8B5CF6)).withOpacity(0.1),
+            color:
+                (accentColor ?? const Color(0xFF8B5CF6)).withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(
-            icon,
-            color: accentColor ?? const Color(0xFF8B5CF6),
-            size: 18,
-          ),
+          child: Icon(icon,
+              color: accentColor ?? const Color(0xFF8B5CF6), size: 18),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(color: secondaryText, fontSize: 11)),
+              Text(label,
+                  style: TextStyle(color: secondaryText, fontSize: 11)),
               const SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  color: primaryText,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(value,
+                  style: TextStyle(
+                      color: primaryText,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: verified
                 ? const Color(0xFF34D399).withOpacity(0.1)
@@ -2072,12 +1712,8 @@ class _PhotoPreview extends StatelessWidget {
   final XFile file;
   final String label;
   final bool isDark;
-
-  const _PhotoPreview({
-    required this.file,
-    required this.label,
-    required this.isDark,
-  });
+  const _PhotoPreview(
+      {required this.file, required this.label, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -2086,12 +1722,8 @@ class _PhotoPreview extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.file(
-            File(file.path),
-            height: 100,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          ),
+          child: Image.file(File(file.path),
+              height: 100, width: double.infinity, fit: BoxFit.cover),
         ),
         const SizedBox(height: 6),
         Text(
@@ -2136,7 +1768,6 @@ class _TierInfo {
 //  Text input formatters
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Formats Ghana Card numbers as GHA-XXXXXXXXX-X
 class _GhanaCardFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -2145,12 +1776,10 @@ class _GhanaCardFormatter extends TextInputFormatter {
   ) {
     final raw = newValue.text.replaceAll(RegExp(r'[^A-Z0-9]'), '');
     final buffer = StringBuffer();
-
     for (int i = 0; i < raw.length && i < 13; i++) {
       if (i == 3 || i == 12) buffer.write('-');
       buffer.write(raw[i]);
     }
-
     final formatted = buffer.toString();
     return TextEditingValue(
       text: formatted,
@@ -2159,7 +1788,6 @@ class _GhanaCardFormatter extends TextInputFormatter {
   }
 }
 
-/// Formats expiry as MM/YY
 class _ExpiryFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

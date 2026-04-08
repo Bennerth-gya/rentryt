@@ -1,4 +1,4 @@
-import 'package:comfi/components/products_details.dart';
+import 'package:comfi/core/constants/app_routes.dart';
 // import 'package:comfi/consts/colors.dart';
 import 'package:comfi/models/products.dart';
 import 'package:flutter/material.dart';
@@ -129,11 +129,10 @@ class _ProductsTileState extends State<ProductsTile>
         : const Color(0xFF8B5CF6).withOpacity(0.1);
 
     return GestureDetector(
-      onTap: () => Navigator.push(
+      onTap: () => Navigator.pushNamed(
         context,
-        MaterialPageRoute(
-          builder: (_) => ProductDetailsPage(product: product),
-        ),
+        AppRoutes.productDetails,
+        arguments: product,
       ),
       child: Container(
         decoration: BoxDecoration(

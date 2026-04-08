@@ -1,10 +1,12 @@
 import 'package:comfi/components/products_tile.dart';
 import 'package:comfi/consts/app_theme.dart';
 import 'package:comfi/consts/theme_toggle_button.dart' show ThemeToggleButton;
+import 'package:comfi/core/constants/app_routes.dart';
 import 'package:comfi/models/cart.dart';
 import 'package:comfi/models/products.dart';
-import 'package:comfi/pages/become_a_seller_screen.dart';
 import 'package:comfi/pages/product_search_delegate.dart';
+import 'package:comfi/presentation/widgets/app_error_state.dart';
+import 'package:comfi/presentation/widgets/app_loading_state.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:provider/provider.dart';
@@ -193,6 +195,23 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
 
     return Consumer<Cart>(
       builder: (context, cart, _) {
+        if (cart.isBootstrapping && cart.allProducts.isEmpty) {
+          return Scaffold(
+            backgroundColor: scaffoldBg,
+            body: const AppLoadingState(label: 'Loading products...'),
+          );
+        }
+
+        if (cart.errorMessage != null && cart.allProducts.isEmpty) {
+          return Scaffold(
+            backgroundColor: scaffoldBg,
+            body: AppErrorState(
+              message: cart.errorMessage!,
+              onRetry: cart.bootstrap,
+            ),
+          );
+        }
+
         final selectedLabel =
             _categories[_selectedCategory]['label'] as String;
         final displayProducts =
@@ -312,12 +331,9 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
 
                                 // Sell button
                                 GestureDetector(
-                                  onTap: () => Navigator.push(
+                                  onTap: () => Navigator.pushNamed(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const BecomeSellerScreen(),
-                                    ),
+                                    AppRoutes.becomeSeller,
                                   ),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(

@@ -1,7 +1,9 @@
 //import 'package:comfi/consts/app_theme.dart';
 //import 'package:comfi/pages/seller_section/sellers_main_screen.dart'; // ✅ correct import
-import 'package:comfi/pages/seller_verification_screen.dart';
+import 'package:comfi/core/constants/app_routes.dart';
+import 'package:comfi/presentation/state/seller_onboarding_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 //import 'package:image_picker/image_picker.dart';
 
 class BecomeSellerScreen extends StatefulWidget {
@@ -52,9 +54,22 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 2));
+    final controller = context.read<SellerOnboardingController>();
+    final message = await controller.submitApplication(
+      shopName: shopName,
+      phoneNumber: phone,
+      location: location,
+      description: description,
+    );
     if (!mounted) return;
     setState(() => _isSubmitting = false);
+
+    if (message != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+      return;
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -91,9 +106,10 @@ class _BecomeSellerScreenState extends State<BecomeSellerScreen>
     );
 
     // ✅ Navigate to SellerMainScreen — the proper shell for the seller flow
-    Navigator.pushReplacement(
+    Navigator.pushReplacementNamed(
       context,
-      MaterialPageRoute(builder: (_) => const SellerVerificationScreen(phoneNumber: '')), // Pass phone number if needed
+      AppRoutes.sellerVerification,
+      arguments: phone,
     );
   }
 

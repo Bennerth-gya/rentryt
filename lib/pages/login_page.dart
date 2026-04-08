@@ -1,68 +1,77 @@
-import 'package:comfi/pages/home_page.dart';
+import 'package:comfi/consts/theme_toggle_button.dart';
+import 'package:comfi/core/constants/app_routes.dart';
+import 'package:comfi/presentation/state/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
-
-import '../consts/theme_toggle_button.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatelessWidget {
+  static const String _appLogoAsset =
+      'assets/images/dark_theme_real_app_logo.png';
+
   const LoginPage({super.key});
-
-  Duration get loadingTime => const Duration(milliseconds: 2000);
-
-  Future<String?> _authUser(LoginData data) =>
-      Future.delayed(loadingTime).then((_) => null);
-
-  Future<String?> _recoverPassword(String name) =>
-      Future.delayed(loadingTime).then((_) => null);
-
-  Future<String?> _signupUser(SignupData data) =>
-      Future.delayed(loadingTime).then((_) => null);
 
   @override
   Widget build(BuildContext context) {
+    final authController = context.read<AuthController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // ── Screen measurements ───────────────────────────────
-    final screenW      = MediaQuery.of(context).size.width;
-    final screenH      = MediaQuery.of(context).size.height;
-    final topPad       = MediaQuery.of(context).padding.top;
-    final bottomPad    = MediaQuery.of(context).padding.bottom;
+    final screenW = MediaQuery.of(context).size.width;
+    final screenH = MediaQuery.of(context).size.height;
+    final topPad = MediaQuery.of(context).padding.top;
+    final bottomPad = MediaQuery.of(context).padding.bottom;
     final isSmallPhone = screenH < 680;
-    final isTablet     = screenW >= 600;
-    final isDesktop    = screenW >= 1000;
+    final isTablet = screenW >= 600;
+    final isDesktop = screenW >= 1000;
 
     // ── Responsive values ─────────────────────────────────
-    final cardHPad     = isDesktop ? screenW * 0.28
-                       : isTablet  ? screenW * 0.15
-                       : isSmallPhone ? 12.0 : 20.0;
-    final logoSize     = isDesktop ? 90.0 : isTablet ? 84.0
-                       : isSmallPhone ? 60.0 : 76.0;
-    final logoRadius   = isDesktop ? 26.0 : isTablet ? 24.0
-                       : isSmallPhone ? 18.0 : 22.0;
-    final logoIconSize = isDesktop ? 48.0 : isTablet ? 44.0
-                       : isSmallPhone ? 30.0 : 40.0;
-    final titleFs      = isDesktop ? 44.0 : isTablet ? 42.0
-                       : isSmallPhone ? 28.0 : 38.0;
-    final taglineFs    = isDesktop ? 14.0 : isTablet ? 13.5
-                       : isSmallPhone ? 10.5 : 12.5;
-    final headerGapTop    = isSmallPhone ? 6.0  : 16.0;
-    final headerGapMiddle = isSmallPhone ? 3.0  : 5.0;
-    final headerGapBottom = isSmallPhone ? 4.0  : 8.0;
-    final inputVPad    = isSmallPhone ? 12.0 : 16.0;
-    final inputHPad    = isSmallPhone ? 16.0 : 20.0;
-    final inputFs      = isSmallPhone ? 13.0 : 15.0;
-    final labelFs      = isSmallPhone ? 12.0 : 14.0;
-    final buttonFs     = isSmallPhone ? 14.0 : 16.0;
-    final cardRadius   = isTablet ? 32.0 : isSmallPhone ? 20.0 : 28.0;
-    final toggleSize   = isSmallPhone ? 36.0 : 42.0;
+    final cardHPad = isDesktop
+        ? screenW * 0.28
+        : isTablet
+        ? screenW * 0.15
+        : isSmallPhone
+        ? 12.0
+        : 20.0;
+    final logoSize = isDesktop
+        ? 90.0
+        : isTablet
+        ? 84.0
+        : isSmallPhone
+        ? 60.0
+        : 76.0;
+    final titleFs = isDesktop
+        ? 44.0
+        : isTablet
+        ? 42.0
+        : isSmallPhone
+        ? 28.0
+        : 38.0;
+    final taglineFs = isDesktop
+        ? 14.0
+        : isTablet
+        ? 13.5
+        : isSmallPhone
+        ? 10.5
+        : 12.5;
+    final headerGapTop = isSmallPhone ? 6.0 : 16.0;
+    final headerGapMiddle = isSmallPhone ? 3.0 : 5.0;
+    final headerGapBottom = isSmallPhone ? 4.0 : 8.0;
+    final inputVPad = isSmallPhone ? 12.0 : 16.0;
+    final inputHPad = isSmallPhone ? 16.0 : 20.0;
+    final inputFs = isSmallPhone ? 13.0 : 15.0;
+    final labelFs = isSmallPhone ? 12.0 : 14.0;
+    final buttonFs = isSmallPhone ? 14.0 : 16.0;
+    final cardRadius = isTablet
+        ? 32.0
+        : isSmallPhone
+        ? 20.0
+        : 28.0;
+    final toggleSize = isSmallPhone ? 36.0 : 42.0;
 
     // ── Theme-aware colours ───────────────────────────────
-    final bgColor = isDark
-        ? const Color(0xFF080C14)
-        : const Color(0xFFF5F7FF);
-    final cardColor = isDark
-        ? const Color(0xFF111827)
-        : Colors.white;
+    final bgColor = isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
+    final cardColor = isDark ? const Color(0xFF111827) : Colors.white;
     final cardBorder = isDark
         ? Colors.white.withOpacity(0.07)
         : const Color(0xFFE2E8F0);
@@ -72,9 +81,7 @@ class LoginPage extends StatelessWidget {
     final inputBorder = isDark
         ? Colors.white.withOpacity(0.06)
         : const Color(0xFFDDE3F0);
-    final inputTextColor = isDark
-        ? Colors.white
-        : const Color(0xFF0F172A);
+    final inputTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
     final glowTop = isDark
         ? const Color(0xFF7C3AED).withOpacity(0.45)
         : const Color(0xFF7C3AED).withOpacity(0.12);
@@ -95,7 +102,6 @@ class LoginPage extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-
           // ── Background ─────────────────────────────────
           Container(color: bgColor),
 
@@ -104,7 +110,11 @@ class LoginPage extends StatelessWidget {
             top: isSmallPhone ? -80 : -120,
             right: isSmallPhone ? -70 : -100,
             child: _GlowCircle(
-              size: isSmallPhone ? 240 : isTablet ? 400 : 340,
+              size: isSmallPhone
+                  ? 240
+                  : isTablet
+                  ? 400
+                  : 340,
               color: glowTop,
             ),
           ),
@@ -114,7 +124,11 @@ class LoginPage extends StatelessWidget {
             bottom: isSmallPhone ? -100 : -140,
             left: isSmallPhone ? -70 : -100,
             child: _GlowCircle(
-              size: isSmallPhone ? 260 : isTablet ? 440 : 380,
+              size: isSmallPhone
+                  ? 260
+                  : isTablet
+                  ? 440
+                  : 380,
               color: glowBottom,
             ),
           ),
@@ -124,29 +138,43 @@ class LoginPage extends StatelessWidget {
             top: isSmallPhone ? 180 : 260,
             right: isSmallPhone ? -40 : -60,
             child: _GlowCircle(
-              size: isSmallPhone ? 140 : isTablet ? 240 : 200,
+              size: isSmallPhone
+                  ? 140
+                  : isTablet
+                  ? 240
+                  : 200,
               color: glowMid,
             ),
           ),
 
           // ── Grid texture ───────────────────────────────
           Positioned.fill(
-            child: CustomPaint(
-                painter: _GridPainter(opacity: gridOpacity)),
+            child: CustomPaint(painter: _GridPainter(opacity: gridOpacity)),
           ),
           Center(
             child: FlutterLogin(
               title: 'Comfi',
               navigateBackAfterRecovery: true,
-              onLogin: _authUser,
-              onRecoverPassword: _recoverPassword,
-              onSignup: _signupUser,
+              onLogin: (data) => authController.loginUser(
+                email: data.name,
+                password: data.password,
+              ),
+              onRecoverPassword: (email) =>
+                  authController.recoverPassword(email: email),
+              onSignup: (data) => authController.signupUser(
+                name:
+                    data.name ??
+                    data.additionalSignupData?['name'] ??
+                    data.additionalSignupData?['full_name'] ??
+                    'Comfi User',
+                email: data.name ?? '',
+                password: data.password ?? '',
+              ),
               loginAfterSignUp: true,
               headerWidget: _ComfiHeader(
                 isDark: isDark,
                 logoSize: logoSize,
-                logoRadius: logoRadius,
-                logoIconSize: logoIconSize,
+                logoAsset: _appLogoAsset,
                 titleFs: titleFs,
                 taglineFs: taglineFs,
                 gapTop: headerGapTop,
@@ -154,10 +182,12 @@ class LoginPage extends StatelessWidget {
                 gapBottom: headerGapBottom,
               ),
               onSubmitAnimationCompleted: () {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                      builder: (_) => const HomePage()),
-                );
+                if (!authController.isAuthenticated) {
+                  return;
+                }
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
               },
               theme: LoginTheme(
                 cardTheme: CardTheme(
@@ -183,7 +213,9 @@ class LoginPage extends StatelessWidget {
                     ? Colors.white.withOpacity(0.55)
                     : const Color(0xFF4C1D95),
                 textFieldStyle: TextStyle(
-                    color: inputTextColor, fontSize: inputFs),
+                  color: inputTextColor,
+                  fontSize: inputFs,
+                ),
                 inputTheme: InputDecorationTheme(
                   filled: true,
                   fillColor: inputFill,
@@ -198,19 +230,15 @@ class LoginPage extends StatelessWidget {
                     fontSize: labelFs,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(isSmallPhone ? 10 : 14),
+                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
                     borderSide: BorderSide.none,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(isSmallPhone ? 10 : 14),
-                    borderSide:
-                        BorderSide(color: inputBorder, width: 1),
+                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
+                    borderSide: BorderSide(color: inputBorder, width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(isSmallPhone ? 10 : 14),
+                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
                     borderSide: const BorderSide(
                       color: Color(0xFF8B5CF6),
                       width: 1.8,
@@ -224,8 +252,7 @@ class LoginPage extends StatelessWidget {
                   elevation: 0,
                   highlightElevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(isSmallPhone ? 10 : 14),
+                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
                   ),
                 ),
                 buttonStyle: TextStyle(
@@ -269,8 +296,7 @@ class LoginPage extends StatelessWidget {
             top: topPad + 12,
             right: 16,
             child: ThemeToggleButton(
-              surfaceColor:
-                  cardColor.withOpacity(isDark ? 0.85 : 0.92),
+              surfaceColor: cardColor.withOpacity(isDark ? 0.85 : 0.92),
               borderColor: cardBorder,
               size: toggleSize,
             ),
@@ -285,8 +311,7 @@ class LoginPage extends StatelessWidget {
 class _ComfiHeader extends StatelessWidget {
   final bool isDark;
   final double logoSize;
-  final double logoRadius;
-  final double logoIconSize;
+  final String logoAsset;
   final double titleFs;
   final double taglineFs;
   final double gapTop;
@@ -296,8 +321,7 @@ class _ComfiHeader extends StatelessWidget {
   const _ComfiHeader({
     required this.isDark,
     required this.logoSize,
-    required this.logoRadius,
-    required this.logoIconSize,
+    required this.logoAsset,
     required this.titleFs,
     required this.taglineFs,
     required this.gapTop,
@@ -307,8 +331,7 @@ class _ComfiHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor =
-        isDark ? Colors.white : const Color(0xFF1E1B4B);
+    final titleColor = isDark ? Colors.white : const Color(0xFF1E1B4B);
     final taglineColor = isDark
         ? Colors.white.withOpacity(0.45)
         : const Color(0xFF4C1D95);
@@ -328,26 +351,23 @@ class _ComfiHeader extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)],
             ),
-            borderRadius: BorderRadius.circular(logoRadius),
+            shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF8B5CF6)
-                    .withOpacity(isDark ? 0.55 : 0.3),
+                color: const Color(0xFF8B5CF6).withOpacity(isDark ? 0.55 : 0.3),
                 blurRadius: 28,
                 offset: const Offset(0, 10),
               ),
               BoxShadow(
-                color: const Color(0xFF7C3AED)
-                    .withOpacity(isDark ? 0.3 : 0.15),
+                color: const Color(0xFF7C3AED).withOpacity(isDark ? 0.3 : 0.15),
                 blurRadius: 60,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Icon(
-            Icons.shopping_bag_rounded,
-            color: Colors.white,
-            size: logoIconSize,
+          child: Padding(
+            padding: const EdgeInsets.all(3),
+            child: ClipOval(child: Image.asset(logoAsset, fit: BoxFit.cover)),
           ),
         ),
 
@@ -440,6 +460,5 @@ class _GridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _GridPainter old) =>
-      old.opacity != opacity;
+  bool shouldRepaint(covariant _GridPainter old) => old.opacity != opacity;
 }
