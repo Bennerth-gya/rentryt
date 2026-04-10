@@ -2,278 +2,550 @@ import 'package:comfi/consts/theme_toggle_button.dart';
 import 'package:comfi/core/constants/app_routes.dart';
 import 'package:comfi/presentation/state/auth_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_login/flutter_login.dart';
 import 'package:provider/provider.dart';
 
-class LoginPage extends StatelessWidget {
-  static const String _appLogoAsset =
-      'assets/images/dark_theme_real_app_logo.png';
+// ── Brand Palette ─────────────────────────────────────────────────────────────
+const Color kAccent = Color(0xFFFFC843);
+const Color kHighlight = Color(0xFFE83A8A);
+const Color kViolet = Color(0xFF8B5CF6);
+const Color kDarkBg = Color(0xFF080C14);
+const Color kDarkSurface = Color(0xFF111827);
+const Color kDarkCard = Color(0xFF1F2937);
 
+// ── Light palette ─────────────────────────────────────────────────────────────
+const Color kLightBg = Color(0xFFF5F7FF);
+const Color kLightSurface = Colors.white;
+const Color kLightCard = Color(0xFFEEF1FB);
+const Color kLightText = Color(0xFF0F172A);
+const Color kLightSubtext = Color(0xFF6B7280);
+
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authController = context.read<AuthController>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  State<LoginPage> createState() => _LoginPageState();
+}
 
-    // ── Screen measurements ───────────────────────────────
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  // Toggle between login and "forgot password" mode
+  bool _isForgotPassword = false;
+
+  late AnimationController _animController;
+  late Animation<double> _fadeIn;
+  late Animation<Offset> _slideUp;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeIn = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideUp = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOut));
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // ── Auth actions ───────────────────────────────────────────────────────────
+
+  Future<void> _handleLogin() async {
+    final authController = context.read<AuthController>();
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final error = await authController.loginUser(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (error != null) {
+      setState(() {
+        _errorMessage = error;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    setState(() => _isLoading = false);
+
+    if (authController.isAuthenticated) {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final authController = context.read<AuthController>();
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final error = await authController.recoverPassword(
+      email: _emailController.text.trim(),
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (error != null) {
+      setState(() => _errorMessage = error);
+    } else {
+      // Show success and return to login
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Password reset email sent!'),
+          backgroundColor: kViolet,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      setState(() => _isForgotPassword = false);
+    }
+  }
+
+  void _handleGoogleSignIn() {
+    // Placeholder — wire to your OAuth flow
+  }
+
+  void _handleAppleSignIn() {
+    // Placeholder — wire to your Apple sign-in flow
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenW = MediaQuery.of(context).size.width;
     final screenH = MediaQuery.of(context).size.height;
     final topPad = MediaQuery.of(context).padding.top;
     final bottomPad = MediaQuery.of(context).padding.bottom;
+
     final isSmallPhone = screenH < 680;
     final isTablet = screenW >= 600;
     final isDesktop = screenW >= 1000;
 
-    // ── Responsive values ─────────────────────────────────
-    final cardHPad = isDesktop
-        ? screenW * 0.28
+    final hPad = isDesktop
+        ? screenW * 0.3
         : isTablet
-        ? screenW * 0.15
-        : isSmallPhone
-        ? 12.0
-        : 20.0;
-    final logoSize = isDesktop
-        ? 90.0
-        : isTablet
-        ? 84.0
-        : isSmallPhone
-        ? 60.0
-        : 76.0;
-    final titleFs = isDesktop
-        ? 44.0
-        : isTablet
-        ? 42.0
-        : isSmallPhone
-        ? 28.0
-        : 38.0;
-    final taglineFs = isDesktop
-        ? 14.0
-        : isTablet
-        ? 13.5
-        : isSmallPhone
-        ? 10.5
-        : 12.5;
-    final headerGapTop = isSmallPhone ? 6.0 : 16.0;
-    final headerGapMiddle = isSmallPhone ? 3.0 : 5.0;
-    final headerGapBottom = isSmallPhone ? 4.0 : 8.0;
-    final inputVPad = isSmallPhone ? 12.0 : 16.0;
-    final inputHPad = isSmallPhone ? 16.0 : 20.0;
-    final inputFs = isSmallPhone ? 13.0 : 15.0;
-    final labelFs = isSmallPhone ? 12.0 : 14.0;
-    final buttonFs = isSmallPhone ? 14.0 : 16.0;
-    final cardRadius = isTablet
-        ? 32.0
-        : isSmallPhone
-        ? 20.0
-        : 28.0;
+            ? screenW * 0.18
+            : isSmallPhone
+                ? 16.0
+                : 28.0;
+
+    // Theme-aware colours
+    final bgColor = isDark ? kDarkBg : kLightBg;
+    final surfaceColor = isDark ? kDarkSurface : kLightSurface;
+    final cardColor = isDark ? kDarkCard : kLightCard;
+    final cardBorder =
+        isDark ? Colors.white.withOpacity(0.06) : const Color(0xFFE2E8F0);
     final toggleSize = isSmallPhone ? 36.0 : 42.0;
-
-    // ── Theme-aware colours ───────────────────────────────
-    final bgColor = isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
-    final cardColor = isDark ? const Color(0xFF111827) : Colors.white;
-    final cardBorder = isDark
-        ? Colors.white.withOpacity(0.07)
-        : const Color(0xFFE2E8F0);
-    final inputFill = isDark
-        ? const Color(0xFF1F2937)
-        : const Color(0xFFEEF1FB);
-    final inputBorder = isDark
-        ? Colors.white.withOpacity(0.06)
-        : const Color(0xFFDDE3F0);
-    final inputTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final glowTop = isDark
-        ? const Color(0xFF7C3AED).withOpacity(0.45)
-        : const Color(0xFF7C3AED).withOpacity(0.12);
-    final glowBottom = isDark
-        ? const Color(0xFF4C1D95).withOpacity(0.5)
-        : const Color(0xFF8B5CF6).withOpacity(0.08);
-    final glowMid = isDark
-        ? const Color(0xFF8B5CF6).withOpacity(0.2)
-        : const Color(0xFFA78BFA).withOpacity(0.1);
-    final gridOpacity = isDark ? 0.025 : 0.06;
-
-    // ── Footer text style ─────────────────────────────────
-    final footerColor = isDark
-        ? Colors.white.withOpacity(0.28)
-        : const Color(0xFF9CA3AF);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      backgroundColor: bgColor,
       body: Stack(
         children: [
-          // ── Background ─────────────────────────────────
-          Container(color: bgColor),
-
-          // ── Glow — top right ───────────────────────────
+          // ── Background glows ────────────────────────────────────────────
           Positioned(
-            top: isSmallPhone ? -80 : -120,
-            right: isSmallPhone ? -70 : -100,
+            top: isSmallPhone ? -60 : -80,
+            left: isSmallPhone ? -50 : -60,
             child: _GlowCircle(
-              size: isSmallPhone
-                  ? 240
-                  : isTablet
-                  ? 400
-                  : 340,
-              color: glowTop,
+              color: kHighlight
+                  .withOpacity(isDark ? 0.2 : 0.1),
+              size: isTablet ? 340 : 260,
+            ),
+          ),
+          Positioned(
+            top: isSmallPhone ? 160 : 220,
+            right: isSmallPhone ? -60 : -80,
+            child: _GlowCircle(
+              color:
+                  kViolet.withOpacity(isDark ? 0.25 : 0.12),
+              size: isTablet ? 300 : 220,
+            ),
+          ),
+          Positioned(
+            bottom: isSmallPhone ? -40 : -60,
+            left: 20,
+            child: _GlowCircle(
+              color:
+                  kAccent.withOpacity(isDark ? 0.1 : 0.07),
+              size: isTablet ? 240 : 180,
             ),
           ),
 
-          // ── Glow — bottom left ─────────────────────────
-          Positioned(
-            bottom: isSmallPhone ? -100 : -140,
-            left: isSmallPhone ? -70 : -100,
-            child: _GlowCircle(
-              size: isSmallPhone
-                  ? 260
-                  : isTablet
-                  ? 440
-                  : 380,
-              color: glowBottom,
-            ),
-          ),
-
-          // ── Glow — mid right ───────────────────────────
-          Positioned(
-            top: isSmallPhone ? 180 : 260,
-            right: isSmallPhone ? -40 : -60,
-            child: _GlowCircle(
-              size: isSmallPhone
-                  ? 140
-                  : isTablet
-                  ? 240
-                  : 200,
-              color: glowMid,
-            ),
-          ),
-
-          // ── Grid texture ───────────────────────────────
+          // ── Mesh grid ───────────────────────────────────────────────────
           Positioned.fill(
-            child: CustomPaint(painter: _GridPainter(opacity: gridOpacity)),
-          ),
-          Center(
-            child: FlutterLogin(
-              title: 'Comfi',
-              navigateBackAfterRecovery: true,
-              onLogin: (data) => authController.loginUser(
-                email: data.name,
-                password: data.password,
-              ),
-              onRecoverPassword: (email) =>
-                  authController.recoverPassword(email: email),
-              onSignup: (data) => authController.signupUser(
-                name:
-                    data.name ??
-                    data.additionalSignupData?['name'] ??
-                    data.additionalSignupData?['full_name'] ??
-                    'Comfi User',
-                email: data.name ?? '',
-                password: data.password ?? '',
-              ),
-              loginAfterSignUp: true,
-              headerWidget: _ComfiHeader(
-                isDark: isDark,
-                logoSize: logoSize,
-                logoAsset: _appLogoAsset,
-                titleFs: titleFs,
-                taglineFs: taglineFs,
-                gapTop: headerGapTop,
-                gapMiddle: headerGapMiddle,
-                gapBottom: headerGapBottom,
-              ),
-              onSubmitAnimationCompleted: () {
-                if (!authController.isAuthenticated) {
-                  return;
-                }
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
-              },
-              theme: LoginTheme(
-                cardTheme: CardTheme(
-                  color: cardColor.withOpacity(isDark ? 0.95 : 1.0),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(cardRadius),
-                    side: BorderSide(color: cardBorder, width: 1),
-                  ),
-                  margin: EdgeInsets.symmetric(horizontal: cardHPad),
-                ),
-                titleStyle: const TextStyle(
-                  fontSize: 0,
-                  color: Colors.transparent,
-                ),
-                bodyStyle: TextStyle(
-                  fontSize: isSmallPhone ? 12.0 : 14.0,
-                  color: isDark
-                      ? Colors.white.withOpacity(0.5)
-                      : const Color(0xFF374151),
-                ),
-                switchAuthTextColor: isDark
-                    ? Colors.white.withOpacity(0.55)
-                    : const Color(0xFF4C1D95),
-                textFieldStyle: TextStyle(
-                  color: inputTextColor,
-                  fontSize: inputFs,
-                ),
-                inputTheme: InputDecorationTheme(
-                  filled: true,
-                  fillColor: inputFill,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: inputHPad,
-                    vertical: inputVPad,
-                  ),
-                  labelStyle: TextStyle(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.4)
-                        : const Color(0xFF6B7280),
-                    fontSize: labelFs,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
-                    borderSide: BorderSide(color: inputBorder, width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF8B5CF6),
-                      width: 1.8,
-                    ),
-                  ),
-                  prefixIconColor: const Color(0xFF8B5CF6),
-                ),
-                buttonTheme: LoginButtonTheme(
-                  backgroundColor: const Color(0xFF7C3AED),
-                  splashColor: const Color(0xFF6D28D9),
-                  elevation: 0,
-                  highlightElevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(isSmallPhone ? 10 : 14),
-                  ),
-                ),
-                buttonStyle: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: buttonFs,
-                  letterSpacing: 0.4,
-                  color: Colors.white,
-                ),
-                primaryColor: bgColor,
-                accentColor: const Color(0xFF8B5CF6),
-                errorColor: const Color(0xFFEF4444),
-                // Zero padding — footer is handled outside FlutterLogin
-                footerBottomPadding: 0,
-              ),
-              // No footer prop — we render our own below
+            child: CustomPaint(
+              painter: _GridPainter(opacity: isDark ? 0.025 : 0.06),
             ),
           ),
 
-          // ── Footer — pinned to bottom, never moves ──────
-          // Sits in the Stack above FlutterLogin so the form
-          // expanding upward never affects its position.
+          // ── Main scrollable content ─────────────────────────────────────
+          SafeArea(
+            child: FadeTransition(
+              opacity: _fadeIn,
+              child: SlideTransition(
+                position: _slideUp,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: hPad,
+                    vertical: isSmallPhone ? 16 : 24,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Spacer so theme toggle doesn't overlap
+                      SizedBox(height: isSmallPhone ? 36 : 48),
+
+                      // ── Mode Badge ───────────────────────────────────
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _ModeBadge(
+                          key: ValueKey(_isForgotPassword),
+                          isForgotPassword: _isForgotPassword,
+                        ),
+                      ),
+
+                      SizedBox(height: isSmallPhone ? 16 : 24),
+
+                      // ── Headline ─────────────────────────────────────
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _isForgotPassword
+                            ? _Headline(
+                                key: const ValueKey('forgot'),
+                                line1: 'Reset your',
+                                line2: 'password',
+                                isDark: isDark,
+                              )
+                            : _Headline(
+                                key: const ValueKey('login'),
+                                line1: 'Welcome',
+                                line2: 'back.',
+                                isDark: isDark,
+                              ),
+                      ),
+
+                      SizedBox(height: isSmallPhone ? 6 : 8),
+
+                      Text(
+                        _isForgotPassword
+                            ? "We'll send a reset link to your email."
+                            : 'Sign in to your Comfi account.',
+                        style: TextStyle(
+                          fontSize: isSmallPhone ? 13 : 15,
+                          color: isDark
+                              ? const Color(0xFF9CA3AF)
+                              : kLightSubtext,
+                        ),
+                      ),
+
+                      SizedBox(height: isSmallPhone ? 20 : 32),
+
+                      // ── Form card ────────────────────────────────────
+                      Container(
+                        padding: EdgeInsets.all(isSmallPhone ? 18 : 24),
+                        decoration: BoxDecoration(
+                          color: surfaceColor,
+                          borderRadius: BorderRadius.circular(
+                              isSmallPhone ? 20 : 24),
+                          border:
+                              Border.all(color: cardBorder, width: 1),
+                        ),
+                        child: Column(
+                          children: [
+                            _BrandInputField(
+                              controller: _emailController,
+                              label: 'Email Address',
+                              hint: 'jane@example.com',
+                              icon: Icons.mail_outline_rounded,
+                              keyboardType: TextInputType.emailAddress,
+                              isDark: isDark,
+                              cardColor: cardColor,
+                            ),
+                            if (!_isForgotPassword) ...[
+                              SizedBox(height: isSmallPhone ? 14 : 18),
+                              _BrandInputField(
+                                controller: _passwordController,
+                                label: 'Password',
+                                hint: '••••••••',
+                                icon: Icons.lock_outline_rounded,
+                                obscure: _obscurePassword,
+                                onToggleObscure: () => setState(
+                                  () => _obscurePassword =
+                                      !_obscurePassword,
+                                ),
+                                isDark: isDark,
+                                cardColor: cardColor,
+                              ),
+                            ],
+
+                            // ── Error message ────────────────────────
+                            if (_errorMessage != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEF4444)
+                                      .withOpacity(0.1),
+                                  borderRadius:
+                                      BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(0xFFEF4444)
+                                        .withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  _errorMessage!,
+                                  style: const TextStyle(
+                                    color: Color(0xFFEF4444),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      // ── Forgot password link (login mode only) ────
+                      if (!_isForgotPassword) ...[
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: () => setState(() {
+                              _isForgotPassword = true;
+                              _errorMessage = null;
+                            }),
+                            child: Text(
+                              'Forgot password?',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? kAccent : kViolet,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      SizedBox(height: isSmallPhone ? 20 : 28),
+
+                      // ── Primary action button ─────────────────────
+                      GestureDetector(
+                        onTap: _isLoading
+                            ? null
+                            : _isForgotPassword
+                                ? _handleForgotPassword
+                                : _handleLogin,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: double.infinity,
+                          height: isSmallPhone ? 50 : 56,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [kViolet, kHighlight],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(
+                                isSmallPhone ? 12 : 16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: kViolet.withOpacity(0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Text(
+                                    _isForgotPassword
+                                        ? 'Send Reset Link'
+                                        : 'Sign In',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isSmallPhone ? 14 : 16,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+
+                      // ── Back to login (forgot password mode) ──────
+                      if (_isForgotPassword) ...[
+                        SizedBox(height: isSmallPhone ? 14 : 20),
+                        Center(
+                          child: GestureDetector(
+                            onTap: () => setState(() {
+                              _isForgotPassword = false;
+                              _errorMessage = null;
+                            }),
+                            child: RichText(
+                              text: TextSpan(
+                                text: '← Back to ',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? const Color(0xFF9CA3AF)
+                                      : kLightSubtext,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Sign In',
+                                    style: TextStyle(
+                                      color:
+                                          isDark ? kAccent : kViolet,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      // ── Divider + social (login mode only) ────────
+                      if (!_isForgotPassword) ...[
+                        SizedBox(height: isSmallPhone ? 20 : 28),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.grey.withOpacity(
+                                    isDark ? 0.15 : 0.3),
+                              ),
+                            ),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 14),
+                              child: Text(
+                                'or sign in with',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? const Color(0xFF6B7280)
+                                      : kLightSubtext,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.grey.withOpacity(
+                                    isDark ? 0.15 : 0.3),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: isSmallPhone ? 14 : 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _SocialBtn(
+                                icon: Icons.g_mobiledata_rounded,
+                                label: 'Google',
+                                onTap: _handleGoogleSignIn,
+                                isDark: isDark,
+                                cardColor: cardColor,
+                                cardBorder: cardBorder,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _SocialBtn(
+                                icon: Icons.apple_rounded,
+                                label: 'Apple',
+                                onTap: _handleAppleSignIn,
+                                isDark: isDark,
+                                cardColor: cardColor,
+                                cardBorder: cardBorder,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: isSmallPhone ? 24 : 32),
+
+                        // ── Sign-up link ─────────────────────────────
+                        Center(
+                          child: GestureDetector(
+                            onTap: () =>
+                                Navigator.pushNamed(context, AppRoutes.signUp),
+                            child: RichText(
+                              text: TextSpan(
+                                text: "Don't have an account? ",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? const Color(0xFF9CA3AF)
+                                      : kLightSubtext,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Sign up',
+                                    style: TextStyle(
+                                      color: isDark ? kAccent : kViolet,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: isSmallPhone ? 12 : 24),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ── Footer ─────────────────────────────────────────────────────
           Positioned(
             bottom: bottomPad + (isSmallPhone ? 10 : 16),
             left: 0,
@@ -284,20 +556,25 @@ class LoginPage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: isSmallPhone ? 10.5 : 12.0,
-                  color: footerColor,
+                  color: isDark
+                      ? Colors.white.withOpacity(0.28)
+                      : const Color(0xFF9CA3AF),
                   letterSpacing: 0.3,
                 ),
               ),
             ),
           ),
 
-          // ── Theme toggle — top right corner ────────────
+          // ── Theme toggle ────────────────────────────────────────────────
           Positioned(
             top: topPad + 12,
             right: 16,
             child: ThemeToggleButton(
-              surfaceColor: cardColor.withOpacity(isDark ? 0.85 : 0.92),
-              borderColor: cardBorder,
+              surfaceColor: (isDark ? kDarkSurface : kLightSurface)
+                  .withOpacity(isDark ? 0.85 : 0.92),
+              borderColor: isDark
+                  ? Colors.white.withOpacity(0.07)
+                  : const Color(0xFFE2E8F0),
               size: toggleSize,
             ),
           ),
@@ -307,118 +584,236 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
-class _ComfiHeader extends StatelessWidget {
-  final bool isDark;
-  final double logoSize;
-  final String logoAsset;
-  final double titleFs;
-  final double taglineFs;
-  final double gapTop;
-  final double gapMiddle;
-  final double gapBottom;
+// ── Mode Badge ────────────────────────────────────────────────────────────────
+class _ModeBadge extends StatelessWidget {
+  final bool isForgotPassword;
 
-  const _ComfiHeader({
+  const _ModeBadge({super.key, required this.isForgotPassword});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: kHighlight.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: kHighlight.withOpacity(0.35), width: 1),
+      ),
+      child: Text(
+        isForgotPassword ? '🔑  Reset your password' : '✦  Welcome back',
+        style: const TextStyle(
+          color: kHighlight,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.4,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Headline ──────────────────────────────────────────────────────────────────
+class _Headline extends StatelessWidget {
+  final String line1;
+  final String line2;
+  final bool isDark;
+
+  const _Headline({
+    super.key,
+    required this.line1,
+    required this.line2,
     required this.isDark,
-    required this.logoSize,
-    required this.logoAsset,
-    required this.titleFs,
-    required this.taglineFs,
-    required this.gapTop,
-    required this.gapMiddle,
-    required this.gapBottom,
   });
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = isDark ? Colors.white : const Color(0xFF1E1B4B);
-    final taglineColor = isDark
-        ? Colors.white.withOpacity(0.45)
-        : const Color(0xFF4C1D95);
-    final ruleColor = isDark
-        ? const Color(0xFF8B5CF6)
-        : const Color(0xFF7C3AED);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: logoSize,
-          height: logoSize,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)],
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF8B5CF6).withOpacity(isDark ? 0.55 : 0.3),
-                blurRadius: 28,
-                offset: const Offset(0, 10),
-              ),
-              BoxShadow(
-                color: const Color(0xFF7C3AED).withOpacity(isDark ? 0.3 : 0.15),
-                blurRadius: 60,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(3),
-            child: ClipOval(child: Image.asset(logoAsset, fit: BoxFit.cover)),
-          ),
+    final isSmallPhone = MediaQuery.of(context).size.height < 680;
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(
+          fontSize: isSmallPhone ? 28 : 36,
+          fontWeight: FontWeight.w800,
+          height: 1.15,
+          letterSpacing: -0.8,
         ),
-
-        const SizedBox(height: 30),
-
-        Center(
-          child: Text(
-            'Comfi',
-            textAlign: TextAlign.center,
+        children: [
+          TextSpan(
+            text: '$line1\n',
             style: TextStyle(
-              fontSize: titleFs,
-              fontWeight: FontWeight.w800,
-              color: titleColor,
-              letterSpacing: 1.0,
+                color: isDark ? Colors.white : const Color(0xFF1E1B4B)),
+          ),
+          TextSpan(
+            text: line2,
+            style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1E1B4B)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Brand Input Field ─────────────────────────────────────────────────────────
+class _BrandInputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final IconData icon;
+  final bool obscure;
+  final VoidCallback? onToggleObscure;
+  final TextInputType keyboardType;
+  final bool isDark;
+  final Color cardColor;
+
+  const _BrandInputField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.icon,
+    required this.isDark,
+    required this.cardColor,
+    this.obscure = false,
+    this.onToggleObscure,
+    this.keyboardType = TextInputType.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDark ? const Color(0xFF9CA3AF) : kLightSubtext,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: obscure,
+          keyboardType: keyboardType,
+          style: TextStyle(
+            color: isDark ? Colors.white : kLightText,
+            fontSize: 15,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: isDark
+                  ? const Color(0xFF4B5563)
+                  : const Color(0xFFB0B9CC),
+              fontSize: 15,
+            ),
+            prefixIcon: Icon(icon,
+                size: 20,
+                color: isDark
+                    ? const Color(0xFF6B7280)
+                    : const Color(0xFF8B5CF6)),
+            suffixIcon: onToggleObscure != null
+                ? IconButton(
+                    icon: Icon(
+                      obscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      size: 20,
+                      color: isDark
+                          ? const Color(0xFF6B7280)
+                          : kLightSubtext,
+                    ),
+                    onPressed: onToggleObscure,
+                  )
+                : null,
+            filled: true,
+            fillColor: cardColor,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: isDark
+                    ? Colors.white.withOpacity(0.06)
+                    : const Color(0xFFDDE3F0),
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide:
+                  const BorderSide(color: kViolet, width: 1.5),
             ),
           ),
         ),
-
-        SizedBox(height: gapMiddle),
-
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 18, height: 1.5, color: ruleColor),
-            const SizedBox(width: 8),
-            Text(
-              'shop with ease',
-              style: TextStyle(
-                fontSize: taglineFs,
-                fontStyle: FontStyle.italic,
-                color: taglineColor,
-                letterSpacing: 1.6,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(width: 18, height: 1.5, color: ruleColor),
-          ],
-        ),
-
-        SizedBox(height: gapBottom),
       ],
     );
   }
 }
 
-// ── Glow circle ───────────────────────────────────────────────────────────────
-class _GlowCircle extends StatelessWidget {
-  final double size;
-  final Color color;
+// ── Social Button ─────────────────────────────────────────────────────────────
+class _SocialBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool isDark;
+  final Color cardColor;
+  final Color cardBorder;
 
-  const _GlowCircle({required this.size, required this.color});
+  const _SocialBtn({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    required this.isDark,
+    required this.cardColor,
+    required this.cardBorder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 52,
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: cardBorder, width: 1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon,
+                size: 24,
+                color: isDark ? Colors.white : const Color(0xFF1E1B4B)),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color:
+                    isDark ? Colors.white : const Color(0xFF1E1B4B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Glow Circle ───────────────────────────────────────────────────────────────
+class _GlowCircle extends StatelessWidget {
+  final Color color;
+  final double size;
+
+  const _GlowCircle({required this.color, required this.size});
 
   @override
   Widget build(BuildContext context) {
@@ -432,7 +827,7 @@ class _GlowCircle extends StatelessWidget {
           BoxShadow(
             color: color,
             blurRadius: size * 0.5,
-            spreadRadius: size * 0.2,
+            spreadRadius: size * 0.15,
           ),
         ],
       ),
@@ -440,7 +835,7 @@ class _GlowCircle extends StatelessWidget {
   }
 }
 
-// ── Grid painter ──────────────────────────────────────────────────────────────
+// ── Grid Painter ──────────────────────────────────────────────────────────────
 class _GridPainter extends CustomPainter {
   final double opacity;
   const _GridPainter({this.opacity = 0.025});
@@ -460,5 +855,6 @@ class _GridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _GridPainter old) => old.opacity != opacity;
+  bool shouldRepaint(covariant _GridPainter old) =>
+      old.opacity != opacity;
 }

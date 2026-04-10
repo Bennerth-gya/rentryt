@@ -6,6 +6,7 @@ import 'package:comfi/pages/cart_page.dart';
 import 'package:comfi/pages/home_page.dart';
 import 'package:comfi/pages/intro_page.dart';
 import 'package:comfi/pages/login_page.dart';
+import 'package:comfi/pages/real_signup_page.dart';
 import 'package:comfi/pages/onboarding_screen.dart';
 import 'package:comfi/pages/seller_orders_screen.dart';
 import 'package:comfi/pages/seller_post_product_screen.dart';
@@ -24,6 +25,8 @@ class AppRouter {
         return _route(const IntroPage(), settings);
       case AppRoutes.login:
         return _route(const LoginPage(), settings);
+      case AppRoutes.signUp:
+        return _route(const SignUpPage(), settings);
       case AppRoutes.home:
         return _route(const HomePage(), settings);
       case AppRoutes.productDetails:
@@ -36,12 +39,19 @@ class AppRouter {
       case AppRoutes.becomeSeller:
         return _route(const BecomeSellerScreen(), settings);
       case AppRoutes.sellerVerification:
-        final phoneNumber = settings.arguments is String ? settings.arguments as String : '';
-        return _route(SellerVerificationScreen(phoneNumber: phoneNumber), settings);
+        final phoneNumber = settings.arguments is String
+            ? settings.arguments as String
+            : '';
+        return _route(
+          SellerVerificationScreen(phoneNumber: phoneNumber),
+          settings,
+        );
       case AppRoutes.sellerMain:
         return _route(const SellerMainScreen(), settings);
       case AppRoutes.sellerOrders:
-        final initialTab = settings.arguments is int ? settings.arguments as int : 0;
+        final initialTab = settings.arguments is int
+            ? settings.arguments as int
+            : 0;
         return _route(SellerOrdersScreen(initialTab: initialTab), settings);
       case AppRoutes.sellerRefund:
         final order = settings.arguments is Map<String, dynamic>
@@ -52,7 +62,10 @@ class AppRouter {
         return _route(const SellerPostProductScreen(), settings);
       case AppRoutes.sellerEditProduct:
         final product = settings.arguments as Products?;
-        return _route(SellerPostProductScreen(productToEdit: product), settings);
+        return _route(
+          SellerPostProductScreen(productToEdit: product),
+          settings,
+        );
       default:
         return _route(const OnboardingScreen(), settings);
     }
