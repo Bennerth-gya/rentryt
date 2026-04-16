@@ -370,8 +370,7 @@ class _ShopPageState extends State<ShopPage> with TickerProviderStateMixin {
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: isSmallPhone
-                                                ? 11
-                                                : 12,
+                                                ? 11 : 12,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),

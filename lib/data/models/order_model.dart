@@ -7,6 +7,15 @@ class OrderModel {
     required this.paymentMethod,
     required this.customerName,
     required this.itemCount,
+    this.currency = 'GHS',
+    this.productId,
+    this.productName,
+    this.buyerId,
+    this.sellerId,
+    this.chatId,
+    this.offerId,
+    this.lockedUnitPrice,
+    this.isNegotiated = false,
   });
 
   final String id;
@@ -16,6 +25,15 @@ class OrderModel {
   final String paymentMethod;
   final String customerName;
   final int itemCount;
+  final String currency;
+  final String? productId;
+  final String? productName;
+  final String? buyerId;
+  final String? sellerId;
+  final String? chatId;
+  final String? offerId;
+  final double? lockedUnitPrice;
+  final bool isNegotiated;
 
   OrderModel copyWith({
     String? id,
@@ -25,6 +43,15 @@ class OrderModel {
     String? paymentMethod,
     String? customerName,
     int? itemCount,
+    String? currency,
+    Object? productId = _sentinel,
+    Object? productName = _sentinel,
+    Object? buyerId = _sentinel,
+    Object? sellerId = _sentinel,
+    Object? chatId = _sentinel,
+    Object? offerId = _sentinel,
+    Object? lockedUnitPrice = _sentinel,
+    bool? isNegotiated,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -34,6 +61,27 @@ class OrderModel {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       customerName: customerName ?? this.customerName,
       itemCount: itemCount ?? this.itemCount,
+      currency: currency ?? this.currency,
+      productId: identical(productId, _sentinel)
+          ? this.productId
+          : productId as String?,
+      productName: identical(productName, _sentinel)
+          ? this.productName
+          : productName as String?,
+      buyerId: identical(buyerId, _sentinel)
+          ? this.buyerId
+          : buyerId as String?,
+      sellerId: identical(sellerId, _sentinel)
+          ? this.sellerId
+          : sellerId as String?,
+      chatId: identical(chatId, _sentinel) ? this.chatId : chatId as String?,
+      offerId: identical(offerId, _sentinel)
+          ? this.offerId
+          : offerId as String?,
+      lockedUnitPrice: identical(lockedUnitPrice, _sentinel)
+          ? this.lockedUnitPrice
+          : lockedUnitPrice as double?,
+      isNegotiated: isNegotiated ?? this.isNegotiated,
     );
   }
 
@@ -46,6 +94,15 @@ class OrderModel {
       paymentMethod: json['paymentMethod'] as String,
       customerName: json['customerName'] as String,
       itemCount: json['itemCount'] as int? ?? 0,
+      currency: json['currency'] as String? ?? 'GHS',
+      productId: json['productId'] as String?,
+      productName: json['productName'] as String?,
+      buyerId: json['buyerId'] as String?,
+      sellerId: json['sellerId'] as String?,
+      chatId: json['chatId'] as String?,
+      offerId: json['offerId'] as String?,
+      lockedUnitPrice: (json['lockedUnitPrice'] as num?)?.toDouble(),
+      isNegotiated: json['isNegotiated'] as bool? ?? false,
     );
   }
 
@@ -58,6 +115,15 @@ class OrderModel {
       'paymentMethod': paymentMethod,
       'customerName': customerName,
       'itemCount': itemCount,
+      'currency': currency,
+      'productId': productId,
+      'productName': productName,
+      'buyerId': buyerId,
+      'sellerId': sellerId,
+      'chatId': chatId,
+      'offerId': offerId,
+      'lockedUnitPrice': lockedUnitPrice,
+      'isNegotiated': isNegotiated,
     };
   }
 
@@ -69,7 +135,7 @@ class OrderModel {
       case 'dateLabel':
         return dateLabel;
       case 'amount':
-        return amount.toStringAsFixed(2);
+        return '$currency ${amount.toStringAsFixed(2)}';
       case 'status':
         return status;
       case 'payment':
@@ -86,3 +152,5 @@ class OrderModel {
     }
   }
 }
+
+const Object _sentinel = Object();

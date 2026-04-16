@@ -1,9 +1,12 @@
 import 'package:comfi/components/products_details.dart';
 import 'package:comfi/core/constants/app_routes.dart';
+import 'package:comfi/data/models/negotiation_models.dart';
 import 'package:comfi/models/products.dart';
 import 'package:comfi/pages/become_a_seller_screen.dart';
+import 'package:comfi/pages/buyers_billing_details_page.dart';
 import 'package:comfi/pages/cart_page.dart';
 import 'package:comfi/pages/home_page.dart';
+import 'package:comfi/pages/negotiation_chat_screen.dart';
 import 'package:comfi/pages/intro_page.dart';
 import 'package:comfi/pages/login_page.dart';
 import 'package:comfi/pages/real_signup_page.dart';
@@ -13,7 +16,6 @@ import 'package:comfi/pages/seller_post_product_screen.dart';
 import 'package:comfi/pages/seller_section/sellers_main_screen.dart';
 import 'package:comfi/pages/seller_verification_screen.dart';
 import 'package:comfi/pages/sellers_refund_screen.dart';
-import 'package:comfi/payment/payment_method.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -32,10 +34,25 @@ class AppRouter {
       case AppRoutes.productDetails:
         final product = settings.arguments as Products;
         return _route(ProductDetailsPage(product: product), settings);
+      case AppRoutes.negotiationChat:
+        final routeData = NegotiationChatRouteData.fromRouteArguments(
+          settings.arguments,
+        );
+        return _route(NegotiationChatScreen(routeData: routeData), settings);
       case AppRoutes.cart:
         return _route(const CartPage(), settings);
       case AppRoutes.payment:
-        return _route(const PaymentMethod(), settings);
+        final routeData = BillingDetailsRouteData.fromRouteArguments(
+          settings.arguments,
+        );
+        return _route(
+          BillingDetailsScreen(
+            item: routeData.item,
+            deliveryOptions: routeData.deliveryOptions,
+            savedAddress: routeData.savedAddress,
+          ),
+          settings,
+        );
       case AppRoutes.becomeSeller:
         return _route(const BecomeSellerScreen(), settings);
       case AppRoutes.sellerVerification:

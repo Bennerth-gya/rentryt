@@ -1,11 +1,42 @@
+import 'package:comfi/pages/buyers_billing_details_page.dart';
+import 'package:comfi/pages/buyers_settings_screen.dart';
+import 'package:comfi/pages/buyers_usermanagement_screen.dart';
 import 'package:flutter/material.dart';
-
-//import 'package:comfi/models/profile_body.dart';
+//import 'package:comfi/pages/settings_screen.dart';
 import 'package:comfi/pages/update_profile_screen.dart';
+//import 'package:comfi/pages/user_management_screen.dart';
 import 'package:get/get.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
-//import '../consts/theme_toggle_button.dart';
+const OrderItem _profileBillingItem = OrderItem(
+  id: 'prod_001',
+  name: 'Nike Air Max 270 - Black/White',
+  sellerName: 'KofiSneaks',
+  sellerRating: 4.8,
+  sellerVerified: true,
+  originalPrice: 380,
+  negotiatedPrice: 310,
+  currency: 'GHS',
+);
+
+const List<DeliveryOption> _profileDeliveryOptions = [
+  DeliveryOption(
+    id: 'home_gig',
+    title: 'Home Delivery',
+    subtitle: 'Delivered by GIG Logistics',
+    fee: 25,
+    timeEstimate: '2-4 business days',
+    type: DeliveryType.home,
+  ),
+  DeliveryOption(
+    id: 'pickup_agent',
+    title: 'Pickup Station',
+    subtitle: 'Collect from a nearby agent hub',
+    fee: 8,
+    timeEstimate: 'Ready in 1-2 days',
+    type: DeliveryType.pickup,
+  ),
+];
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,9 +48,9 @@ class ProfileScreen extends StatelessWidget {
     final scaffoldBg    = isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
     final surfaceColor  = isDark ? const Color(0xFF111827) : Colors.white;
     final cardBg        = isDark ? const Color(0xFF1F2937) : const Color(0xFFEEF1FB);
-    final borderColor   = isDark ? Colors.white.withOpacity(0.06) : const Color(0xFFE2E8F0);
+    final borderColor   = isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFE2E8F0);
     final primaryText   = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryText = isDark ? Colors.white.withOpacity(0.5) : const Color(0xFF64748B);
+    final secondaryText = isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF64748B);
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -27,27 +58,9 @@ class ProfileScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         backgroundColor: scaffoldBg,
         elevation: 0,
-        
-        // title: Text('Profile',
-        //   style: TextStyle(
-        //     color: primaryText,
-        //     fontSize: 18,
-        //     fontWeight: FontWeight.w700,
-        //     letterSpacing: -0.3,
-        //   ),
-        // ),
         centerTitle: true,
         actions: [
-          // ✅ Replaced sun/moon IconButton with ThemeToggleButton
-          Padding(
-            padding: const EdgeInsets.only(
-                right: 16, top: 8, bottom: 8),
-            // child: ThemeToggleButton(
-            //   surfaceColor: surfaceColor,
-            //   borderColor: borderColor,
-            //   size: 38,
-            // ),
-          ),
+          Padding(padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8)),
         ],
       ),
 
@@ -71,8 +84,7 @@ class ProfileScreen extends StatelessWidget {
                       ? []
                       : [
                           BoxShadow(
-                            color:
-                                Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 20,
                             offset: const Offset(0, 6),
                           ),
@@ -87,30 +99,23 @@ class ProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF7C3AED),
-                                Color(0xFF8B5CF6)
-                              ],
+                              colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF8B5CF6)
-                                    .withOpacity(0.4),
+                                color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
                                 blurRadius: 20,
                                 offset: const Offset(0, 6),
                               ),
                             ],
                           ),
                           child: ClipRRect(
-                            borderRadius:
-                                BorderRadius.circular(100),
+                            borderRadius: BorderRadius.circular(100),
                             child: const Image(
-                              image: AssetImage(
-                                  'assets/images/strive.jpg'),
-                              width: 100,
-                              height: 100,
+                              image: AssetImage('assets/images/strive.jpg'),
+                              width: 100, height: 100,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -121,19 +126,14 @@ class ProfileScreen extends StatelessWidget {
                             width: 32, height: 32,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFF7C3AED),
-                                  Color(0xFF8B5CF6)
-                                ],
+                                colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)],
                               ),
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                  color: surfaceColor, width: 2),
+                              border: Border.all(color: surfaceColor, width: 2),
                             ),
                             child: const Icon(
                               LineAwesomeIcons.pencil_alt_solid,
-                              color: Colors.white,
-                              size: 14,
+                              color: Colors.white, size: 14,
                             ),
                           ),
                         ),
@@ -150,16 +150,13 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text('gbennerth@gmail.com',
-                      style: TextStyle(
-                          fontSize: 13, color: secondaryText),
+                      style: TextStyle(fontSize: 13, color: secondaryText),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6)
-                            .withOpacity(0.12),
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Text('Premium Member',
@@ -174,60 +171,32 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     Row(
                       children: [
-                        _StatItem(
-                          label: 'Orders', value: '12',
-                          isDark: isDark, cardBg: cardBg,
-                          primaryText: primaryText,
-                          secondaryText: secondaryText,
-                        ),
+                        _StatItem(label: 'Orders', value: '12', isDark: isDark, cardBg: cardBg, primaryText: primaryText, secondaryText: secondaryText),
                         const SizedBox(width: 10),
-                        _StatItem(
-                          label: 'Wishlist', value: '5',
-                          isDark: isDark, cardBg: cardBg,
-                          primaryText: primaryText,
-                          secondaryText: secondaryText,
-                        ),
+                        _StatItem(label: 'Wishlist', value: '5', isDark: isDark, cardBg: cardBg, primaryText: primaryText, secondaryText: secondaryText),
                         const SizedBox(width: 10),
-                        _StatItem(
-                          label: 'Reviews', value: '8',
-                          isDark: isDark, cardBg: cardBg,
-                          primaryText: primaryText,
-                          secondaryText: secondaryText,
-                        ),
+                        _StatItem(label: 'Reviews', value: '8', isDark: isDark, cardBg: cardBg, primaryText: primaryText, secondaryText: secondaryText),
                       ],
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
-                      width: double.infinity,
-                      height: 48,
+                      width: double.infinity, height: 48,
                       child: ElevatedButton(
-                        onPressed: () => Get.to(
-                            () => const UpdateProfileScreen()),
+                        onPressed: () => Get.to(() => const UpdateProfileScreen()),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFF7C3AED),
+                          backgroundColor: const Color(0xFF7C3AED),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(14),
-                          ),
+                              borderRadius: BorderRadius.circular(14)),
                         ),
                         child: const Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                                LineAwesomeIcons
-                                    .pencil_alt_solid,
-                                size: 16,
-                                color: Colors.white),
+                            Icon(LineAwesomeIcons.pencil_alt_solid, size: 16, color: Colors.white),
                             SizedBox(width: 8),
                             Text('Edit Profile',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                             ),
                           ],
                         ),
@@ -239,8 +208,7 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              _SectionLabel(
-                  label: 'Account', color: secondaryText),
+              _SectionLabel(label: 'Account', color: secondaryText),
               const SizedBox(height: 10),
 
               _MenuCard(
@@ -255,21 +223,41 @@ class ProfileScreen extends StatelessWidget {
                     label: 'Settings',
                     subtitle: 'App preferences',
                     iconBg: const Color(0xFF8B5CF6),
-                    onTap: () {},
+                    // ✅ Navigates to SettingsScreen
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SettingsScreen(),
+                      ),
+                    ),
                   ),
                   _MenuItem(
                     icon: LineAwesomeIcons.wallet_solid,
                     label: 'Billing Details',
                     subtitle: 'Payment methods',
                     iconBg: const Color(0xFF059669),
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const BillingDetailsScreen(
+                          item: _profileBillingItem,
+                          deliveryOptions: _profileDeliveryOptions,
+                        ),
+                      ),
+                    ),
                   ),
                   _MenuItem(
                     icon: LineAwesomeIcons.user_check_solid,
                     label: 'User Management',
                     subtitle: 'Manage your account',
                     iconBg: const Color(0xFF0284C7),
-                    onTap: () {},
+                    // ✅ Navigates to UserManagementScreen
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UserManagementScreen(),
+                      ),
+                    ),
                     showDivider: false,
                   ),
                 ],
@@ -277,8 +265,7 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              _SectionLabel(
-                  label: 'Support', color: secondaryText),
+              _SectionLabel(label: 'Support', color: secondaryText),
               const SizedBox(height: 10),
 
               _MenuCard(
@@ -312,7 +299,7 @@ class ProfileScreen extends StatelessWidget {
 
               Text('Comfi v1.0.0',
                 style: TextStyle(
-                  color: secondaryText.withOpacity(0.5),
+                  color: secondaryText.withValues(alpha: 0.5),
                   fontSize: 12,
                 ),
               ),
@@ -335,12 +322,8 @@ class _StatItem extends StatelessWidget {
   final Color secondaryText;
 
   const _StatItem({
-    required this.label,
-    required this.value,
-    required this.isDark,
-    required this.cardBg,
-    required this.primaryText,
-    required this.secondaryText,
+    required this.label, required this.value, required this.isDark,
+    required this.cardBg, required this.primaryText, required this.secondaryText,
   });
 
   @override
@@ -356,16 +339,14 @@ class _StatItem extends StatelessWidget {
           children: [
             Text(value,
               style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontSize: 20, fontWeight: FontWeight.w800,
                 color: Color(0xFF8B5CF6),
               ),
             ),
             const SizedBox(height: 2),
             Text(label,
               style: TextStyle(
-                fontSize: 11,
-                color: secondaryText,
+                fontSize: 11, color: secondaryText,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -388,10 +369,8 @@ class _SectionLabel extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(label.toUpperCase(),
         style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2,
+          color: color, fontSize: 11,
+          fontWeight: FontWeight.w700, letterSpacing: 1.2,
         ),
       ),
     );
@@ -408,12 +387,9 @@ class _MenuCard extends StatelessWidget {
   final List<_MenuItem> items;
 
   const _MenuCard({
-    required this.isDark,
-    required this.surfaceColor,
-    required this.borderColor,
-    required this.primaryText,
-    required this.secondaryText,
-    required this.items,
+    required this.isDark, required this.surfaceColor,
+    required this.borderColor, required this.primaryText,
+    required this.secondaryText, required this.items,
   });
 
   @override
@@ -427,21 +403,19 @@ class _MenuCard extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ],
       ),
       child: Column(
-        children: items.map((item) {
-          return _MenuTile(
-            item: item,
-            primaryText: primaryText,
-            secondaryText: secondaryText,
-            borderColor: borderColor,
-          );
-        }).toList(),
+        children: items.map((item) => _MenuTile(
+          item: item,
+          primaryText: primaryText,
+          secondaryText: secondaryText,
+          borderColor: borderColor,
+        )).toList(),
       ),
     );
   }
@@ -459,14 +433,9 @@ class _MenuItem {
   final bool showArrow;
 
   const _MenuItem({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-    required this.iconBg,
-    required this.onTap,
-    this.labelColor,
-    this.showDivider = true,
-    this.showArrow = true,
+    required this.icon, required this.label, required this.subtitle,
+    required this.iconBg, required this.onTap,
+    this.labelColor, this.showDivider = true, this.showArrow = true,
   });
 }
 
@@ -478,10 +447,8 @@ class _MenuTile extends StatelessWidget {
   final Color borderColor;
 
   const _MenuTile({
-    required this.item,
-    required this.primaryText,
-    required this.secondaryText,
-    required this.borderColor,
+    required this.item, required this.primaryText,
+    required this.secondaryText, required this.borderColor,
   });
 
   @override
@@ -492,46 +459,39 @@ class _MenuTile extends StatelessWidget {
           onTap: item.onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 Container(
                   width: 42, height: 42,
                   decoration: BoxDecoration(
-                    color: item.iconBg.withOpacity(0.12),
+                    color: item.iconBg.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(13),
                   ),
-                  child: Icon(item.icon,
-                      color: item.iconBg, size: 20),
+                  child: Icon(item.icon, color: item.iconBg, size: 20),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.label,
                         style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w600,
-                          color:
-                              item.labelColor ?? primaryText,
+                          color: item.labelColor ?? primaryText,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(item.subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: secondaryText,
-                        ),
+                        style: TextStyle(fontSize: 12, color: secondaryText),
                       ),
                     ],
                   ),
                 ),
                 if (item.showArrow)
                   Icon(Icons.arrow_forward_ios_rounded,
-                    size: 14, color: secondaryText),
+                      size: 14, color: secondaryText),
               ],
             ),
           ),
@@ -539,8 +499,7 @@ class _MenuTile extends StatelessWidget {
         if (item.showDivider)
           Divider(
             height: 1, thickness: 1,
-            color: borderColor,
-            indent: 72,
+            color: borderColor, indent: 72,
           ),
       ],
     );

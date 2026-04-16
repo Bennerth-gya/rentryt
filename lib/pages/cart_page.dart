@@ -1,6 +1,6 @@
-
 import 'package:comfi/core/constants/app_routes.dart';
 import 'package:comfi/pages/shop_page.dart';
+import 'package:comfi/pages/buyers_billing_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:comfi/components/cart_item.dart';
 import 'package:comfi/models/cart.dart';
@@ -28,13 +28,11 @@ class _CartPageState extends State<CartPage>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _fadeAnim = CurvedAnimation(
-        parent: _animController, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.06),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-        parent: _animController, curve: Curves.easeOut));
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
     _animController.forward();
   }
 
@@ -46,15 +44,20 @@ class _CartPageState extends State<CartPage>
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final scaffoldBg    = isDark ? const Color(0xFF080C14)  : const Color(0xFFF5F7FF);
-    final appBarBg      = isDark ? const Color(0xFF080C14)  : const Color(0xFFF5F7FF);
-    final appBarGradTop = isDark ? const Color(0xFF0F1526)  : const Color(0xFFEEF1FB);
-    final primaryText   = isDark ? Colors.white             : const Color(0xFF0F172A);
-    final surfaceColor  = isDark ? const Color(0xFF111827)  : Colors.white;
-    final borderColor   = isDark ? Colors.white.withOpacity(0.06) : const Color(0xFFE2E8F0);
+    final scaffoldBg = isDark
+        ? const Color(0xFF080C14)
+        : const Color(0xFFF5F7FF);
+    final appBarBg = isDark ? const Color(0xFF080C14) : const Color(0xFFF5F7FF);
+    final appBarGradTop = isDark
+        ? const Color(0xFF0F1526)
+        : const Color(0xFFEEF1FB);
+    final primaryText = isDark ? Colors.white : const Color(0xFF0F172A);
+    final surfaceColor = isDark ? const Color(0xFF111827) : Colors.white;
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.06)
+        : const Color(0xFFE2E8F0);
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -65,7 +68,6 @@ class _CartPageState extends State<CartPage>
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-
               // ── SLIVER APP BAR ──────────────────────
               SliverAppBar(
                 expandedHeight: 110,
@@ -77,7 +79,10 @@ class _CartPageState extends State<CartPage>
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(
-                        right: 16, top: 8, bottom: 8),
+                      right: 16,
+                      top: 8,
+                      bottom: 8,
+                    ),
                     // child: ThemeToggleButton(
                     //   surfaceColor: surfaceColor,
                     //   borderColor: borderColor,
@@ -86,11 +91,9 @@ class _CartPageState extends State<CartPage>
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(
-                      left: 24, bottom: 16),
+                  titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
                   title: Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       // ✅ Title restored
                       Text(
@@ -105,17 +108,14 @@ class _CartPageState extends State<CartPage>
                       if (!isEmpty) ...[
                         const SizedBox(width: 10),
                         Container(
-                          margin: const EdgeInsets.only(
-                              bottom: 3),
-                          padding:
-                              const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2),
+                          margin: const EdgeInsets.only(bottom: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF8B5CF6),
-                            borderRadius:
-                                BorderRadius.circular(20),
+                            color: const Color(0xFF8B5CF6),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             '${value.userCart.length}',
@@ -134,10 +134,7 @@ class _CartPageState extends State<CartPage>
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          appBarGradTop,
-                          scaffoldBg,
-                        ],
+                        colors: [appBarGradTop, scaffoldBg],
                       ),
                     ),
                   ),
@@ -160,38 +157,30 @@ class _CartPageState extends State<CartPage>
                     ),
                   ),
                 )
-
               // ── CART ITEMS ──────────────────────────
               else ...[
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 8),
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final entries = value
-                            .userCart.entries
-                            .toList();
-                        return FadeTransition(
-                          opacity: _fadeAnim,
-                          child: SlideTransition(
-                            position: _slideAnim,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(
-                                      bottom: 12),
-                              child: CartItem(
-                                product:
-                                    entries[index].key,
-                                quantity:
-                                    entries[index].value,
-                              ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final entries = value.userCart.entries.toList();
+                      return FadeTransition(
+                        opacity: _fadeAnim,
+                        child: SlideTransition(
+                          position: _slideAnim,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: CartItem(
+                              product: entries[index].key,
+                              quantity: entries[index].value,
                             ),
                           ),
-                        );
-                      },
-                      childCount: value.userCart.length,
-                    ),
+                        ),
+                      );
+                    }, childCount: value.userCart.length),
                   ),
                 ),
 
@@ -202,8 +191,7 @@ class _CartPageState extends State<CartPage>
                     child: Padding(
                       // ✅ Extra bottom padding so summary
                       //    clears the floating bottom nav
-                      padding: const EdgeInsets.fromLTRB(
-                          20, 8, 20, 110),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
                       child: _OrderSummaryCard(
                         total: value.getTotalPrice(),
                         itemCount: value.userCart.length,
@@ -211,8 +199,13 @@ class _CartPageState extends State<CartPage>
                         surfaceColor: surfaceColor,
                         borderColor: borderColor,
                         primaryText: primaryText,
-                        onCheckout: () =>
-                            Navigator.pushNamed(context, AppRoutes.payment),
+                        onCheckout: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.payment,
+                          arguments: BillingDetailsRouteData.fromCart(
+                            value.userCart,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -252,8 +245,7 @@ class _OrderSummaryCard extends StatelessWidget {
     final secondaryText = isDark
         ? Colors.white.withOpacity(0.5)
         : const Color(0xFF64748B);
-    final valueText =
-        isDark ? Colors.white70 : const Color(0xFF374151);
+    final valueText = isDark ? Colors.white70 : const Color(0xFF374151);
     final totalRowBg = isDark
         ? Colors.white.withOpacity(0.04)
         : const Color(0xFFF1EEFF);
@@ -271,8 +263,7 @@ class _OrderSummaryCard extends StatelessWidget {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color:
-                purple.withOpacity(isDark ? 0.12 : 0.08),
+            color: purple.withOpacity(isDark ? 0.12 : 0.08),
             blurRadius: 32,
             offset: const Offset(0, 8),
           ),
@@ -280,14 +271,13 @@ class _OrderSummaryCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-
           // ── Header ───────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-                22, 20, 22, 16),
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 16),
             child: Row(
               children: [
-                Text('Order Summary',
+                Text(
+                  'Order Summary',
                   style: TextStyle(
                     color: primaryText,
                     fontSize: 16,
@@ -298,11 +288,12 @@ class _OrderSummaryCard extends StatelessWidget {
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: purple.withOpacity(0.12),
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '$itemCount item${itemCount > 1 ? 's' : ''}',
@@ -321,15 +312,13 @@ class _OrderSummaryCard extends StatelessWidget {
 
           // ── Price rows ────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 22, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
             child: Column(
               children: [
                 _PriceRow(
                   label: 'Subtotal',
                   // ✅ GHS currency
-                  value:
-                      'GHS ${total.toStringAsFixed(2)}',
+                  value: 'GHS ${total.toStringAsFixed(2)}',
                   labelColor: secondaryText,
                   valueColor: valueText,
                 ),
@@ -347,8 +336,7 @@ class _OrderSummaryCard extends StatelessWidget {
                 const SizedBox(height: 10),
                 _PriceRow(
                   label: 'VAT (2.5%)',
-                  value:
-                      'GHS ${tax.toStringAsFixed(2)}',
+                  value: 'GHS ${tax.toStringAsFixed(2)}',
                   labelColor: secondaryText,
                   valueColor: valueText,
                 ),
@@ -358,19 +346,17 @@ class _OrderSummaryCard extends StatelessWidget {
 
           // ── Grand total row ───────────────────────
           Container(
-            margin: const EdgeInsets.symmetric(
-                horizontal: 16),
-            padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 14),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: totalRowBg,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total',
+                Text(
+                  'Total',
                   style: TextStyle(
                     color: primaryText,
                     fontSize: 17,
@@ -395,24 +381,22 @@ class _OrderSummaryCard extends StatelessWidget {
 
           // ── Checkout button ───────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-                16, 0, 16, 20),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
             child: _CheckoutButton(onTap: onCheckout),
           ),
 
           // ── Free shipping nudge ───────────────────
           if (!shippingFree)
             Padding(
-              padding:
-                  const EdgeInsets.only(bottom: 18),
+              padding: const EdgeInsets.only(bottom: 18),
               child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
-                      Icons.local_shipping_outlined,
-                      size: 14,
-                      color: Color(0xFF34D399)),
+                    Icons.local_shipping_outlined,
+                    size: 14,
+                    color: Color(0xFF34D399),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'Add GHS ${(200 - total).toStringAsFixed(2)} more for free shipping',
@@ -450,15 +434,15 @@ class _PriceRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label,
-            style: TextStyle(
-                color: labelColor, fontSize: 14)),
-        Text(value,
-            style: TextStyle(
-              color: valueColor,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            )),
+        Text(label, style: TextStyle(color: labelColor, fontSize: 14)),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
@@ -470,8 +454,7 @@ class _CheckoutButton extends StatefulWidget {
   const _CheckoutButton({required this.onTap});
 
   @override
-  State<_CheckoutButton> createState() =>
-      _CheckoutButtonState();
+  State<_CheckoutButton> createState() => _CheckoutButtonState();
 }
 
 class _CheckoutButtonState extends State<_CheckoutButton>
@@ -512,19 +495,14 @@ class _CheckoutButtonState extends State<_CheckoutButton>
           height: 54,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFF7C3AED),
-                Color(0xFF8B5CF6),
-                Color(0xFFA78BFA),
-              ],
+              colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6), Color(0xFFA78BFA)],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF8B5CF6)
-                    .withOpacity(0.4),
+                color: const Color(0xFF8B5CF6).withOpacity(0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 6),
               ),
@@ -533,10 +511,10 @@ class _CheckoutButtonState extends State<_CheckoutButton>
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.lock_outline_rounded,
-                  color: Colors.white, size: 18),
+              Icon(Icons.lock_outline_rounded, color: Colors.white, size: 18),
               SizedBox(width: 8),
-              Text('Proceed to Checkout',
+              Text(
+                'Proceed to Checkout',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 15,
@@ -545,8 +523,7 @@ class _CheckoutButtonState extends State<_CheckoutButton>
                 ),
               ),
               SizedBox(width: 8),
-              Icon(Icons.arrow_forward_rounded,
-                  color: Colors.white, size: 16),
+              Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
             ],
           ),
         ),
@@ -562,10 +539,8 @@ class _EmptyCart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
-    final primaryText =
-        isDark ? Colors.white : const Color(0xFF0F172A);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryText = isDark ? Colors.white : const Color(0xFF0F172A);
     final subtitleText = isDark
         ? Colors.white.withOpacity(0.4)
         : const Color(0xFF94A3B8);
@@ -578,23 +553,22 @@ class _EmptyCart extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 110, height: 110,
+              width: 110,
+              height: 110,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: iconRingColor,
-                border: Border.all(
-                    color: iconBorderColor, width: 1.5),
+                border: Border.all(color: iconBorderColor, width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6)
-                        .withOpacity(
-                            isDark ? 0.15 : 0.1),
+                    color: const Color(
+                      0xFF8B5CF6,
+                    ).withOpacity(isDark ? 0.15 : 0.1),
                     blurRadius: 40,
                     spreadRadius: 4,
                   ),
@@ -607,7 +581,8 @@ class _EmptyCart extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 28),
-            Text('Your cart is empty',
+            Text(
+              'Your cart is empty',
               style: TextStyle(
                 color: primaryText,
                 fontSize: 22,
@@ -619,34 +594,28 @@ class _EmptyCart extends StatelessWidget {
             Text(
               'Looks like you haven\'t added\nanything to your cart yet.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: subtitleText,
-                fontSize: 14,
-                height: 1.6,
-              ),
+              style: TextStyle(color: subtitleText, fontSize: 14, height: 1.6),
             ),
             const SizedBox(height: 36),
             GestureDetector(
               onTap: onShopNow,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 36, vertical: 16),
+                  horizontal: 36,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF7C3AED),
-                      Color(0xFF8B5CF6),
-                    ],
+                    colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF8B5CF6)
-                          .withOpacity(
-                              isDark ? 0.4 : 0.25),
+                      color: const Color(
+                        0xFF8B5CF6,
+                      ).withOpacity(isDark ? 0.4 : 0.25),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -655,10 +624,14 @@ class _EmptyCart extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.storefront_outlined,
-                        color: Colors.white, size: 18),
+                    Icon(
+                      Icons.storefront_outlined,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                     SizedBox(width: 8),
-                    Text('Shop Now',
+                    Text(
+                      'Shop Now',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 15,

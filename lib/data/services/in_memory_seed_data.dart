@@ -207,4 +207,27 @@ abstract final class InMemorySeedData {
       phoneNumber: '+233 24 111 2222',
     );
   }
+
+  static UserModel sellerForProduct(ProductModel product) {
+    final sellerName = (product.sellerName?.trim().isNotEmpty ?? false)
+        ? product.sellerName!.trim()
+        : 'Comfi Seller';
+    final sellerId = (product.sellerId?.trim().isNotEmpty ?? false)
+        ? product.sellerId!.trim()
+        : activeSellerId;
+    final normalizedEmail = sellerName
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '.')
+        .replaceAll(RegExp(r'\.+'), '.')
+        .replaceAll(RegExp(r'^\.|\.$'), '');
+
+    return UserModel(
+      id: sellerId,
+      name: sellerName,
+      email:
+          '${normalizedEmail.isEmpty ? 'seller' : normalizedEmail}@comfi.app',
+      role: UserRole.seller,
+      phoneNumber: product.sellerPhone ?? demoSeller().phoneNumber,
+    );
+  }
 }

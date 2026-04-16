@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:comfi/core/constants/app_routes.dart';
 import 'package:comfi/presentation/state/seller_onboarding_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,6 +19,11 @@ class SellerVerificationScreen extends StatefulWidget {
 
 class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     with TickerProviderStateMixin {
+  static const bool _forceEnableTestingAccess = bool.fromEnvironment(
+    'ENABLE_SELLER_VERIFICATION_TEST_ACCESS',
+    defaultValue: false,
+  );
+
   // ── Step state ───────────────────────────────────────────────────────────
   int _currentStep = 0;
   static const int _totalSteps = 4;
@@ -79,6 +85,16 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+  bool get _isTestingAccessEnabled =>
+      kDebugMode || _forceEnableTestingAccess;
+
+  bool get _hasValidIdentityDraft {
+    final idNumber = _idNumberCtrl.text.trim();
+    final idExpiry = _idExpiryCtrl.text.trim();
+    return RegExp(r'^GHA-\d{9}-\d$').hasMatch(idNumber) &&
+        idExpiry.length == 5;
+  }
+
   String get _phoneNumber {
     final submittedPhone =
         context.read<SellerOnboardingController>().lastSubmittedPhoneNumber;
@@ -171,14 +187,45 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
     });
   }
 
+  void _applySampleIdentityData() {
+    _idNumberCtrl.text = 'GHA-123456789-1';
+    _idExpiryCtrl.text = '12/30';
+    setState(() {});
+  }
+
+  void _unlockOtpForTesting() {
+    const testCode = '123456';
+    for (var i = 0; i < _otpCtrl.length; i++) {
+      _otpCtrl[i].text = testCode[i];
+    }
+    setState(() {
+      _otpSent = true;
+      _resendCountdown = 0;
+    });
+  }
+
+  void _verifyOtpForTesting() {
+    _unlockOtpForTesting();
+    setState(() => _otpVerified = true);
+  }
+
   Future<void> _submitVerification() async {
+    final idNumber = _idNumberCtrl.text.trim().isEmpty && _isTestingAccessEnabled
+        ? 'GHA-123456789-1'
+        : _idNumberCtrl.text.trim();
+    final idExpiry = _idExpiryCtrl.text.trim().isEmpty && _isTestingAccessEnabled
+        ? '12/30'
+        : _idExpiryCtrl.text.trim();
+    final selectedTier =
+        _selectedTier >= 0 ? _selectedTier : (_isTestingAccessEnabled ? 1 : -1);
+
     setState(() => _isSubmitting = true);
     final message =
         await context.read<SellerOnboardingController>().submitVerification(
               phoneNumber: _phoneNumber,
-              idNumber: _idNumberCtrl.text.trim(),
-              idExpiry: _idExpiryCtrl.text.trim(),
-              selectedTier: _selectedTier,
+              idNumber: idNumber,
+              idExpiry: idExpiry,
+              selectedTier: selectedTier,
             );
     if (!mounted) return;
     setState(() => _isSubmitting = false);
@@ -292,9 +339,10 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   bool get _canAdvance {
     switch (_currentStep) {
       case 0: // identity
-        return _idFrontPhoto != null && _idBackPhoto != null;
+        return (_idFrontPhoto != null && _idBackPhoto != null) ||
+            (_isTestingAccessEnabled && _hasValidIdentityDraft);
       case 1: // otp
-        return _otpVerified;
+        return _otpVerified || _isTestingAccessEnabled;
       case 2: // tier
         return _selectedTier >= 0;
       case 3: // review – submit button handles it
@@ -620,6 +668,19 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
                 'We use your Ghana Card to verify your identity. '
                 'Your information is encrypted and never shared.',
           ),
+          if (_isTestingAccessEnabled) ...[
+            const SizedBox(height: 14),
+            _TestingAccessCard(
+              isDark: isDark,
+              title: 'Testing Access Enabled',
+              message:
+                  'Debug/test access is on. You can use sample identity data '
+                  'and continue without uploading photos. Release builds keep '
+                  'the real verification rules.',
+              primaryLabel: 'Use Sample Identity',
+              onPrimaryPressed: _applySampleIdentityData,
+            ),
+          ],
           const SizedBox(height: 24),
           _FieldLabel(label: 'Ghana Card Number', isDark: isDark),
           const SizedBox(height: 8),
@@ -641,6 +702,7 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               hintColor: hintColor,
               iconColor: iconColor,
             ),
+            onChanged: (_) => setState(() {}),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Ghana Card number is required';
               final re = RegExp(r'^GHA-\d{9}-\d$');
@@ -668,6 +730,7 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
               hintColor: hintColor,
               iconColor: iconColor,
             ),
+            onChanged: (_) => setState(() {}),
             validator: (v) {
               if (v == null || v.length < 5) return 'Enter a valid expiry date';
               return null;
@@ -735,6 +798,20 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
           message:
               'We\'ll send a 6-digit code to $_phoneNumber to confirm ownership.',
         ),
+        if (_isTestingAccessEnabled) ...[
+          const SizedBox(height: 14),
+          _TestingAccessCard(
+            isDark: isDark,
+            title: 'SMS Testing Shortcuts',
+            message:
+                'Use the normal SMS flow, or unlock this step with the fixed '
+                'test code so you can keep moving through the verification UI.',
+            primaryLabel: 'Open Test OTP',
+            onPrimaryPressed: _unlockOtpForTesting,
+            secondaryLabel: 'Verify Instantly',
+            onSecondaryPressed: _verifyOtpForTesting,
+          ),
+        ],
         const SizedBox(height: 28),
         Center(
           child: Column(
@@ -1265,7 +1342,8 @@ class _SellerVerificationScreenState extends State<SellerVerificationScreen>
   Widget _buildBottomCta(bool isDark, Color surfaceColor, Color borderColor) {
     final isLastStep = _currentStep == _totalSteps - 1;
     final isOtpStep = _currentStep == 1;
-    final canContinueOnOtp = !isOtpStep || _otpVerified;
+    final canContinueOnOtp =
+        !isOtpStep || _otpVerified || _isTestingAccessEnabled;
     final enabled = _canAdvance && canContinueOnOtp && !_isSubmitting;
 
     return Container(
@@ -1418,6 +1496,131 @@ class _InfoBanner extends StatelessWidget {
                 height: 1.55,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TestingAccessCard extends StatelessWidget {
+  final bool isDark;
+  final String title;
+  final String message;
+  final String primaryLabel;
+  final VoidCallback onPrimaryPressed;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondaryPressed;
+
+  const _TestingAccessCard({
+    required this.isDark,
+    required this.title,
+    required this.message,
+    required this.primaryLabel,
+    required this.onPrimaryPressed,
+    this.secondaryLabel,
+    this.onSecondaryPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF0F172A).withOpacity(0.8)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.science_rounded,
+                  color: Color(0xFFF59E0B),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            message,
+            style: TextStyle(
+              color: isDark
+                  ? Colors.white.withOpacity(0.62)
+                  : const Color(0xFF64748B),
+              fontSize: 12.5,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              ElevatedButton(
+                onPressed: onPrimaryPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF59E0B),
+                  foregroundColor: const Color(0xFF111827),
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  primaryLabel,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              if (secondaryLabel != null && onSecondaryPressed != null)
+                OutlinedButton(
+                  onPressed: onSecondaryPressed,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFF59E0B),
+                    side: BorderSide(
+                      color: const Color(0xFFF59E0B).withOpacity(0.45),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    secondaryLabel!,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

@@ -6,16 +6,17 @@ import 'package:comfi/core/network/api_client.dart';
 import 'package:comfi/core/utils/app_router.dart';
 import 'package:comfi/data/repositories/auth_repository.dart';
 import 'package:comfi/data/repositories/cart_repository.dart';
+import 'package:comfi/data/repositories/negotiation_repository.dart';
 import 'package:comfi/data/repositories/order_repository.dart';
 import 'package:comfi/data/repositories/product_repository.dart';
 import 'package:comfi/data/repositories/seller_repository.dart';
 import 'package:comfi/data/services/auth_service.dart';
 import 'package:comfi/data/services/cart_service.dart';
+import 'package:comfi/data/services/negotiation_service.dart';
 import 'package:comfi/data/services/order_service.dart';
 import 'package:comfi/data/services/product_service.dart';
 import 'package:comfi/data/services/seller_service.dart';
 import 'package:comfi/models/cart.dart';
-import 'package:comfi/pages/real_login.dart';
 import 'package:comfi/presentation/state/auth_controller.dart';
 import 'package:comfi/presentation/state/seller_onboarding_controller.dart';
 import 'package:device_preview/device_preview.dart';
@@ -27,7 +28,7 @@ import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
- // WebViewPlatform.instance = AndroidWebViewPlatform();
+  // WebViewPlatform.instance = AndroidWebViewPlatform();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -49,35 +50,35 @@ void main() {
         Provider<ApiClient>(
           create: (_) => ApiClient(baseUrl: ApiEndpoints.baseUrl),
         ),
-        Provider<ProductService>(
-          create: (_) => InMemoryProductService(),
+        Provider<ProductService>(create: (_) => InMemoryProductService()),
+        Provider<CartService>(create: (_) => InMemoryCartService()),
+        Provider<AuthService>(create: (_) => InMemoryAuthService()),
+        Provider<OrderService>(create: (_) => InMemoryOrderService()),
+        ProxyProvider<OrderService, NegotiationService>(
+          update: (_, orderService, previous) =>
+              InMemoryNegotiationService(orderService: orderService),
         ),
-        Provider<CartService>(
-          create: (_) => InMemoryCartService(),
-        ),
-        Provider<AuthService>(
-          create: (_) => InMemoryAuthService(),
-        ),
-        Provider<OrderService>(
-          create: (_) => InMemoryOrderService(),
-        ),
-        Provider<SellerService>(
-          create: (_) => InMemorySellerService(),
-        ),
+        Provider<SellerService>(create: (_) => InMemorySellerService()),
         ProxyProvider<ProductService, ProductRepository>(
-          update: (_, productService, __) => ProductRepository(productService),
+          update: (_, productService, previous) =>
+              ProductRepository(productService),
         ),
         ProxyProvider<CartService, CartRepository>(
-          update: (_, cartService, __) => CartRepository(cartService),
+          update: (_, cartService, previous) => CartRepository(cartService),
         ),
         ProxyProvider<AuthService, AuthRepository>(
-          update: (_, authService, __) => AuthRepository(authService),
+          update: (_, authService, previous) => AuthRepository(authService),
         ),
         ProxyProvider<OrderService, OrderRepository>(
-          update: (_, orderService, __) => OrderRepository(orderService),
+          update: (_, orderService, previous) => OrderRepository(orderService),
+        ),
+        ProxyProvider<NegotiationService, NegotiationRepository>(
+          update: (_, negotiationService, previous) =>
+              NegotiationRepository(negotiationService),
         ),
         ProxyProvider<SellerService, SellerRepository>(
-          update: (_, sellerService, __) => SellerRepository(sellerService),
+          update: (_, sellerService, previous) =>
+              SellerRepository(sellerService),
         ),
         ChangeNotifierProvider<Cart>(
           create: (context) => Cart(
@@ -87,9 +88,8 @@ void main() {
           ),
         ),
         ChangeNotifierProvider<AuthController>(
-          create: (context) => AuthController(
-            authRepository: context.read<AuthRepository>(),
-          ),
+          create: (context) =>
+              AuthController(authRepository: context.read<AuthRepository>()),
         ),
         ChangeNotifierProvider<SellerOnboardingController>(
           create: (context) => SellerOnboardingController(
@@ -118,19 +118,15 @@ class ComfiApp extends StatelessWidget {
         locale: DevicePreview.locale(context),
 
         // ── Themes ──────────────────────────────────
-        theme:     AppTheme.light,
+        theme: AppTheme.light,
         darkTheme: AppTheme.dark,
-        themeMode: themeCtrl.themeMode,  // ✅ driven by controller
-
+        themeMode: themeCtrl.themeMode, // ✅ driven by controller
         // ── Global MediaQuery override ───────────────
         builder: (context, child) {
           final adjustedChild = MediaQuery(
             data: MediaQuery.of(context).copyWith(
               textScaler: TextScaler.linear(
-                MediaQuery.of(context)
-                    .textScaler
-                    .scale(1.0)
-                    .clamp(0.8, 1.15),
+                MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.15),
               ),
             ),
             child: child!,
