@@ -1252,14 +1252,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                           Icon(
                             Icons.forum_rounded,
                             color: Color(0xFF0F766E),
-                            size: 18,
+                            size: 12,
                           ),
                           SizedBox(width: 6),
                           Text(
                             'Negotiate',
                             style: TextStyle(
                               color: Color(0xFF0F766E),
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -1304,16 +1304,16 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                                 Icon(
                                   Icons.flash_on_rounded,
                                   color: Colors.white,
-                                  size: 18,
+                                  size: 12,
                                 ),
                                 SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    'Buy Now',
+                                    'Buy\ Now',
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 15,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: 0.3,
                                     ),
