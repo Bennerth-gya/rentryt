@@ -1,33 +1,32 @@
+// ────────────────────────────────────────────────────────────────────────────
+// BRAND PALETTE — Comfi v2
+// ────────────────────────────────────────────────────────────────────────────
 import 'package:flutter/material.dart';
 
-// ────────────────────────────────────────────────────────────────────────────
-// BRAND PALETTE
-// ────────────────────────────────────────────────────────────────────────────
-const Color kAccent = Color(0xFFFFC843);      // golden yellow
-const Color kHighlight = Color(0xFFE83A8A);   // hot pink
-const Color kViolet = Color(0xFF8B5CF6);      // main purple
+const Color kAccent    = Color(0xFFF0A500);   // warm gold
+const Color kHighlight = Color(0xFF00C6A7);   // emerald teal
+const Color kViolet    = Color(0xFF5B6EF5);   // indigo blue
 
 // Dark palette
-const Color kDarkBg = Color(0xFF080C14);
+const Color kDarkBg      = Color(0xFF0A0E1A);
 const Color kDarkSurface = Color(0xFF111827);
-const Color kDarkCard = Color(0xFF1F2937);
-const Color kDarkNavy = Color(0xFF1E2A4A);
-const Color kDarkChip = Color(0xFF252F5C);
+const Color kDarkCard    = Color(0xFF1C2537);
+const Color kDarkNavy    = Color(0xFF1A2340);
+const Color kDarkChip    = Color(0xFF232E45);
 
 // Light palette
-const Color kLightBg = Color(0xFFF5F7FF);
+const Color kLightBg      = Color(0xFFF0F4FF);
 const Color kLightSurface = Color(0xFFFFFFFF);
-const Color kLightCard = Color(0xFFEEF1FB);
-const Color kLightChip = Color(0xFFE2E8F8);
+const Color kLightCard    = Color(0xFFE8EEFF);
+const Color kLightChip    = Color(0xFFDDE4FF);
 
-// Legacy (for backward compatibility)
-const Color background = kDarkNavy;
-const Color cardColor = kDarkChip;
-const Color accent = kAccent;
-const Color highlight = kHighlight;
-const Color textPrimary = Color(0xFFFFFFFF);
-const Color textSecondary = Color(0xFFCFCFD6);
-
+// Legacy (backward compatibility)
+const Color background   = kDarkNavy;
+const Color cardColor    = kDarkChip;
+const Color accent       = kAccent;
+const Color highlight    = kHighlight;
+const Color textPrimary  = Color(0xFFFFFFFF);
+const Color textSecondary = Color(0xFFCBD5E1);
 // Product Color Map
 final Map<String, Color> productColorMap = {
   'Black': Colors.black,

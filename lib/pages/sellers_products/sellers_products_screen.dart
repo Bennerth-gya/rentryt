@@ -229,7 +229,7 @@ class _SellersProductsScreenState extends State<SellersProductsScreen>
                               bg: isDark
                                   ? Colors.white.withOpacity(0.06)
                                   : const Color(0xFFF1F5F9),
-                              borderColor: borderColor,
+                            borderColor: borderColor,
                               iconColor: primaryText,
                             ),
                             const SizedBox(width: 8),

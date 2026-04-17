@@ -1,23 +1,13 @@
+import 'package:comfi/consts/colors.dart';
 import 'package:comfi/consts/theme_toggle_button.dart';
 import 'package:comfi/core/constants/app_routes.dart';
 import 'package:comfi/presentation/state/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// ── Brand Palette ─────────────────────────────────────────────────────────────
-const Color kAccent = Color(0xFFFFC843);
-const Color kHighlight = Color(0xFFE83A8A);
-const Color kViolet = Color(0xFF8B5CF6);
-const Color kDarkBg = Color(0xFF080C14);
-const Color kDarkSurface = Color(0xFF111827);
-const Color kDarkCard = Color(0xFF1F2937);
-
-// ── Light palette ─────────────────────────────────────────────────────────────
-const Color kLightBg = Color(0xFFF5F7FF);
-const Color kLightSurface = Colors.white;
-const Color kLightCard = Color(0xFFEEF1FB);
-const Color kLightText = Color(0xFF0F172A);
-const Color kLightSubtext = Color(0xFF6B7280);
+const Color _kLightText = Color(0xFF0F172A);
+const Color _kLightSubtext = Color(0xFF64748B);
+const Color _kErrorColor = Color(0xFFEF4444);
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -120,7 +110,7 @@ class _LoginPageState extends State<LoginPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Password reset email sent!'),
-          backgroundColor: kViolet,
+          backgroundColor: kHighlight,
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -164,8 +154,10 @@ class _LoginPageState extends State<LoginPage>
     final bgColor = isDark ? kDarkBg : kLightBg;
     final surfaceColor = isDark ? kDarkSurface : kLightSurface;
     final cardColor = isDark ? kDarkCard : kLightCard;
+    final fieldColor = isDark ? kDarkChip : kLightChip;
+    final subduedText = isDark ? const Color(0xFF9CA3AF) : _kLightSubtext;
     final cardBorder =
-        isDark ? Colors.white.withOpacity(0.06) : const Color(0xFFE2E8F0);
+        isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.07);
     final toggleSize = isSmallPhone ? 36.0 : 42.0;
 
     return Scaffold(
@@ -179,7 +171,7 @@ class _LoginPageState extends State<LoginPage>
             left: isSmallPhone ? -50 : -60,
             child: _GlowCircle(
               color: kHighlight
-                  .withOpacity(isDark ? 0.2 : 0.1),
+                  .withOpacity(isDark ? 0.18 : 0.08),
               size: isTablet ? 340 : 260,
             ),
           ),
@@ -188,7 +180,7 @@ class _LoginPageState extends State<LoginPage>
             right: isSmallPhone ? -60 : -80,
             child: _GlowCircle(
               color:
-                  kViolet.withOpacity(isDark ? 0.25 : 0.12),
+                  kViolet.withOpacity(isDark ? 0.32 : 0.12),
               size: isTablet ? 300 : 220,
             ),
           ),
@@ -197,7 +189,7 @@ class _LoginPageState extends State<LoginPage>
             left: 20,
             child: _GlowCircle(
               color:
-                  kAccent.withOpacity(isDark ? 0.1 : 0.07),
+                  kAccent.withOpacity(isDark ? 0.15 : 0.10),
               size: isTablet ? 240 : 180,
             ),
           ),
@@ -263,9 +255,7 @@ class _LoginPageState extends State<LoginPage>
                             : 'Sign in to your Comfi account.',
                         style: TextStyle(
                           fontSize: isSmallPhone ? 13 : 15,
-                          color: isDark
-                              ? const Color(0xFF9CA3AF)
-                              : kLightSubtext,
+                          color: subduedText,
                         ),
                       ),
 
@@ -290,7 +280,7 @@ class _LoginPageState extends State<LoginPage>
                               icon: Icons.mail_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
                               isDark: isDark,
-                              cardColor: cardColor,
+                              cardColor: fieldColor,
                             ),
                             if (!_isForgotPassword) ...[
                               SizedBox(height: isSmallPhone ? 14 : 18),
@@ -305,7 +295,7 @@ class _LoginPageState extends State<LoginPage>
                                       !_obscurePassword,
                                 ),
                                 isDark: isDark,
-                                cardColor: cardColor,
+                                cardColor: fieldColor,
                               ),
                             ],
 
@@ -317,19 +307,17 @@ class _LoginPageState extends State<LoginPage>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 14, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEF4444)
-                                      .withOpacity(0.1),
+                                  color: _kErrorColor.withOpacity(0.1),
                                   borderRadius:
                                       BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: const Color(0xFFEF4444)
-                                        .withOpacity(0.3),
+                                    color: _kErrorColor.withOpacity(0.3),
                                   ),
                                 ),
                                 child: Text(
                                   _errorMessage!,
                                   style: const TextStyle(
-                                    color: Color(0xFFEF4444),
+                                    color: _kErrorColor,
                                     fontSize: 13,
                                   ),
                                 ),
@@ -429,9 +417,7 @@ class _LoginPageState extends State<LoginPage>
                                 text: '← Back to ',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: isDark
-                                      ? const Color(0xFF9CA3AF)
-                                      : kLightSubtext,
+                                  color: subduedText,
                                 ),
                                 children: [
                                   TextSpan(
@@ -467,9 +453,7 @@ class _LoginPageState extends State<LoginPage>
                                 'or sign in with',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isDark
-                                      ? const Color(0xFF6B7280)
-                                      : kLightSubtext,
+                                  color: subduedText,
                                 ),
                               ),
                             ),
@@ -490,7 +474,7 @@ class _LoginPageState extends State<LoginPage>
                                 label: 'Google',
                                 onTap: _handleGoogleSignIn,
                                 isDark: isDark,
-                                cardColor: cardColor,
+                                cardColor: fieldColor,
                                 cardBorder: cardBorder,
                               ),
                             ),
@@ -501,7 +485,7 @@ class _LoginPageState extends State<LoginPage>
                                 label: 'Apple',
                                 onTap: _handleAppleSignIn,
                                 isDark: isDark,
-                                cardColor: cardColor,
+                                cardColor: fieldColor,
                                 cardBorder: cardBorder,
                               ),
                             ),
@@ -519,9 +503,7 @@ class _LoginPageState extends State<LoginPage>
                                 text: "Don't have an account? ",
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: isDark
-                                      ? const Color(0xFF9CA3AF)
-                                      : kLightSubtext,
+                                  color: subduedText,
                                 ),
                                 children: [
                                   TextSpan(
@@ -557,8 +539,8 @@ class _LoginPageState extends State<LoginPage>
                 style: TextStyle(
                   fontSize: isSmallPhone ? 10.5 : 12.0,
                   color: isDark
-                      ? Colors.white.withOpacity(0.28)
-                      : const Color(0xFF9CA3AF),
+                      ? textSecondary.withOpacity(0.3)
+                      : _kLightSubtext.withOpacity(0.7),
                   letterSpacing: 0.3,
                 ),
               ),
@@ -570,11 +552,8 @@ class _LoginPageState extends State<LoginPage>
             top: topPad + 12,
             right: 16,
             child: ThemeToggleButton(
-              surfaceColor: (isDark ? kDarkSurface : kLightSurface)
-                  .withOpacity(isDark ? 0.85 : 0.92),
-              borderColor: isDark
-                  ? Colors.white.withOpacity(0.07)
-                  : const Color(0xFFE2E8F0),
+              surfaceColor: cardColor.withOpacity(isDark ? 0.9 : 0.95),
+              borderColor: cardBorder,
               size: toggleSize,
             ),
           ),
@@ -592,17 +571,19 @@ class _ModeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = isForgotPassword ? kAccent : kHighlight;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: kHighlight.withOpacity(0.12),
+        color: accentColor.withOpacity(0.12),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: kHighlight.withOpacity(0.35), width: 1),
+        border: Border.all(color: accentColor.withOpacity(0.35), width: 1),
       ),
       child: Text(
         isForgotPassword ? '🔑  Reset your password' : '✦  Welcome back',
-        style: const TextStyle(
-          color: kHighlight,
+        style: TextStyle(
+          color: accentColor,
           fontSize: 13,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.4,
@@ -639,13 +620,11 @@ class _Headline extends StatelessWidget {
         children: [
           TextSpan(
             text: '$line1\n',
-            style: TextStyle(
-                color: isDark ? Colors.white : const Color(0xFF1E1B4B)),
+            style: TextStyle(color: isDark ? Colors.white : _kLightText),
           ),
           TextSpan(
             text: line2,
-            style: TextStyle(
-                color: isDark ? Colors.white : const Color(0xFF1E1B4B)),
+            style: TextStyle(color: isDark ? Colors.white : _kLightText),
           ),
         ],
       ),
@@ -687,7 +666,7 @@ class _BrandInputField extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isDark ? const Color(0xFF9CA3AF) : kLightSubtext,
+            color: isDark ? textSecondary.withOpacity(0.8) : _kLightSubtext,
             letterSpacing: 0.5,
           ),
         ),
@@ -697,22 +676,22 @@ class _BrandInputField extends StatelessWidget {
           obscureText: obscure,
           keyboardType: keyboardType,
           style: TextStyle(
-            color: isDark ? Colors.white : kLightText,
+            color: isDark ? Colors.white : _kLightText,
             fontSize: 15,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
               color: isDark
-                  ? const Color(0xFF4B5563)
-                  : const Color(0xFFB0B9CC),
+                  ? textSecondary.withOpacity(0.35)
+                  : _kLightSubtext.withOpacity(0.55),
               fontSize: 15,
             ),
             prefixIcon: Icon(icon,
                 size: 20,
                 color: isDark
-                    ? const Color(0xFF6B7280)
-                    : const Color(0xFF8B5CF6)),
+                    ? textSecondary.withOpacity(0.65)
+                    : kViolet),
             suffixIcon: onToggleObscure != null
                 ? IconButton(
                     icon: Icon(
@@ -721,8 +700,8 @@ class _BrandInputField extends StatelessWidget {
                           : Icons.visibility_outlined,
                       size: 20,
                       color: isDark
-                          ? const Color(0xFF6B7280)
-                          : kLightSubtext,
+                          ? textSecondary.withOpacity(0.65)
+                          : _kLightSubtext,
                     ),
                     onPressed: onToggleObscure,
                   )
@@ -740,7 +719,7 @@ class _BrandInputField extends StatelessWidget {
               borderSide: BorderSide(
                 color: isDark
                     ? Colors.white.withOpacity(0.06)
-                    : const Color(0xFFDDE3F0),
+                    : kViolet.withOpacity(0.12),
                 width: 1,
               ),
             ),
@@ -790,15 +769,14 @@ class _SocialBtn extends StatelessWidget {
           children: [
             Icon(icon,
                 size: 24,
-                color: isDark ? Colors.white : const Color(0xFF1E1B4B)),
+                color: isDark ? Colors.white : _kLightText),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color:
-                    isDark ? Colors.white : const Color(0xFF1E1B4B),
+                color: isDark ? Colors.white : _kLightText,
               ),
             ),
           ],

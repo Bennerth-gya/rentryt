@@ -1,3 +1,4 @@
+import 'package:comfi/consts/colors.dart';
 import 'package:comfi/consts/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,7 +42,7 @@ class ThemeToggleButton extends StatelessWidget {
             boxShadow: dark
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                      color: kViolet.withOpacity(0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),
@@ -59,9 +60,7 @@ class ThemeToggleButton extends StatelessWidget {
                   ? Icons.light_mode_rounded      // sun — switch to light
                   : Icons.dark_mode_rounded,      // moon — switch to dark
               key: ValueKey(dark),
-              color: dark
-                  ? const Color(0xFFFFC843)       // golden sun
-                  : const Color(0xFF8B5CF6),      // violet moon
+              color: dark ? kAccent : kViolet,
               size: size * 0.45,
             ),
           ),
