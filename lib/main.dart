@@ -36,11 +36,6 @@ void main() {
     ),
   );
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
   // Register theme state once at the root.
   Get.put(ThemeController());
 
